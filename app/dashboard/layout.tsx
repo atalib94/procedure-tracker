@@ -24,7 +24,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Top bar - altijd zichtbaar */}
+      {/* Top bar - always visible */}
       <div className="bg-white border-b border-gray-200 fixed w-full top-0 z-40">
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
@@ -41,7 +41,7 @@ export default async function DashboardLayout({
       </div>
 
       <div className="pt-16">
-        {/* DESKTOP: Sidebar links */}
+        {/* DESKTOP: Sidebar + MOBILE: Bottom nav (handled by DashboardNav component) */}
         <aside className="hidden lg:block w-64 bg-white border-r border-gray-200 fixed left-0 h-[calc(100vh-4rem)] overflow-y-auto">
           <DashboardNav />
         </aside>
@@ -51,42 +51,6 @@ export default async function DashboardLayout({
           {children}
         </main>
       </div>
-
-      {/* MOBILE: Bottom nav (rendered by DashboardNav component) */}
-      <DashboardNav />
     </div>
   )
 }
-```
-
-5. Commit: `Update layout for bottom navigation`
-
----
-
-## ✅ WAT JE NU KRIJGT:
-
-### Op Mobile (Telefoon):
-```
-┌─────────────────────┐
-│  IR  IR Log      👤 │ ← Top bar
-├─────────────────────┤
-│                     │
-│   Content           │
-│                     │
-│                     │
-├─────────────────────┤
-│ 📋   📚    ⚙️      │ ← Bottom nav (vast)
-│ Proc  Lib  Set      │
-└─────────────────────┘
-```
-
-### Op Desktop:
-```
-┌──────┬──────────────┐
-│  IR  │  Content  👤 │
-├──────┤              │
-│ 📋 P │              │
-│ 📚 L │              │
-│ ⚙️ S │              │
-│      │              │
-└──────┴──────────────┘

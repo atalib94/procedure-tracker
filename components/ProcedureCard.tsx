@@ -61,18 +61,18 @@ export default function ProcedureCard({ procedure }: ProcedureCardProps) {
           {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-4 mb-2">
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-1">
+              <div className="min-w-0 flex-1">
+                <h3 className="font-semibold text-gray-900 mb-1 truncate">
                   {procedure.procedure_name}
                 </h3>
                 {procedure.ebir_categories && (
-                  <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(procedure.ebir_categories.code)}`}>
+                  <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(procedure.ebir_categories.code)} truncate max-w-full`}>
                     {procedure.ebir_categories.name}
                   </span>
                 )}
               </div>
               {procedure.operator_role && (
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleBadge(procedure.operator_role)}`}>
+                <span className={`flex-shrink-0 px-2 py-1 rounded-full text-xs font-medium ${getRoleBadge(procedure.operator_role)}`}>
                   {procedure.operator_role}
                 </span>
               )}
@@ -80,19 +80,19 @@ export default function ProcedureCard({ procedure }: ProcedureCardProps) {
 
             <div className="flex flex-wrap gap-4 text-sm text-gray-600">
               <div className="flex items-center gap-1">
-                <Calendar className="w-4 h-4" />
-                {format(new Date(procedure.procedure_date), 'MMM dd, yyyy')}
+                <Calendar className="w-4 h-4 flex-shrink-0" />
+                <span className="truncate">{format(new Date(procedure.procedure_date), 'MMM dd, yyyy')}</span>
               </div>
               {procedure.medical_centres && (
-                <div className="flex items-center gap-1">
-                  <Building2 className="w-4 h-4" />
-                  {procedure.medical_centres.name}
+                <div className="flex items-center gap-1 min-w-0">
+                  <Building2 className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate">{procedure.medical_centres.name}</span>
                 </div>
               )}
               {procedure.accession_number && (
                 <div className="flex items-center gap-1">
-                  <Hash className="w-4 h-4" />
-                  {procedure.accession_number}
+                  <Hash className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate">{procedure.accession_number}</span>
                 </div>
               )}
             </div>

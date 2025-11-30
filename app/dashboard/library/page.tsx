@@ -4,20 +4,17 @@ import UploadPDFButton from '@/components/UploadPDFButton'
 
 export default async function LibraryPage() {
   const supabase = createServerClient()
+  const session = await supabase.auth.getSession()
   
-  const { data: { session } } = await supabase.auth.getSession()
-  
-  if (!session) return null
+  if (!session.data.session) return null
 
   const { data: materials } = await supabase
     .from('learning_materials')
     .select('*')
-    .eq('user_id', session.user.id)
+    .eq('user_id', session.data.session.user.id)
     .order('created_at', { ascending: false })
 
   const totalDocs = materials?.length || 0
-  const categories = new Set(materials?.map(m => m.category).filter(Boolean)).size
-  const linkedCount = materials?.filter(m => m.is_linked_to_procedure).length || 0
 
   return (
     <div className="space-y-6 pb-20 lg:pb-6">
@@ -33,14 +30,6 @@ export default async function LibraryPage() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="text-3xl font-bold text-gray-900 mb-1">{totalDocs}</div>
           <div className="text-sm text-gray-600">Total Documents</div>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="text-3xl font-bold text-gray-900 mb-1">{categories}</div>
-          <div className="text-sm text-gray-600">Categories Used</div>
-        </div>
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="text-3xl font-bold text-gray-900 mb-1">{linkedCount}</div>
-          <div className="text-sm text-gray-600">Linked to Procedures</div>
         </div>
       </div>
 
@@ -63,9 +52,6 @@ export default async function LibraryPage() {
                         {material.category}
                       </span>
                     )}
-                    <p className="text-xs text-gray-500 mt-2">
-                      Added {new Date(material.created_at).toLocaleDateString()}
-                    </p>
                   </div>
                   
                     href={material.file_url}

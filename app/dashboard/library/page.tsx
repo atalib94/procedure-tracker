@@ -1,5 +1,5 @@
 import { createServerClient } from '@/lib/supabase-server'
-import { Plus, BookOpen, Download } from 'lucide-react'
+import { BookOpen, Download } from 'lucide-react'
 import UploadPDFButton from '@/components/UploadPDFButton'
 
 export default async function LibraryPage() {

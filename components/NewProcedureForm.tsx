@@ -24,7 +24,7 @@ export default function NewProcedureForm({ environments, categories, medicalCent
     procedure_name: '',
     procedure_date: new Date().toISOString().split('T')[0],
     ebir_category_id: '',
-    medical_centre_id: '',
+    medical_centre_id: medicalCentres[0]?.id || '',
     accession_number: '',
     operator_role: '1st Operator',
     notes: '',
@@ -47,9 +47,26 @@ export default function NewProcedureForm({ environments, categories, medicalCent
     setLoading(true)
     setError(null)
 
+    // Validation
+    if (!formData.procedure_name.trim()) {
+      setError('Please enter a procedure name')
+      setLoading(false)
+      return
+    }
+
+    if (!formData.medical_centre_id) {
+      setError('Please select a medical centre')
+      setLoading(false)
+      return
+    }
+
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) throw new Error('Not authenticated')
+      if (!session) {
+        setError('You must be logged in to create a procedure')
+        setLoading(false)
+        return
+      }
 
       let imageUrl = null
 
@@ -62,7 +79,9 @@ export default function NewProcedureForm({ environments, categories, medicalCent
           .from('procedure-images')
           .upload(fileName, imageFile)
 
-        if (uploadError) throw uploadError
+        if (uploadError) {
+          throw new Error(`Image upload failed: ${uploadError.message}`)
+        }
 
         const { data: { publicUrl } } = supabase.storage
           .from('procedure-images')
@@ -78,15 +97,20 @@ export default function NewProcedureForm({ environments, categories, medicalCent
           ...formData,
           user_id: session.user.id,
           image_url: imageUrl,
-          environment_id: environments[0]?.id, // Default to first environment (EBIR)
+          environment_id: environments[0]?.id,
+          // Convert empty strings to null for optional UUID fields
+          ebir_category_id: formData.ebir_category_id || null,
         })
 
-      if (insertError) throw insertError
+      if (insertError) {
+        throw new Error(`Failed to save procedure: ${insertError.message}`)
+      }
 
       router.push('/dashboard')
       router.refresh()
     } catch (err: any) {
-      setError(err.message)
+      console.error('Error:', err)
+      setError(err.message || 'An unexpected error occurred. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -95,8 +119,9 @@ export default function NewProcedureForm({ environments, categories, medicalCent
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="p-4 bg-red-50 text-red-800 rounded-lg text-sm">
-          {error}
+        <div className="p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg text-sm">
+          <p className="font-medium">Error</p>
+          <p>{error}</p>
         </div>
       )}
 
@@ -119,20 +144,27 @@ export default function NewProcedureForm({ environments, categories, medicalCent
         {/* Medical Centre */}
         <div>
           <label htmlFor="centre" className="block text-sm font-medium text-gray-700 mb-2">
-            Medical Centre
+            Medical Centre <span className="text-red-500">*</span>
           </label>
           <select
             id="centre"
+            required
             value={formData.medical_centre_id}
             onChange={(e) => setFormData({ ...formData, medical_centre_id: e.target.value })}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="">Select centre</option>
-            {medicalCentres.map((centre) => (
-              <option key={centre.id} value={centre.id}>
-                {centre.name}
-              </option>
-            ))}
+            {medicalCentres.length === 0 ? (
+              <option value="">No centres available</option>
+            ) : (
+              <>
+                <option value="">Select centre</option>
+                {medicalCentres.map((centre) => (
+                  <option key={centre.id} value={centre.id}>
+                    {centre.name}
+                  </option>
+                ))}
+              </>
+            )}
           </select>
         </div>
       </div>
@@ -140,7 +172,7 @@ export default function NewProcedureForm({ environments, categories, medicalCent
       {/* EBIR Category */}
       <div>
         <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
-          EBIR Category
+          EBIR Category <span className="text-gray-400">(optional)</span>
         </label>
         <select
           id="category"
@@ -194,7 +226,7 @@ export default function NewProcedureForm({ environments, categories, medicalCent
       {/* Accession Number */}
       <div>
         <label htmlFor="accession" className="block text-sm font-medium text-gray-700 mb-2">
-          Accession Number
+          Accession Number <span className="text-gray-400">(optional)</span>
         </label>
         <input
           type="text"
@@ -209,7 +241,7 @@ export default function NewProcedureForm({ environments, categories, medicalCent
       {/* Notes */}
       <div>
         <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-2">
-          Procedure Notes
+          Procedure Notes <span className="text-gray-400">(optional)</span>
         </label>
         <textarea
           id="notes"
@@ -224,7 +256,7 @@ export default function NewProcedureForm({ environments, categories, medicalCent
       {/* Image Upload */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Procedure Image
+          Procedure Image <span className="text-gray-400">(optional)</span>
         </label>
         <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
           {imagePreview ? (
@@ -270,7 +302,8 @@ export default function NewProcedureForm({ environments, categories, medicalCent
         <button
           type="button"
           onClick={() => router.back()}
-          className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+          disabled={loading}
+          className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
         >
           Cancel
         </button>

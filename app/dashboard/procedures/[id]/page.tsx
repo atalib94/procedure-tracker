@@ -1,12 +1,11 @@
 import { createServerClient } from '@/lib/supabase-server'
-import { redirect, notFound } from 'next/navigation'
-import { format } from 'date-fns'
-import { Calendar, Building2, Hash, User, ArrowLeft } from 'lucide-react'
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
-import ProcedureDocuments from '@/components/ProcedureDocuments'
+import { Plus } from 'lucide-react'
+import ProcedureCard from '@/components/ProcedureCard'
+import StatsCards from '@/components/StatsCards'
 
-export default async function ProcedureDetailPage({ params }: { params: { id: string } }) {
+export default async function DashboardPage() {
   const supabase = createServerClient()
   
   const { data: { session } } = await supabase.auth.getSession()
@@ -15,166 +14,82 @@ export default async function ProcedureDetailPage({ params }: { params: { id: st
     redirect('/')
   }
 
-  const { data: procedure, error } = await supabase
+  // Fetch user's procedures
+  const { data: procedures } = await supabase
     .from('procedures')
     .select(`
       *,
       ebir_categories (name, code),
-      medical_centres (name, city, country)
+      medical_centres (name, city)
     `)
-    .eq('id', params.id)
     .eq('user_id', session.user.id)
-    .single()
+    .order('procedure_date', { ascending: false })
 
-  if (error || !procedure) {
-    notFound()
-  }
+  // Fetch stats
+  const { count: totalProcedures } = await supabase
+    .from('procedures')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', session.user.id)
 
-  // Fetch linked documents
-  const { data: linkedDocs } = await supabase
-    .from('procedure_learning_links')
-    .select(`
-      learning_material_id,
-      learning_materials (
-        id, title, description, file_url, file_size, category, created_at
-      )
-    `)
-    .eq('procedure_id', params.id)
+  const { count: firstOperator } = await supabase
+    .from('procedures')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', session.user.id)
+    .eq('operator_role', '1st Operator')
 
-  const documents = linkedDocs?.map(link => link.learning_materials).filter(Boolean) || []
-
-  const getCategoryColor = (code: string) => {
-    const colors: { [key: string]: string } = {
-      'vascular_access': 'bg-blue-100 text-blue-800',
-      'angiography_vascular': 'bg-green-100 text-green-800',
-      'neurointervention': 'bg-purple-100 text-purple-800',
-      'non_vascular': 'bg-orange-100 text-orange-800',
-      'oncologic': 'bg-red-100 text-red-800',
-      'hepatobiliary': 'bg-yellow-100 text-yellow-800',
-      'genitourinary': 'bg-indigo-100 text-indigo-800',
-      'gastrointestinal': 'bg-pink-100 text-pink-800',
-      'thoracic': 'bg-cyan-100 text-cyan-800',
-      'musculoskeletal': 'bg-teal-100 text-teal-800',
-      'womens_health': 'bg-rose-100 text-rose-800',
-      'pediatric': 'bg-amber-100 text-amber-800',
-      'biopsy': 'bg-lime-100 text-lime-800',
-      'drainage': 'bg-emerald-100 text-emerald-800',
-    }
-    return colors[code] || 'bg-gray-100 text-gray-800'
-  }
-
-  const getRoleBadge = (role: string) => {
-    if (role === '1st Operator') return 'bg-green-100 text-green-800'
-    if (role === '2nd Operator') return 'bg-blue-100 text-blue-800'
-    return 'bg-gray-100 text-gray-800'
-  }
+  const { count: categoriesUsed } = await supabase
+    .from('procedures')
+    .select('ebir_category_id', { count: 'exact', head: true })
+    .eq('user_id', session.user.id)
+    .not('ebir_category_id', 'is', null)
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-20 lg:pb-6">
-      <div>
-        <Link
-          href="/dashboard"
-          className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to procedures
-        </Link>
-        
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 truncate">{procedure.procedure_name}</h1>
-        <p className="text-gray-600 mt-1">
-          {format(new Date(procedure.procedure_date), 'EEEE, MMMM dd, yyyy')}
-        </p>
-      </div>
-
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        {procedure.image_url && (
-          <div className="w-full h-64 sm:h-96 relative bg-gray-100">
-            <Image
-              src={procedure.image_url}
-              alt={procedure.procedure_name}
-              fill
-              className="object-contain"
-            />
-          </div>
-        )}
-
-        <div className="p-6 space-y-6">
-          <div className="flex flex-wrap gap-2">
-            {procedure.ebir_categories && (
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${getCategoryColor(procedure.ebir_categories.code)}`}>
-                {procedure.ebir_categories.name}
-              </span>
-            )}
-            {procedure.operator_role && (
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${getRoleBadge(procedure.operator_role)}`}>
-                {procedure.operator_role}
-              </span>
-            )}
-          </div>
-
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div className="flex items-start gap-3">
-              <Calendar className="w-5 h-5 text-gray-400 mt-0.5" />
-              <div>
-                <p className="text-sm text-gray-500">Date</p>
-                <p className="font-medium text-gray-900">
-                  {format(new Date(procedure.procedure_date), 'MMM dd, yyyy')}
-                </p>
-              </div>
-            </div>
-
-            {procedure.medical_centres && (
-              <div className="flex items-start gap-3">
-                <Building2 className="w-5 h-5 text-gray-400 mt-0.5" />
-                <div>
-                  <p className="text-sm text-gray-500">Medical Centre</p>
-                  <p className="font-medium text-gray-900 truncate">{procedure.medical_centres.name}</p>
-                  {procedure.medical_centres.city && (
-                    <p className="text-sm text-gray-500">
-                      {procedure.medical_centres.city}
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {procedure.accession_number && (
-              <div className="flex items-start gap-3">
-                <Hash className="w-5 h-5 text-gray-400 mt-0.5" />
-                <div>
-                  <p className="text-sm text-gray-500">Accession Number</p>
-                  <p className="font-medium text-gray-900">{procedure.accession_number}</p>
-                </div>
-              </div>
-            )}
-
-            {procedure.operator_role && (
-              <div className="flex items-start gap-3">
-                <User className="w-5 h-5 text-gray-400 mt-0.5" />
-                <div>
-                  <p className="text-sm text-gray-500">Your Role</p>
-                  <p className="font-medium text-gray-900">{procedure.operator_role}</p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {procedure.notes && (
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">Notes</h2>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-gray-700 whitespace-pre-wrap">{procedure.notes}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Linked Documents Section */}
-          <ProcedureDocuments 
-            procedureId={params.id} 
-            initialDocuments={documents as any[]}
-          />
+    <div className="space-y-6 pb-20 lg:pb-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">My Procedures</h1>
+          <p className="text-gray-600 mt-1">Track and manage your interventional procedures</p>
         </div>
+        <Link
+          href="/dashboard/procedures/new"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-purple-600 text-white rounded-xl font-medium hover:bg-purple-700 transition-colors shadow-sm"
+        >
+          <Plus className="w-5 h-5" />
+          <span>New Procedure</span>
+        </Link>
       </div>
+
+      {/* Stats */}
+      <StatsCards 
+        totalProcedures={totalProcedures || 0}
+        firstOperator={firstOperator || 0}
+        categoriesUsed={categoriesUsed || 0}
+      />
+
+      {/* Procedures List */}
+      {procedures && procedures.length > 0 ? (
+        <div className="grid gap-4">
+          {procedures.map((procedure) => (
+            <ProcedureCard key={procedure.id} procedure={procedure} />
+          ))}
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Plus className="w-8 h-8 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No procedures yet</h3>
+          <p className="text-gray-600 mb-4">Start tracking your procedures by adding your first one.</p>
+          <Link
+            href="/dashboard/procedures/new"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Add Procedure
+          </Link>
+        </div>
+      )}
     </div>
   )
 }

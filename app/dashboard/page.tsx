@@ -35,16 +35,16 @@ export default async function DashboardPage() {
   const categoriesUsed = new Set(stats?.map(p => p.ebir_category_id).filter(Boolean)).size
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="hidden sm:block">
           <h1 className="text-3xl font-bold text-gray-900">IR Procedure Log</h1>
           <p className="text-gray-600 mt-1">Track your interventional radiology procedures</p>
         </div>
         <Link
           href="/dashboard/procedures/new"
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+          className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2.5 sm:py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors w-full sm:w-auto"
         >
           <Plus className="w-5 h-5" />
           Log Procedure

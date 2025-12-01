@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { FileText, Eye, Download, ExternalLink, Link2, Trash2, MoreVertical, Calendar, Tag, Loader2 } from 'lucide-react'
+import { useState } from 'react'
+import { FileText, Eye, Download, ExternalLink, Link2, Trash2, MoreVertical, Calendar, Tag } from 'lucide-react'
 import { format } from 'date-fns'
 
 interface PDFCardProps {
@@ -24,77 +24,6 @@ interface PDFCardProps {
 
 export default function PDFCard({ material, onView, onLink, onDelete }: PDFCardProps) {
   const [showMenu, setShowMenu] = useState(false)
-  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null)
-  const [thumbnailLoading, setThumbnailLoading] = useState(true)
-  const [thumbnailError, setThumbnailError] = useState(false)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-
-  useEffect(() => {
-    let cancelled = false
-    
-    const generateThumbnail = async () => {
-      try {
-        setThumbnailLoading(true)
-        setThumbnailError(false)
-        
-        // Dynamically import pdf.js
-        const pdfjsLib = await import('pdfjs-dist')
-        
-        // Set worker source
-        pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
-        
-        // Load the PDF
-        const loadingTask = pdfjsLib.getDocument(material.file_url)
-        const pdf = await loadingTask.promise
-        
-        if (cancelled) return
-        
-        // Get first page
-        const page = await pdf.getPage(1)
-        
-        if (cancelled) return
-        
-        // Set up canvas for thumbnail
-        const scale = 0.5
-        const viewport = page.getViewport({ scale })
-        
-        const canvas = document.createElement('canvas')
-        const context = canvas.getContext('2d')
-        
-        if (!context) {
-          throw new Error('Could not get canvas context')
-        }
-        
-        canvas.height = viewport.height
-        canvas.width = viewport.width
-        
-        // Render page to canvas
-        await page.render({
-          canvasContext: context,
-          viewport: viewport
-        }).promise
-        
-        if (cancelled) return
-        
-        // Convert to data URL
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.8)
-        setThumbnailUrl(dataUrl)
-        setThumbnailLoading(false)
-      } catch (err) {
-        console.error('Error generating PDF thumbnail:', err)
-        if (!cancelled) {
-          setThumbnailError(true)
-          setThumbnailLoading(false)
-        }
-      }
-    }
-    
-    generateThumbnail()
-    
-    return () => {
-      cancelled = true
-    }
-  }, [material.file_url])
 
   const formatFileSize = (bytes: number | null): string => {
     if (!bytes) return 'Unknown size'
@@ -121,34 +50,50 @@ export default function PDFCard({ material, onView, onLink, onDelete }: PDFCardP
     setShowMenu(false)
   }
 
+  // Generate a color based on the title for visual variety
+  const getCardColor = () => {
+    const colors = [
+      'from-red-50 to-red-100',
+      'from-blue-50 to-blue-100', 
+      'from-green-50 to-green-100',
+      'from-purple-50 to-purple-100',
+      'from-amber-50 to-amber-100',
+      'from-cyan-50 to-cyan-100',
+      'from-pink-50 to-pink-100',
+      'from-indigo-50 to-indigo-100',
+    ]
+    const iconColors = [
+      'text-red-500',
+      'text-blue-500',
+      'text-green-500', 
+      'text-purple-500',
+      'text-amber-500',
+      'text-cyan-500',
+      'text-pink-500',
+      'text-indigo-500',
+    ]
+    const hash = material.title.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+    const index = hash % colors.length
+    return { bg: colors[index], icon: iconColors[index] }
+  }
+
+  const cardColor = getCardColor()
+
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow overflow-hidden">
       {/* Preview Area */}
       <div 
-        className="h-40 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center cursor-pointer relative group overflow-hidden"
+        className={`h-36 bg-gradient-to-br ${cardColor.bg} flex items-center justify-center cursor-pointer relative group`}
         onClick={onView}
       >
-        {thumbnailLoading ? (
-          <div className="text-center">
-            <Loader2 className="w-8 h-8 text-gray-400 animate-spin mx-auto mb-2" />
-            <span className="text-xs text-gray-500">Loading preview...</span>
+        <div className="text-center">
+          <div className="w-14 h-14 bg-white rounded-xl shadow-md flex items-center justify-center mx-auto mb-2">
+            <FileText className={`w-7 h-7 ${cardColor.icon}`} />
           </div>
-        ) : thumbnailUrl && !thumbnailError ? (
-          <img 
-            src={thumbnailUrl} 
-            alt={material.title}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="text-center">
-            <div className="w-16 h-16 bg-white rounded-xl shadow-md flex items-center justify-center mx-auto mb-2">
-              <FileText className="w-8 h-8 text-red-500" />
-            </div>
-            <span className="text-xs font-medium text-red-600 bg-white/80 px-2 py-1 rounded">
-              PDF Document
-            </span>
-          </div>
-        )}
+          <span className={`text-xs font-medium ${cardColor.icon} bg-white/80 px-2 py-1 rounded`}>
+            PDF
+          </span>
+        </div>
         
         {/* Hover Overlay */}
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -160,9 +105,9 @@ export default function PDFCard({ material, onView, onLink, onDelete }: PDFCardP
       </div>
 
       {/* Content */}
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <h3 className="font-semibold text-gray-900 line-clamp-2 flex-1">{material.title}</h3>
+      <div className="p-3">
+        <div className="flex items-start justify-between gap-2 mb-1">
+          <h3 className="font-semibold text-gray-900 line-clamp-2 flex-1 text-sm">{material.title}</h3>
           
           {/* Menu Button */}
           <div className="relative">
@@ -222,15 +167,11 @@ export default function PDFCard({ material, onView, onLink, onDelete }: PDFCardP
           </div>
         </div>
 
-        {material.description && (
-          <p className="text-sm text-gray-600 line-clamp-2 mb-3">{material.description}</p>
-        )}
-
         {/* Meta Info */}
-        <div className="space-y-2 text-xs text-gray-500">
-          <div className="flex items-center gap-4">
+        <div className="space-y-1.5 text-xs text-gray-500">
+          <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5" />
+              <Calendar className="w-3 h-3" />
               {format(new Date(material.created_at), 'MMM dd, yyyy')}
             </span>
             <span>{formatFileSize(material.file_size)}</span>
@@ -244,14 +185,14 @@ export default function PDFCard({ material, onView, onLink, onDelete }: PDFCardP
 
           {material.tags && material.tags.length > 0 && (
             <div className="flex items-center gap-1 flex-wrap">
-              <Tag className="w-3.5 h-3.5 text-gray-400" />
-              {material.tags.slice(0, 3).map((tag, i) => (
-                <span key={i} className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">
+              <Tag className="w-3 h-3 text-gray-400" />
+              {material.tags.slice(0, 2).map((tag, i) => (
+                <span key={i} className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded-full text-xs">
                   {tag}
                 </span>
               ))}
-              {material.tags.length > 3 && (
-                <span className="text-gray-500">+{material.tags.length - 3}</span>
+              {material.tags.length > 2 && (
+                <span className="text-gray-500">+{material.tags.length - 2}</span>
               )}
             </div>
           )}
@@ -259,9 +200,9 @@ export default function PDFCard({ material, onView, onLink, onDelete }: PDFCardP
 
         {/* Linked Indicator */}
         {material.is_linked_to_procedure && (
-          <div className="mt-3 pt-3 border-t border-gray-100">
+          <div className="mt-2 pt-2 border-t border-gray-100">
             <span className="text-xs text-green-600 flex items-center gap-1">
-              <Link2 className="w-3.5 h-3.5" />
+              <Link2 className="w-3 h-3" />
               Linked to {material.linked_procedures_count || 0} case{(material.linked_procedures_count || 0) !== 1 ? 's' : ''}
             </span>
           </div>
@@ -269,17 +210,17 @@ export default function PDFCard({ material, onView, onLink, onDelete }: PDFCardP
       </div>
 
       {/* Quick Actions */}
-      <div className="px-4 pb-4 flex gap-2">
+      <div className="px-3 pb-3 flex gap-2">
         <button
           onClick={onView}
-          className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-1.5"
+          className="flex-1 px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-1.5"
         >
           <Eye className="w-4 h-4" />
           View
         </button>
         <button
           onClick={onLink}
-          className="flex-1 px-3 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-1.5"
+          className="flex-1 px-3 py-1.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-1.5"
         >
           <Link2 className="w-4 h-4" />
           Link

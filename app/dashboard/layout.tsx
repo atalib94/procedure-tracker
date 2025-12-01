@@ -41,13 +41,18 @@ export default async function DashboardLayout({
       </div>
 
       <div className="pt-16">
-        {/* DESKTOP: Sidebar + MOBILE: Bottom nav (handled by DashboardNav component) */}
+        {/* DESKTOP: Sidebar */}
         <aside className="hidden lg:block w-64 bg-white border-r border-gray-200 fixed left-0 h-[calc(100vh-4rem)] overflow-y-auto">
           <DashboardNav />
         </aside>
 
+        {/* MOBILE: Bottom nav - rendered outside the hidden aside */}
+        <div className="lg:hidden">
+          <DashboardNav />
+        </div>
+
         {/* Main content */}
-        <main className="lg:ml-64 p-4 sm:p-6 pb-20 lg:pb-6">
+        <main className="lg:ml-64 p-4 sm:p-6 pb-24 lg:pb-6">
           {children}
         </main>
       </div>

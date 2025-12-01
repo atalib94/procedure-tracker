@@ -29,12 +29,12 @@ export default function DashboardClient({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="hidden sm:block">
-          <h1 className="text-3xl font-bold text-gray-900">IR Procedure Log</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Procedure Log</h1>
           <p className="text-gray-600 mt-1">Track your interventional radiology procedures</p>
         </div>
         <Link
           href="/dashboard/procedures/new"
-          className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2.5 sm:py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors w-full sm:w-auto"
+          className="flex items-center justify-center gap-2 bg-purple-600 text-white px-4 py-2.5 sm:py-2 rounded-lg font-medium hover:bg-purple-700 transition-colors w-full sm:w-auto"
         >
           <Plus className="w-5 h-5" />
           Log Procedure
@@ -58,7 +58,7 @@ export default function DashboardClient({
               <input
                 type="search"
                 placeholder="Search procedures..."
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -71,14 +71,14 @@ export default function DashboardClient({
             ))
           ) : (
             <div className="p-12 text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Plus className="w-8 h-8 text-gray-400" />
+              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Plus className="w-8 h-8 text-purple-500" />
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No procedures yet</h3>
               <p className="text-gray-600 mb-6">Get started by logging your first procedure</p>
               <Link
                 href="/dashboard/procedures/new"
-                className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center gap-2 bg-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-purple-700 transition-colors"
               >
                 <Plus className="w-5 h-5" />
                 Log Your First Procedure

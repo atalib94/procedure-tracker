@@ -53,7 +53,7 @@ export default function Home() {
           <div className="text-center mb-12 relative">
             {/* Main Headline */}
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-4 leading-tight">
-              The Interventionalist's Diary
+              The Doer's Diary
             </h1>
             
             {/* Subtitle */}

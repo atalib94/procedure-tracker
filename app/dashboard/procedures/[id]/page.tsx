@@ -1,9 +1,6 @@
 import { createServerClient } from '@/lib/supabase-server'
 import { redirect, notFound } from 'next/navigation'
-import { format } from 'date-fns'
-import { Calendar, Building2, Hash, User, ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
-import Image from 'next/image'
+import ProcedureDetailClient from '@/components/ProcedureDetailClient'
 
 export default async function ProcedureDetailPage({ params }: { params: { id: string } }) {
   const supabase = createServerClient()
@@ -14,6 +11,7 @@ export default async function ProcedureDetailPage({ params }: { params: { id: st
     redirect('/')
   }
 
+  // Fetch the procedure with related data
   const { data: procedure, error } = await supabase
     .from('procedures')
     .select(`
@@ -29,132 +27,37 @@ export default async function ProcedureDetailPage({ params }: { params: { id: st
     notFound()
   }
 
-  const getCategoryColor = (code: string) => {
-    const colors: { [key: string]: string } = {
-      'vascular_access': 'bg-blue-100 text-blue-800',
-      'angiography_vascular': 'bg-green-100 text-green-800',
-      'neurointervention': 'bg-purple-100 text-purple-800',
-      'non_vascular': 'bg-orange-100 text-orange-800',
-      'oncologic': 'bg-red-100 text-red-800',
-      'hepatobiliary': 'bg-yellow-100 text-yellow-800',
-      'genitourinary': 'bg-indigo-100 text-indigo-800',
-      'gastrointestinal': 'bg-pink-100 text-pink-800',
-      'thoracic': 'bg-cyan-100 text-cyan-800',
-      'musculoskeletal': 'bg-teal-100 text-teal-800',
-      'womens_health': 'bg-rose-100 text-rose-800',
-      'pediatric': 'bg-amber-100 text-amber-800',
-      'biopsy': 'bg-lime-100 text-lime-800',
-      'drainage': 'bg-emerald-100 text-emerald-800',
-    }
-    return colors[code] || 'bg-gray-100 text-gray-800'
-  }
+  // Fetch linked documents
+  const { data: linkedDocsData } = await supabase
+    .from('procedure_learning_links')
+    .select(`
+      learning_material_id,
+      learning_materials (
+        id, title, description, file_url, file_size, category, created_at
+      )
+    `)
+    .eq('procedure_id', params.id)
 
-  const getRoleBadge = (role: string) => {
-    if (role === '1st Operator') return 'bg-green-100 text-green-800'
-    if (role === '2nd Operator') return 'bg-blue-100 text-blue-800'
-    return 'bg-gray-100 text-gray-800'
-  }
+  const linkedDocuments = linkedDocsData?.map(link => link.learning_materials as any) || []
+
+  // Fetch categories and medical centres for edit modal
+  const { data: categories } = await supabase
+    .from('ebir_categories')
+    .select('id, name')
+    .order('order_index', { ascending: true })
+
+  const { data: medicalCentres } = await supabase
+    .from('medical_centres')
+    .select('id, name')
+    .eq('is_active', true)
+    .order('name', { ascending: true })
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-20 lg:pb-6">
-      <div>
-        <Link
-          href="/dashboard"
-          className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to procedures
-        </Link>
-        
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 truncate">{procedure.procedure_name}</h1>
-        <p className="text-gray-600 mt-1">
-          {format(new Date(procedure.procedure_date), 'EEEE, MMMM dd, yyyy')}
-        </p>
-      </div>
-
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        {procedure.image_url && (
-          <div className="w-full h-64 sm:h-96 relative bg-gray-100">
-            <Image
-              src={procedure.image_url}
-              alt={procedure.procedure_name}
-              fill
-              className="object-contain"
-            />
-          </div>
-        )}
-
-        <div className="p-6 space-y-6">
-          <div className="flex flex-wrap gap-2">
-            {procedure.ebir_categories && (
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${getCategoryColor(procedure.ebir_categories.code)}`}>
-                {procedure.ebir_categories.name}
-              </span>
-            )}
-            {procedure.operator_role && (
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${getRoleBadge(procedure.operator_role)}`}>
-                {procedure.operator_role}
-              </span>
-            )}
-          </div>
-
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div className="flex items-start gap-3">
-              <Calendar className="w-5 h-5 text-gray-400 mt-0.5" />
-              <div>
-                <p className="text-sm text-gray-500">Date</p>
-                <p className="font-medium text-gray-900">
-                  {format(new Date(procedure.procedure_date), 'MMM dd, yyyy')}
-                </p>
-              </div>
-            </div>
-
-            {procedure.medical_centres && (
-              <div className="flex items-start gap-3">
-                <Building2 className="w-5 h-5 text-gray-400 mt-0.5" />
-                <div>
-                  <p className="text-sm text-gray-500">Medical Centre</p>
-                  <p className="font-medium text-gray-900 truncate">{procedure.medical_centres.name}</p>
-                  {procedure.medical_centres.city && (
-                    <p className="text-sm text-gray-500">
-                      {procedure.medical_centres.city}
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {procedure.accession_number && (
-              <div className="flex items-start gap-3">
-                <Hash className="w-5 h-5 text-gray-400 mt-0.5" />
-                <div>
-                  <p className="text-sm text-gray-500">Accession Number</p>
-                  <p className="font-medium text-gray-900">{procedure.accession_number}</p>
-                </div>
-              </div>
-            )}
-
-            {procedure.operator_role && (
-              <div className="flex items-start gap-3">
-                <User className="w-5 h-5 text-gray-400 mt-0.5" />
-                <div>
-                  <p className="text-sm text-gray-500">Your Role</p>
-                  <p className="font-medium text-gray-900">{procedure.operator_role}</p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {procedure.notes && (
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">Notes</h2>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-gray-700 whitespace-pre-wrap">{procedure.notes}</p>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+    <ProcedureDetailClient
+      procedure={procedure}
+      linkedDocuments={linkedDocuments}
+      categories={categories || []}
+      medicalCentres={medicalCentres || []}
+    />
   )
 }

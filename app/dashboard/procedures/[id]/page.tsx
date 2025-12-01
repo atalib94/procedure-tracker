@@ -63,7 +63,7 @@ export default async function DashboardPage() {
       {/* Stats */}
       <StatsCards 
         totalProcedures={totalProcedures || 0}
-        firstOperator={firstOperator || 0}
+        asFirstOperator={firstOperator || 0}
         categoriesUsed={categoriesUsed || 0}
       />
 

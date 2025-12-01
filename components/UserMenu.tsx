@@ -28,7 +28,7 @@ export default function UserMenu({ user, profile }: UserMenuProps) {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
       >
-        <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+        <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
           <User className="w-5 h-5 text-white" />
         </div>
         <div className="text-left hidden sm:block">

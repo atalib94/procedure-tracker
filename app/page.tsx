@@ -46,24 +46,28 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <div className="w-full px-6 py-12 md:py-20">
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+      <div className="w-full px-6 py-12 md:py-16">
+        <div className="max-w-7xl mx-auto">
           
-          {/* Left side - Content */}
-          <div className="text-center lg:text-left">
+          {/* Top Content - Centered */}
+          <div className="text-center mb-12">
             {/* Main Headline */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 leading-tight">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-4 leading-tight">
               The Interventionalist's<br />
               <span className="text-blue-600">Diary</span>
             </h1>
             
             {/* Subtitle */}
-            <p className="text-xl md:text-2xl text-gray-600 mb-8 font-medium">
+            <p className="text-2xl md:text-3xl text-gray-500 font-medium">
               Reflect. Improve. Celebrate.
             </p>
+          </div>
+
+          {/* Main Content Grid */}
+          <div className="grid lg:grid-cols-3 gap-8 items-start">
             
-            {/* Features */}
-            <div className="space-y-4 mt-8 text-left">
+            {/* Left side - Features */}
+            <div className="lg:col-span-1 space-y-4">
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
                   <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -112,87 +116,88 @@ export default function Home() {
                 </p>
               </div>
             </div>
-          </div>
 
-          {/* Right side - Auth + Phone Mockup */}
-          <div className="flex flex-col items-center lg:items-end gap-8">
-            {/* Auth Form */}
-            <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
-              <AuthForm />
+            {/* Center - Auth Form */}
+            <div className="lg:col-span-1">
+              <div className="w-full max-w-md mx-auto bg-white rounded-2xl shadow-xl p-8">
+                <AuthForm />
+              </div>
             </div>
             
-            {/* Phone Mockup */}
-            <div className="relative">
-              <div className="w-48 h-96 bg-gray-900 rounded-[2.5rem] p-2 shadow-2xl">
-                {/* Phone Frame */}
-                <div className="w-full h-full bg-white rounded-[2rem] overflow-hidden relative">
-                  {/* Notch */}
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-6 bg-gray-900 rounded-b-xl z-10"></div>
-                  
-                  {/* Screen Content */}
-                  <div className="w-full h-full bg-gradient-to-b from-blue-50 to-white p-3 pt-8">
-                    {/* Mini Header */}
-                    <div className="flex items-center gap-1.5 mb-3">
-                      <div className="w-5 h-5 bg-blue-600 rounded-md"></div>
-                      <span className="text-[8px] font-bold text-gray-900">Procedure Tracker</span>
-                    </div>
+            {/* Right side - Phone Mockup */}
+            <div className="lg:col-span-1 flex justify-center lg:justify-end">
+              <div className="relative">
+                <div className="w-44 h-[22rem] bg-gray-900 rounded-[2.5rem] p-2 shadow-2xl">
+                  {/* Phone Frame */}
+                  <div className="w-full h-full bg-white rounded-[2rem] overflow-hidden relative">
+                    {/* Notch */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-5 bg-gray-900 rounded-b-xl z-10"></div>
                     
-                    {/* Mini Stats */}
-                    <div className="grid grid-cols-2 gap-1.5 mb-3">
-                      <div className="bg-white rounded-lg p-2 shadow-sm">
-                        <div className="text-[10px] font-bold text-gray-900">24</div>
-                        <div className="text-[6px] text-gray-500">Procedures</div>
+                    {/* Screen Content */}
+                    <div className="w-full h-full bg-gradient-to-b from-blue-50 to-white p-3 pt-7">
+                      {/* Mini Header */}
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <div className="w-4 h-4 bg-blue-600 rounded-md"></div>
+                        <span className="text-[7px] font-bold text-gray-900">Procedure Tracker</span>
                       </div>
-                      <div className="bg-white rounded-lg p-2 shadow-sm">
-                        <div className="text-[10px] font-bold text-blue-600">8</div>
-                        <div className="text-[6px] text-gray-500">Categories</div>
+                      
+                      {/* Mini Stats */}
+                      <div className="grid grid-cols-2 gap-1 mb-2">
+                        <div className="bg-white rounded-lg p-1.5 shadow-sm">
+                          <div className="text-[9px] font-bold text-gray-900">24</div>
+                          <div className="text-[5px] text-gray-500">Procedures</div>
+                        </div>
+                        <div className="bg-white rounded-lg p-1.5 shadow-sm">
+                          <div className="text-[9px] font-bold text-blue-600">8</div>
+                          <div className="text-[5px] text-gray-500">Categories</div>
+                        </div>
                       </div>
-                    </div>
-                    
-                    {/* Mini Cards */}
-                    <div className="space-y-1.5">
-                      <div className="bg-white rounded-lg p-2 shadow-sm">
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-6 h-6 bg-blue-100 rounded"></div>
-                          <div>
-                            <div className="text-[7px] font-medium text-gray-900">TACE Procedure</div>
-                            <div className="text-[6px] text-gray-500">Today</div>
+                      
+                      {/* Mini Cards */}
+                      <div className="space-y-1">
+                        <div className="bg-white rounded-lg p-1.5 shadow-sm">
+                          <div className="flex items-center gap-1">
+                            <div className="w-5 h-5 bg-blue-100 rounded"></div>
+                            <div>
+                              <div className="text-[6px] font-medium text-gray-900">TACE Procedure</div>
+                              <div className="text-[5px] text-gray-500">Today</div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="bg-white rounded-lg p-1.5 shadow-sm">
+                          <div className="flex items-center gap-1">
+                            <div className="w-5 h-5 bg-green-100 rounded"></div>
+                            <div>
+                              <div className="text-[6px] font-medium text-gray-900">PTA + Stent</div>
+                              <div className="text-[5px] text-gray-500">Yesterday</div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="bg-white rounded-lg p-1.5 shadow-sm">
+                          <div className="flex items-center gap-1">
+                            <div className="w-5 h-5 bg-purple-100 rounded"></div>
+                            <div>
+                              <div className="text-[6px] font-medium text-gray-900">Nephrostomy</div>
+                              <div className="text-[5px] text-gray-500">2 days ago</div>
+                            </div>
                           </div>
                         </div>
                       </div>
-                      <div className="bg-white rounded-lg p-2 shadow-sm">
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-6 h-6 bg-green-100 rounded"></div>
-                          <div>
-                            <div className="text-[7px] font-medium text-gray-900">PTA + Stent</div>
-                            <div className="text-[6px] text-gray-500">Yesterday</div>
-                          </div>
-                        </div>
+                      
+                      {/* Mini Nav */}
+                      <div className="absolute bottom-2 left-2 right-2 bg-white rounded-xl p-1 shadow-lg flex justify-around">
+                        <div className="w-3 h-3 bg-blue-600 rounded"></div>
+                        <div className="w-3 h-3 bg-gray-200 rounded"></div>
+                        <div className="w-3 h-3 bg-gray-200 rounded"></div>
                       </div>
-                      <div className="bg-white rounded-lg p-2 shadow-sm">
-                        <div className="flex items-center gap-1.5">
-                          <div className="w-6 h-6 bg-purple-100 rounded"></div>
-                          <div>
-                            <div className="text-[7px] font-medium text-gray-900">Nephrostomy</div>
-                            <div className="text-[6px] text-gray-500">2 days ago</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Mini Nav */}
-                    <div className="absolute bottom-2 left-3 right-3 bg-white rounded-xl p-1.5 shadow-lg flex justify-around">
-                      <div className="w-4 h-4 bg-blue-600 rounded"></div>
-                      <div className="w-4 h-4 bg-gray-200 rounded"></div>
-                      <div className="w-4 h-4 bg-gray-200 rounded"></div>
                     </div>
                   </div>
                 </div>
+                
+                {/* Decorative elements */}
+                <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-blue-200 rounded-full opacity-50 blur-xl"></div>
+                <div className="absolute -top-4 -right-4 w-12 h-12 bg-indigo-200 rounded-full opacity-50 blur-xl"></div>
               </div>
-              
-              {/* Decorative elements */}
-              <div className="absolute -bottom-4 -left-4 w-20 h-20 bg-blue-200 rounded-full opacity-50 blur-xl"></div>
-              <div className="absolute -top-4 -right-4 w-16 h-16 bg-indigo-200 rounded-full opacity-50 blur-xl"></div>
             </div>
           </div>
         </div>

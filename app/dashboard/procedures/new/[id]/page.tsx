@@ -158,4 +158,3 @@ export default async function ProcedureDetailPage({ params }: { params: { id: st
     </div>
   )
 }
-

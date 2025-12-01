@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { FileText, Eye, Download, ExternalLink, Link2, Trash2, MoreVertical, Calendar, Tag } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { FileText, Eye, Download, ExternalLink, Link2, Trash2, MoreVertical, Calendar, Tag, Loader2 } from 'lucide-react'
 import { format } from 'date-fns'
 
 interface PDFCardProps {
@@ -24,6 +24,77 @@ interface PDFCardProps {
 
 export default function PDFCard({ material, onView, onLink, onDelete }: PDFCardProps) {
   const [showMenu, setShowMenu] = useState(false)
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null)
+  const [thumbnailLoading, setThumbnailLoading] = useState(true)
+  const [thumbnailError, setThumbnailError] = useState(false)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    
+    const generateThumbnail = async () => {
+      try {
+        setThumbnailLoading(true)
+        setThumbnailError(false)
+        
+        // Dynamically import pdf.js
+        const pdfjsLib = await import('pdfjs-dist')
+        
+        // Set worker source
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+        
+        // Load the PDF
+        const loadingTask = pdfjsLib.getDocument(material.file_url)
+        const pdf = await loadingTask.promise
+        
+        if (cancelled) return
+        
+        // Get first page
+        const page = await pdf.getPage(1)
+        
+        if (cancelled) return
+        
+        // Set up canvas for thumbnail
+        const scale = 0.5
+        const viewport = page.getViewport({ scale })
+        
+        const canvas = document.createElement('canvas')
+        const context = canvas.getContext('2d')
+        
+        if (!context) {
+          throw new Error('Could not get canvas context')
+        }
+        
+        canvas.height = viewport.height
+        canvas.width = viewport.width
+        
+        // Render page to canvas
+        await page.render({
+          canvasContext: context,
+          viewport: viewport
+        }).promise
+        
+        if (cancelled) return
+        
+        // Convert to data URL
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.8)
+        setThumbnailUrl(dataUrl)
+        setThumbnailLoading(false)
+      } catch (err) {
+        console.error('Error generating PDF thumbnail:', err)
+        if (!cancelled) {
+          setThumbnailError(true)
+          setThumbnailLoading(false)
+        }
+      }
+    }
+    
+    generateThumbnail()
+    
+    return () => {
+      cancelled = true
+    }
+  }, [material.file_url])
 
   const formatFileSize = (bytes: number | null): string => {
     if (!bytes) return 'Unknown size'
@@ -54,17 +125,30 @@ export default function PDFCard({ material, onView, onLink, onDelete }: PDFCardP
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow overflow-hidden">
       {/* Preview Area */}
       <div 
-        className="h-40 bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center cursor-pointer relative group"
+        className="h-40 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center cursor-pointer relative group overflow-hidden"
         onClick={onView}
       >
-        <div className="text-center">
-          <div className="w-16 h-16 bg-white rounded-xl shadow-md flex items-center justify-center mx-auto mb-2">
-            <FileText className="w-8 h-8 text-red-500" />
+        {thumbnailLoading ? (
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 text-gray-400 animate-spin mx-auto mb-2" />
+            <span className="text-xs text-gray-500">Loading preview...</span>
           </div>
-          <span className="text-xs font-medium text-red-600 bg-white/80 px-2 py-1 rounded">
-            PDF Document
-          </span>
-        </div>
+        ) : thumbnailUrl && !thumbnailError ? (
+          <img 
+            src={thumbnailUrl} 
+            alt={material.title}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="text-center">
+            <div className="w-16 h-16 bg-white rounded-xl shadow-md flex items-center justify-center mx-auto mb-2">
+              <FileText className="w-8 h-8 text-red-500" />
+            </div>
+            <span className="text-xs font-medium text-red-600 bg-white/80 px-2 py-1 rounded">
+              PDF Document
+            </span>
+          </div>
+        )}
         
         {/* Hover Overlay */}
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">

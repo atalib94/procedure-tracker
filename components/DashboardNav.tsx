@@ -39,7 +39,7 @@ export default function DashboardNav() {
               href={item.href}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                 isActive
-                  ? 'bg-blue-50 text-blue-700 font-medium'
+                  ? 'bg-purple-50 text-purple-700 font-medium'
                   : 'text-gray-700 hover:bg-gray-50'
               }`}
             >
@@ -66,7 +66,7 @@ export default function DashboardNav() {
                 href={item.href}
                 className={`flex flex-col items-center justify-center flex-1 h-full gap-0.5 transition-colors ${
                   isActive
-                    ? 'text-blue-600'
+                    ? 'text-purple-600'
                     : 'text-gray-500'
                 }`}
               >

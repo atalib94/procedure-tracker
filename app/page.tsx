@@ -47,27 +47,88 @@ export default function Home() {
 
       {/* Hero Section */}
       <div className="w-full px-6 py-12 md:py-16">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           
-          {/* Top Content - Centered */}
-          <div className="text-center mb-12">
+          {/* Top Content - Centered with Phone */}
+          <div className="text-center mb-16 relative">
             {/* Main Headline */}
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-4 leading-tight">
-              The Interventionalist's<br />
-              <span className="text-blue-600">Diary</span>
+              The Interventionalist's Diary
             </h1>
             
             {/* Subtitle */}
             <p className="text-2xl md:text-3xl text-gray-500 font-medium">
-              Reflect. Improve. Celebrate.
+              Reflect. Improve. <span className="text-blue-600">Celebrate.</span>
             </p>
+
+            {/* Phone Mockup - Small, tilted, positioned to the right */}
+            <div className="absolute -right-4 md:right-8 lg:right-16 top-0 transform rotate-12 scale-75 md:scale-90 opacity-90 hidden md:block">
+              <div className="w-32 h-64 bg-gray-900 rounded-[1.5rem] p-1.5 shadow-xl">
+                <div className="w-full h-full bg-white rounded-[1.25rem] overflow-hidden relative">
+                  {/* Notch */}
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-4 bg-gray-900 rounded-b-lg z-10"></div>
+                  
+                  {/* Screen Content */}
+                  <div className="w-full h-full bg-gradient-to-b from-blue-50 to-white p-2 pt-6">
+                    {/* Mini Header */}
+                    <div className="flex items-center gap-1 mb-2">
+                      <div className="w-3 h-3 bg-blue-600 rounded"></div>
+                      <span className="text-[5px] font-bold text-gray-900">Procedure Tracker</span>
+                    </div>
+                    
+                    {/* Mini Stats */}
+                    <div className="grid grid-cols-2 gap-1 mb-2">
+                      <div className="bg-white rounded p-1 shadow-sm">
+                        <div className="text-[7px] font-bold text-gray-900">24</div>
+                        <div className="text-[4px] text-gray-500">Procedures</div>
+                      </div>
+                      <div className="bg-white rounded p-1 shadow-sm">
+                        <div className="text-[7px] font-bold text-blue-600">8</div>
+                        <div className="text-[4px] text-gray-500">Categories</div>
+                      </div>
+                    </div>
+                    
+                    {/* Mini Cards */}
+                    <div className="space-y-1">
+                      <div className="bg-white rounded p-1 shadow-sm">
+                        <div className="flex items-center gap-1">
+                          <div className="w-3 h-3 bg-blue-100 rounded"></div>
+                          <div>
+                            <div className="text-[4px] font-medium text-gray-900">TACE Procedure</div>
+                            <div className="text-[3px] text-gray-500">Today</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-white rounded p-1 shadow-sm">
+                        <div className="flex items-center gap-1">
+                          <div className="w-3 h-3 bg-green-100 rounded"></div>
+                          <div>
+                            <div className="text-[4px] font-medium text-gray-900">PTA + Stent</div>
+                            <div className="text-[3px] text-gray-500">Yesterday</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-white rounded p-1 shadow-sm">
+                        <div className="flex items-center gap-1">
+                          <div className="w-3 h-3 bg-purple-100 rounded"></div>
+                          <div>
+                            <div className="text-[4px] font-medium text-gray-900">Nephrostomy</div>
+                            <div className="text-[3px] text-gray-500">2 days ago</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Main Content Grid */}
-          <div className="grid lg:grid-cols-3 gap-8 items-start">
+          {/* Two Column Content */}
+          <div className="grid md:grid-cols-2 gap-12 items-start">
             
             {/* Left side - Features */}
-            <div className="lg:col-span-1 space-y-4">
+            <div className="space-y-5">
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0 w-6 h-6 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
                   <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -117,86 +178,10 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Center - Auth Form */}
-            <div className="lg:col-span-1">
-              <div className="w-full max-w-md mx-auto bg-white rounded-2xl shadow-xl p-8">
+            {/* Right side - Auth Form */}
+            <div>
+              <div className="bg-white rounded-2xl shadow-xl p-8">
                 <AuthForm />
-              </div>
-            </div>
-            
-            {/* Right side - Phone Mockup */}
-            <div className="lg:col-span-1 flex justify-center lg:justify-end">
-              <div className="relative">
-                <div className="w-44 h-[22rem] bg-gray-900 rounded-[2.5rem] p-2 shadow-2xl">
-                  {/* Phone Frame */}
-                  <div className="w-full h-full bg-white rounded-[2rem] overflow-hidden relative">
-                    {/* Notch */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-5 bg-gray-900 rounded-b-xl z-10"></div>
-                    
-                    {/* Screen Content */}
-                    <div className="w-full h-full bg-gradient-to-b from-blue-50 to-white p-3 pt-7">
-                      {/* Mini Header */}
-                      <div className="flex items-center gap-1.5 mb-2">
-                        <div className="w-4 h-4 bg-blue-600 rounded-md"></div>
-                        <span className="text-[7px] font-bold text-gray-900">Procedure Tracker</span>
-                      </div>
-                      
-                      {/* Mini Stats */}
-                      <div className="grid grid-cols-2 gap-1 mb-2">
-                        <div className="bg-white rounded-lg p-1.5 shadow-sm">
-                          <div className="text-[9px] font-bold text-gray-900">24</div>
-                          <div className="text-[5px] text-gray-500">Procedures</div>
-                        </div>
-                        <div className="bg-white rounded-lg p-1.5 shadow-sm">
-                          <div className="text-[9px] font-bold text-blue-600">8</div>
-                          <div className="text-[5px] text-gray-500">Categories</div>
-                        </div>
-                      </div>
-                      
-                      {/* Mini Cards */}
-                      <div className="space-y-1">
-                        <div className="bg-white rounded-lg p-1.5 shadow-sm">
-                          <div className="flex items-center gap-1">
-                            <div className="w-5 h-5 bg-blue-100 rounded"></div>
-                            <div>
-                              <div className="text-[6px] font-medium text-gray-900">TACE Procedure</div>
-                              <div className="text-[5px] text-gray-500">Today</div>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="bg-white rounded-lg p-1.5 shadow-sm">
-                          <div className="flex items-center gap-1">
-                            <div className="w-5 h-5 bg-green-100 rounded"></div>
-                            <div>
-                              <div className="text-[6px] font-medium text-gray-900">PTA + Stent</div>
-                              <div className="text-[5px] text-gray-500">Yesterday</div>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="bg-white rounded-lg p-1.5 shadow-sm">
-                          <div className="flex items-center gap-1">
-                            <div className="w-5 h-5 bg-purple-100 rounded"></div>
-                            <div>
-                              <div className="text-[6px] font-medium text-gray-900">Nephrostomy</div>
-                              <div className="text-[5px] text-gray-500">2 days ago</div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Mini Nav */}
-                      <div className="absolute bottom-2 left-2 right-2 bg-white rounded-xl p-1 shadow-lg flex justify-around">
-                        <div className="w-3 h-3 bg-blue-600 rounded"></div>
-                        <div className="w-3 h-3 bg-gray-200 rounded"></div>
-                        <div className="w-3 h-3 bg-gray-200 rounded"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Decorative elements */}
-                <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-blue-200 rounded-full opacity-50 blur-xl"></div>
-                <div className="absolute -top-4 -right-4 w-12 h-12 bg-indigo-200 rounded-full opacity-50 blur-xl"></div>
               </div>
             </div>
           </div>

@@ -4,6 +4,7 @@ import { format } from 'date-fns'
 import { Calendar, Building2, Hash, User, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
+import ProcedureDocuments from '@/components/ProcedureDocuments'
 
 export default async function ProcedureDetailPage({ params }: { params: { id: string } }) {
   const supabase = createServerClient()
@@ -28,6 +29,19 @@ export default async function ProcedureDetailPage({ params }: { params: { id: st
   if (error || !procedure) {
     notFound()
   }
+
+  // Fetch linked documents
+  const { data: linkedDocs } = await supabase
+    .from('procedure_documents')
+    .select(`
+      learning_material_id,
+      learning_materials (
+        id, title, description, file_url, file_size, category, created_at
+      )
+    `)
+    .eq('procedure_id', params.id)
+
+  const documents = linkedDocs?.map(link => link.learning_materials).filter(Boolean) || []
 
   const getCategoryColor = (code: string) => {
     const colors: { [key: string]: string } = {
@@ -153,6 +167,12 @@ export default async function ProcedureDetailPage({ params }: { params: { id: st
               </div>
             </div>
           )}
+
+          {/* Linked Documents Section */}
+          <ProcedureDocuments 
+            procedureId={params.id} 
+            initialDocuments={documents as any[]}
+          />
         </div>
       </div>
     </div>

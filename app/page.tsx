@@ -51,16 +51,16 @@ export default function Home() {
           
           {/* Left side - Content */}
           <div className="text-center lg:text-left">
-            {/* Top Slogan */}
-            <div className="inline-block px-4 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm font-medium mb-6">
-              The Interventionalist's Diary
-            </div>
-            
             {/* Main Headline */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 leading-tight">
-              Reflect. Improve.<br />
-              <span className="text-blue-600">Celebrate.</span>
+              The Interventionalist's<br />
+              <span className="text-blue-600">Diary</span>
             </h1>
+            
+            {/* Subtitle */}
+            <p className="text-xl md:text-2xl text-gray-600 mb-8 font-medium">
+              Reflect. Improve. Celebrate.
+            </p>
             
             {/* Features */}
             <div className="space-y-4 mt-8 text-left">

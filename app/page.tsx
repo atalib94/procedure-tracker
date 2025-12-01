@@ -50,70 +50,72 @@ export default function Home() {
         <div className="max-w-6xl mx-auto">
           
           {/* Top Content - Centered with Phone */}
-          <div className="text-center mb-16 relative">
+          <div className="text-center mb-12 relative">
             {/* Main Headline */}
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-4 leading-tight">
-              The Interventionalist's Diary
+              The Doer's Diary
             </h1>
             
             {/* Subtitle */}
             <p className="text-2xl md:text-3xl text-gray-500 font-medium">
-              Reflect. Improve. <span className="text-blue-600">Celebrate.</span>
+              Reflect. Improve. <span className="text-blue-600">Thrive.</span>
             </p>
 
-            {/* Phone Mockup - Small, tilted, positioned to the right */}
-            <div className="absolute -right-4 md:right-8 lg:right-16 top-0 transform rotate-12 scale-75 md:scale-90 opacity-90 hidden md:block">
-              <div className="w-32 h-64 bg-gray-900 rounded-[1.5rem] p-1.5 shadow-xl">
-                <div className="w-full h-full bg-white rounded-[1.25rem] overflow-hidden relative">
-                  {/* Notch */}
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-4 bg-gray-900 rounded-b-lg z-10"></div>
-                  
-                  {/* Screen Content */}
-                  <div className="w-full h-full bg-gradient-to-b from-blue-50 to-white p-2 pt-6">
-                    {/* Mini Header */}
-                    <div className="flex items-center gap-1 mb-2">
-                      <div className="w-3 h-3 bg-blue-600 rounded"></div>
-                      <span className="text-[5px] font-bold text-gray-900">Procedure Tracker</span>
-                    </div>
+            {/* Phone Mockup - Centered below subtitle */}
+            <div className="flex justify-center mt-8 mb-4">
+              <div className="transform rotate-6 scale-75">
+                <div className="w-32 h-64 bg-gray-900 rounded-[1.5rem] p-1.5 shadow-xl">
+                  <div className="w-full h-full bg-white rounded-[1.25rem] overflow-hidden relative">
+                    {/* Notch */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-4 bg-gray-900 rounded-b-lg z-10"></div>
                     
-                    {/* Mini Stats */}
-                    <div className="grid grid-cols-2 gap-1 mb-2">
-                      <div className="bg-white rounded p-1 shadow-sm">
-                        <div className="text-[7px] font-bold text-gray-900">24</div>
-                        <div className="text-[4px] text-gray-500">Procedures</div>
+                    {/* Screen Content */}
+                    <div className="w-full h-full bg-gradient-to-b from-blue-50 to-white p-2 pt-6">
+                      {/* Mini Header */}
+                      <div className="flex items-center gap-1 mb-2">
+                        <div className="w-3 h-3 bg-blue-600 rounded"></div>
+                        <span className="text-[5px] font-bold text-gray-900">Procedure Tracker</span>
                       </div>
-                      <div className="bg-white rounded p-1 shadow-sm">
-                        <div className="text-[7px] font-bold text-blue-600">8</div>
-                        <div className="text-[4px] text-gray-500">Categories</div>
-                      </div>
-                    </div>
-                    
-                    {/* Mini Cards */}
-                    <div className="space-y-1">
-                      <div className="bg-white rounded p-1 shadow-sm">
-                        <div className="flex items-center gap-1">
-                          <div className="w-3 h-3 bg-blue-100 rounded"></div>
-                          <div>
-                            <div className="text-[4px] font-medium text-gray-900">TACE Procedure</div>
-                            <div className="text-[3px] text-gray-500">Today</div>
-                          </div>
+                      
+                      {/* Mini Stats */}
+                      <div className="grid grid-cols-2 gap-1 mb-2">
+                        <div className="bg-white rounded p-1 shadow-sm">
+                          <div className="text-[7px] font-bold text-gray-900">24</div>
+                          <div className="text-[4px] text-gray-500">Procedures</div>
+                        </div>
+                        <div className="bg-white rounded p-1 shadow-sm">
+                          <div className="text-[7px] font-bold text-blue-600">8</div>
+                          <div className="text-[4px] text-gray-500">Categories</div>
                         </div>
                       </div>
-                      <div className="bg-white rounded p-1 shadow-sm">
-                        <div className="flex items-center gap-1">
-                          <div className="w-3 h-3 bg-green-100 rounded"></div>
-                          <div>
-                            <div className="text-[4px] font-medium text-gray-900">PTA + Stent</div>
-                            <div className="text-[3px] text-gray-500">Yesterday</div>
+                      
+                      {/* Mini Cards */}
+                      <div className="space-y-1">
+                        <div className="bg-white rounded p-1 shadow-sm">
+                          <div className="flex items-center gap-1">
+                            <div className="w-3 h-3 bg-blue-100 rounded"></div>
+                            <div>
+                              <div className="text-[4px] font-medium text-gray-900">TACE Procedure</div>
+                              <div className="text-[3px] text-gray-500">Today</div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div className="bg-white rounded p-1 shadow-sm">
-                        <div className="flex items-center gap-1">
-                          <div className="w-3 h-3 bg-purple-100 rounded"></div>
-                          <div>
-                            <div className="text-[4px] font-medium text-gray-900">Nephrostomy</div>
-                            <div className="text-[3px] text-gray-500">2 days ago</div>
+                        <div className="bg-white rounded p-1 shadow-sm">
+                          <div className="flex items-center gap-1">
+                            <div className="w-3 h-3 bg-green-100 rounded"></div>
+                            <div>
+                              <div className="text-[4px] font-medium text-gray-900">PTA + Stent</div>
+                              <div className="text-[3px] text-gray-500">Yesterday</div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="bg-white rounded p-1 shadow-sm">
+                          <div className="flex items-center gap-1">
+                            <div className="w-3 h-3 bg-purple-100 rounded"></div>
+                            <div>
+                              <div className="text-[4px] font-medium text-gray-900">Nephrostomy</div>
+                              <div className="text-[3px] text-gray-500">2 days ago</div>
+                            </div>
                           </div>
                         </div>
                       </div>

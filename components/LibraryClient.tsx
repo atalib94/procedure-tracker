@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase-client'
-import { Plus, Search, Filter, Grid, List, FileText, Loader2 } from 'lucide-react'
+import { Plus, Search, Filter, Grid, List, FileText, Loader2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 import PDFCard from './PDFCard'
 import PDFViewer from './PDFViewer'
 import PDFUploadForm from './PDFUploadForm'
@@ -27,6 +27,9 @@ interface LibraryClientProps {
   environmentId: string | null
 }
 
+type SortField = 'title' | 'created_at' | 'file_size' | 'linked_procedures_count' | 'category'
+type SortDirection = 'asc' | 'desc'
+
 export default function LibraryClient({ initialMaterials, environmentId }: LibraryClientProps) {
   const supabase = createClient()
   
@@ -35,6 +38,8 @@ export default function LibraryClient({ initialMaterials, environmentId }: Libra
   const [searchQuery, setSearchQuery] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [sortField, setSortField] = useState<SortField>('created_at')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   
   // Modal states
   const [showUploadForm, setShowUploadForm] = useState(false)
@@ -53,6 +58,14 @@ export default function LibraryClient({ initialMaterials, environmentId }: Libra
     'Reference',
     'Other'
   ]
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes'
+    const k = 1024
+    const sizes = ['Bytes', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  }
 
   const fetchMaterials = async () => {
     setLoading(true)
@@ -128,15 +141,58 @@ export default function LibraryClient({ initialMaterials, environmentId }: Libra
     }
   }
 
-  const filteredMaterials = materials.filter(m => {
-    const matchesSearch = m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (m.description?.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (m.tags?.some(t => t.toLowerCase().includes(searchQuery.toLowerCase())))
-    
-    const matchesCategory = !categoryFilter || categoryFilter === 'All Categories' || m.category === categoryFilter
-    
-    return matchesSearch && matchesCategory
-  })
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortField(field)
+      setSortDirection(field === 'title' ? 'asc' : 'desc')
+    }
+  }
+
+  const sortOptions = [
+    { value: 'created_at', label: 'Date Added' },
+    { value: 'title', label: 'Name' },
+    { value: 'file_size', label: 'File Size' },
+    { value: 'linked_procedures_count', label: 'Linked Cases' },
+    { value: 'category', label: 'Category' },
+  ]
+
+  const filteredAndSortedMaterials = useMemo(() => {
+    const filtered = materials.filter(m => {
+      const matchesSearch = m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (m.description?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (m.tags?.some(t => t.toLowerCase().includes(searchQuery.toLowerCase())))
+      
+      const matchesCategory = !categoryFilter || categoryFilter === 'All Categories' || m.category === categoryFilter
+      
+      return matchesSearch && matchesCategory
+    })
+
+    return filtered.sort((a, b) => {
+      let comparison = 0
+      
+      switch (sortField) {
+        case 'title':
+          comparison = a.title.localeCompare(b.title)
+          break
+        case 'created_at':
+          comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          break
+        case 'file_size':
+          comparison = (a.file_size || 0) - (b.file_size || 0)
+          break
+        case 'linked_procedures_count':
+          comparison = (a.linked_procedures_count || 0) - (b.linked_procedures_count || 0)
+          break
+        case 'category':
+          comparison = (a.category || '').localeCompare(b.category || '')
+          break
+      }
+      
+      return sortDirection === 'asc' ? comparison : -comparison
+    })
+  }, [materials, searchQuery, categoryFilter, sortField, sortDirection])
 
   return (
     <div className="space-y-6">
@@ -171,7 +227,7 @@ export default function LibraryClient({ initialMaterials, environmentId }: Libra
           </div>
 
           {/* Category Filter */}
-          <div className="sm:w-48">
+          <div className="sm:w-44">
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
@@ -181,6 +237,30 @@ export default function LibraryClient({ initialMaterials, environmentId }: Libra
                 <option key={cat} value={cat}>{cat}</option>
               ))}
             </select>
+          </div>
+
+          {/* Sort Dropdown */}
+          <div className="sm:w-44 flex gap-2">
+            <select
+              value={sortField}
+              onChange={(e) => setSortField(e.target.value as SortField)}
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            >
+              {sortOptions.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+            <button
+              onClick={() => setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')}
+              className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              title={sortDirection === 'asc' ? 'Ascending' : 'Descending'}
+            >
+              {sortDirection === 'asc' ? (
+                <ArrowUp className="w-5 h-5 text-gray-600" />
+              ) : (
+                <ArrowDown className="w-5 h-5 text-gray-600" />
+              )}
+            </button>
           </div>
 
           {/* View Toggle */}
@@ -203,7 +283,7 @@ export default function LibraryClient({ initialMaterials, environmentId }: Libra
 
       {/* Results Count */}
       <div className="text-sm text-gray-600">
-        {filteredMaterials.length} document{filteredMaterials.length !== 1 ? 's' : ''}
+        {filteredAndSortedMaterials.length} document{filteredAndSortedMaterials.length !== 1 ? 's' : ''}
         {searchQuery || categoryFilter ? ' found' : ' in library'}
       </div>
 
@@ -212,7 +292,7 @@ export default function LibraryClient({ initialMaterials, environmentId }: Libra
         <div className="flex items-center justify-center py-20">
           <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
         </div>
-      ) : filteredMaterials.length === 0 ? (
+      ) : filteredAndSortedMaterials.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <FileText className="w-8 h-8 text-gray-400" />
@@ -237,7 +317,7 @@ export default function LibraryClient({ initialMaterials, environmentId }: Libra
         </div>
       ) : viewMode === 'grid' ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredMaterials.map(material => (
+          {filteredAndSortedMaterials.map(material => (
             <PDFCard
               key={material.id}
               material={material}
@@ -252,15 +332,66 @@ export default function LibraryClient({ initialMaterials, environmentId }: Libra
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Document</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 hidden sm:table-cell">Category</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 hidden md:table-cell">Date</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 hidden lg:table-cell">Linked</th>
+                <th 
+                  className="px-4 py-3 text-left text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
+                  onClick={() => handleSort('title')}
+                >
+                  <div className="flex items-center gap-1">
+                    Document
+                    {sortField === 'title' && (
+                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                    )}
+                  </div>
+                </th>
+                <th 
+                  className="px-4 py-3 text-left text-sm font-medium text-gray-700 hidden sm:table-cell cursor-pointer hover:bg-gray-100"
+                  onClick={() => handleSort('category')}
+                >
+                  <div className="flex items-center gap-1">
+                    Category
+                    {sortField === 'category' && (
+                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                    )}
+                  </div>
+                </th>
+                <th 
+                  className="px-4 py-3 text-left text-sm font-medium text-gray-700 hidden md:table-cell cursor-pointer hover:bg-gray-100"
+                  onClick={() => handleSort('created_at')}
+                >
+                  <div className="flex items-center gap-1">
+                    Date
+                    {sortField === 'created_at' && (
+                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                    )}
+                  </div>
+                </th>
+                <th 
+                  className="px-4 py-3 text-left text-sm font-medium text-gray-700 hidden lg:table-cell cursor-pointer hover:bg-gray-100"
+                  onClick={() => handleSort('file_size')}
+                >
+                  <div className="flex items-center gap-1">
+                    Size
+                    {sortField === 'file_size' && (
+                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                    )}
+                  </div>
+                </th>
+                <th 
+                  className="px-4 py-3 text-left text-sm font-medium text-gray-700 hidden lg:table-cell cursor-pointer hover:bg-gray-100"
+                  onClick={() => handleSort('linked_procedures_count')}
+                >
+                  <div className="flex items-center gap-1">
+                    Linked
+                    {sortField === 'linked_procedures_count' && (
+                      sortDirection === 'asc' ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />
+                    )}
+                  </div>
+                </th>
                 <th className="px-4 py-3 text-right text-sm font-medium text-gray-700">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredMaterials.map(material => (
+              {filteredAndSortedMaterials.map(material => (
                 <tr key={material.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
@@ -284,6 +415,9 @@ export default function LibraryClient({ initialMaterials, environmentId }: Libra
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-600 hidden md:table-cell">
                     {new Date(material.created_at).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-600 hidden lg:table-cell">
+                    {material.file_size ? formatFileSize(material.file_size) : '-'}
                   </td>
                   <td className="px-4 py-3 hidden lg:table-cell">
                     {material.is_linked_to_procedure && (

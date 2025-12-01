@@ -1,0 +1,358 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase-client'
+import { Plus, Search, Filter, Grid, List, FileText, Loader2 } from 'lucide-react'
+import PDFCard from './PDFCard'
+import PDFViewer from './PDFViewer'
+import PDFUploadForm from './PDFUploadForm'
+import LinkPDFModal from './LinkPDFModal'
+
+interface LearningMaterial {
+  id: string
+  title: string
+  description: string | null
+  file_url: string
+  file_type: string
+  file_size: number | null
+  category: string | null
+  tags: string[] | null
+  is_linked_to_procedure: boolean
+  created_at: string
+  linked_procedures_count?: number
+}
+
+interface LibraryClientProps {
+  initialMaterials: LearningMaterial[]
+  environmentId: string | null
+}
+
+export default function LibraryClient({ initialMaterials, environmentId }: LibraryClientProps) {
+  const supabase = createClient()
+  
+  const [materials, setMaterials] = useState<LearningMaterial[]>(initialMaterials)
+  const [loading, setLoading] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  
+  // Modal states
+  const [showUploadForm, setShowUploadForm] = useState(false)
+  const [viewingPDF, setViewingPDF] = useState<LearningMaterial | null>(null)
+  const [linkingMaterial, setLinkingMaterial] = useState<LearningMaterial | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  const categories = [
+    'All Categories',
+    'Anatomy',
+    'Technique',
+    'Case Study',
+    'Guidelines',
+    'Research',
+    'Protocol',
+    'Reference',
+    'Other'
+  ]
+
+  const fetchMaterials = async () => {
+    setLoading(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+
+      // Fetch materials
+      const { data: materialsData, error: materialsError } = await supabase
+        .from('learning_materials')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .eq('file_type', 'pdf')
+        .order('created_at', { ascending: false })
+
+      if (materialsError) throw materialsError
+
+      // Fetch linked procedure counts
+      const { data: linksData, error: linksError } = await supabase
+        .from('procedure_documents')
+        .select('learning_material_id')
+
+      if (linksError) throw linksError
+
+      // Count links per material
+      const linkCounts: Record<string, number> = {}
+      linksData?.forEach(link => {
+        linkCounts[link.learning_material_id] = (linkCounts[link.learning_material_id] || 0) + 1
+      })
+
+      // Merge counts
+      const materialsWithCounts = (materialsData || []).map(m => ({
+        ...m,
+        linked_procedures_count: linkCounts[m.id] || 0
+      }))
+
+      setMaterials(materialsWithCounts)
+    } catch (err) {
+      console.error('Error fetching materials:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this document? This action cannot be undone.')) {
+      return
+    }
+
+    setDeletingId(id)
+    try {
+      // Delete links first
+      await supabase
+        .from('procedure_documents')
+        .delete()
+        .eq('learning_material_id', id)
+
+      // Delete the material
+      const { error } = await supabase
+        .from('learning_materials')
+        .delete()
+        .eq('id', id)
+
+      if (error) throw error
+
+      // Update local state
+      setMaterials(prev => prev.filter(m => m.id !== id))
+    } catch (err) {
+      console.error('Error deleting material:', err)
+      alert('Failed to delete document')
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  const filteredMaterials = materials.filter(m => {
+    const matchesSearch = m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (m.description?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (m.tags?.some(t => t.toLowerCase().includes(searchQuery.toLowerCase())))
+    
+    const matchesCategory = !categoryFilter || categoryFilter === 'All Categories' || m.category === categoryFilter
+    
+    return matchesSearch && matchesCategory
+  })
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Learning Library</h1>
+          <p className="text-gray-600 mt-1">Upload and organize your medical learning materials</p>
+        </div>
+        <button
+          onClick={() => setShowUploadForm(true)}
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+        >
+          <Plus className="w-5 h-5" />
+          Upload PDF
+        </button>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+        <div className="flex flex-col sm:flex-row gap-4">
+          {/* Search */}
+          <div className="flex-1 relative">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search by title, description, or tags..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+
+          {/* Category Filter */}
+          <div className="sm:w-48">
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              {categories.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* View Toggle */}
+          <div className="flex border border-gray-300 rounded-lg overflow-hidden">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-2 ${viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+            >
+              <Grid className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-2 ${viewMode === 'list' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+            >
+              <List className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Results Count */}
+      <div className="text-sm text-gray-600">
+        {filteredMaterials.length} document{filteredMaterials.length !== 1 ? 's' : ''}
+        {searchQuery || categoryFilter ? ' found' : ' in library'}
+      </div>
+
+      {/* Content */}
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+        </div>
+      ) : filteredMaterials.length === 0 ? (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <FileText className="w-8 h-8 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            {searchQuery || categoryFilter ? 'No documents found' : 'No documents yet'}
+          </h3>
+          <p className="text-gray-600 mb-4">
+            {searchQuery || categoryFilter 
+              ? 'Try adjusting your search or filters'
+              : 'Upload your first PDF to get started'}
+          </p>
+          {!searchQuery && !categoryFilter && (
+            <button
+              onClick={() => setShowUploadForm(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Upload PDF
+            </button>
+          )}
+        </div>
+      ) : viewMode === 'grid' ? (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredMaterials.map(material => (
+            <PDFCard
+              key={material.id}
+              material={material}
+              onView={() => setViewingPDF(material)}
+              onLink={() => setLinkingMaterial(material)}
+              onDelete={() => handleDelete(material.id)}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b border-gray-200">
+              <tr>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Document</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 hidden sm:table-cell">Category</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 hidden md:table-cell">Date</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 hidden lg:table-cell">Linked</th>
+                <th className="px-4 py-3 text-right text-sm font-medium text-gray-700">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {filteredMaterials.map(material => (
+                <tr key={material.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <FileText className="w-5 h-5 text-red-600" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-medium text-gray-900 truncate">{material.title}</p>
+                        {material.description && (
+                          <p className="text-sm text-gray-500 truncate">{material.description}</p>
+                        )}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 hidden sm:table-cell">
+                    {material.category && (
+                      <span className="inline-block bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs">
+                        {material.category}
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-600 hidden md:table-cell">
+                    {new Date(material.created_at).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-3 hidden lg:table-cell">
+                    {material.is_linked_to_procedure && (
+                      <span className="text-green-600 text-sm">
+                        {material.linked_procedures_count} case{(material.linked_procedures_count || 0) !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => setViewingPDF(material)}
+                        className="px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      >
+                        View
+                      </button>
+                      <button
+                        onClick={() => setLinkingMaterial(material)}
+                        className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                      >
+                        Link
+                      </button>
+                      <button
+                        onClick={() => handleDelete(material.id)}
+                        disabled={deletingId === material.id}
+                        className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                      >
+                        {deletingId === material.id ? '...' : 'Delete'}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Modals */}
+      {showUploadForm && (
+        <PDFUploadForm
+          environmentId={environmentId}
+          onSuccess={() => {
+            setShowUploadForm(false)
+            fetchMaterials()
+          }}
+          onCancel={() => setShowUploadForm(false)}
+        />
+      )}
+
+      {viewingPDF && (
+        <PDFViewer
+          url={viewingPDF.file_url}
+          title={viewingPDF.title}
+          onClose={() => setViewingPDF(null)}
+        />
+      )}
+
+      {linkingMaterial && (
+        <LinkPDFModal
+          materialId={linkingMaterial.id}
+          materialTitle={linkingMaterial.title}
+          onClose={() => setLinkingMaterial(null)}
+          onSuccess={() => {
+            setLinkingMaterial(null)
+            fetchMaterials()
+          }}
+        />
+      )}
+    </div>
+  )
+}

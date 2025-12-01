@@ -18,27 +18,27 @@ export default function StatsCards({
       name: 'Total Procedures',
       value: totalProcedures,
       icon: ClipboardList,
-      color: 'bg-blue-500',
+      color: 'bg-purple-500',
     },
     {
       name: 'As 1st Operator',
       value: asFirstOperator,
       subtitle: `${totalProcedures > 0 ? Math.round((asFirstOperator / totalProcedures) * 100) : 0}%`,
       icon: User,
-      color: 'bg-green-500',
+      color: 'bg-amber-500',
     },
     {
       name: 'Medical Centres',
       value: medicalCentres,
       icon: Building2,
-      color: 'bg-purple-500',
+      color: 'bg-purple-400',
     },
     {
       name: 'EBIR Categories',
       value: categoriesUsed,
       subtitle: 'of 14',
       icon: Activity,
-      color: 'bg-orange-500',
+      color: 'bg-amber-400',
     },
   ]
 

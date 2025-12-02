@@ -27,14 +27,12 @@ export default function Home() {
       {/* Navigation */}
       <nav className="w-full px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-<div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">
             <img 
               src="/logo.png" 
               alt="Logo" 
               className="w-10 h-10 rounded-xl object-cover"
             />
-            <span className="font-bold text-xl text-gray-900">Procedure Tracker</span>
-          </div>
             <span className="font-bold text-xl text-gray-900">Procedure Tracker</span>
           </div>
           <button

@@ -54,7 +54,7 @@ export default function ProcedureDetailClient({
 
   const getCategoryColor = (code: string) => {
     const colors: { [key: string]: string } = {
-      'vascular_access': 'bg-blue-100 text-blue-800',
+      'vascular_access': 'bg-purple-100 text-purple-800',
       'angiography_vascular': 'bg-green-100 text-green-800',
       'neurointervention': 'bg-purple-100 text-purple-800',
       'non_vascular': 'bg-orange-100 text-orange-800',
@@ -74,7 +74,7 @@ export default function ProcedureDetailClient({
 
   const getRoleBadge = (role: string) => {
     if (role === '1st Operator') return 'bg-green-100 text-green-800'
-    if (role === '2nd Operator') return 'bg-blue-100 text-blue-800'
+    if (role === '2nd Operator') return 'bg-purple-100 text-purple-800'
     return 'bg-gray-100 text-gray-800'
   }
 

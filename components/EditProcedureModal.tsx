@@ -395,7 +395,7 @@ export default function EditProcedureModal({
                   required
                   value={formData.procedure_date}
                   onChange={(e) => setFormData({ ...formData, procedure_date: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
               </div>
 
@@ -408,7 +408,7 @@ export default function EditProcedureModal({
                   id="centre"
                   value={formData.medical_centre_id}
                   onChange={(e) => setFormData({ ...formData, medical_centre_id: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 >
                   <option value="">Select centre</option>
                   {medicalCentres.map((centre) => (
@@ -429,7 +429,7 @@ export default function EditProcedureModal({
                 id="category"
                 value={formData.ebir_category_id}
                 onChange={(e) => setFormData({ ...formData, ebir_category_id: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               >
                 <option value="">Select category</option>
                 {categories.map((cat) => (
@@ -450,7 +450,7 @@ export default function EditProcedureModal({
                 required
                 value={formData.operator_role}
                 onChange={(e) => setFormData({ ...formData, operator_role: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               >
                 <option value="1st Operator">1st Operator</option>
                 <option value="2nd Operator">2nd Operator</option>
@@ -470,7 +470,7 @@ export default function EditProcedureModal({
                 placeholder="e.g., TACE, PTA, Nephrostomy"
                 value={formData.procedure_name}
                 onChange={(e) => setFormData({ ...formData, procedure_name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
             </div>
 
@@ -485,7 +485,7 @@ export default function EditProcedureModal({
                 placeholder="e.g., ACC-12345"
                 value={formData.accession_number}
                 onChange={(e) => setFormData({ ...formData, accession_number: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
             </div>
 
@@ -500,7 +500,7 @@ export default function EditProcedureModal({
                 placeholder="Add any relevant details, complications, or observations..."
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
             </div>
 
@@ -518,7 +518,7 @@ export default function EditProcedureModal({
                       className="max-h-48 mx-auto rounded-lg"
                     />
                     <div className="flex justify-center gap-3">
-                      <label className="cursor-pointer text-sm text-blue-600 hover:text-blue-700 font-medium">
+                      <label className="cursor-pointer text-sm text-purple-600 hover:text-purple-700 font-medium">
                         <input
                           type="file"
                           accept="image/*"
@@ -562,7 +562,7 @@ export default function EditProcedureModal({
               {/* Already Linked Documents */}
               {loadingDocs ? (
                 <div className="flex items-center justify-center py-4">
-                  <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
+                  <Loader2 className="w-5 h-5 text-purple-600 animate-spin" />
                 </div>
               ) : linkedDocuments.length > 0 && (
                 <div className="space-y-2 mb-3">
@@ -584,7 +584,7 @@ export default function EditProcedureModal({
                           href={doc.file_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded transition-colors"
                           title="View PDF"
                         >
                           <Eye className="w-4 h-4" />
@@ -613,7 +613,7 @@ export default function EditProcedureModal({
                 <div className="space-y-2 mb-3">
                   <p className="text-xs text-gray-500">New documents to upload:</p>
                   {pdfFiles.map((pdf, index) => (
-                    <div key={index} className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <div key={index} className="bg-purple-50 border border-purple-200 rounded-lg p-3">
                       <div className="flex items-start gap-3">
                         <div className="w-8 h-8 bg-red-100 rounded flex items-center justify-center flex-shrink-0">
                           <FileText className="w-4 h-4 text-red-600" />
@@ -638,12 +638,12 @@ export default function EditProcedureModal({
                               placeholder="Title"
                               value={pdf.title}
                               onChange={(e) => updatePdfFile(index, { title: e.target.value })}
-                              className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                             />
                             <select
                               value={pdf.category}
                               onChange={(e) => updatePdfFile(index, { category: e.target.value })}
-                              className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                             >
                               <option value="">Category</option>
                               {pdfCategories.map((cat) => (
@@ -666,7 +666,7 @@ export default function EditProcedureModal({
                 onDrop={handlePdfDrop}
                 className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors ${
                   pdfDragActive
-                    ? 'border-blue-500 bg-blue-50'
+                    ? 'border-purple-500 bg-purple-50'
                     : 'border-gray-300 hover:border-gray-400'
                 }`}
               >
@@ -706,7 +706,7 @@ export default function EditProcedureModal({
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2.5 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>

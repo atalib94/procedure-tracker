@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Plus, Search, ArrowUpDown, ArrowUp, ArrowDown, Calendar, Filter, Download, FileSpreadsheet, X, Loader2 } from 'lucide-react'
+import { Plus, Search, ArrowUpDown, ArrowUp, ArrowDown, Calendar, Filter, Download, FileSpreadsheet, X, Loader2, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import ProcedureCard from '@/components/ProcedureCard'
 import StatsCards from '@/components/StatsCards'
 import HIPAANotice from '@/components/HIPAANotice'
@@ -25,6 +26,7 @@ export default function DashboardClient({
   medicalCentres,
   categoriesUsed,
 }: DashboardClientProps) {
+  const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
   const [sortField, setSortField] = useState<SortField>('procedure_date')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
@@ -34,6 +36,15 @@ export default function DashboardClient({
   const [exportLoading, setExportLoading] = useState(false)
   const [exportDateFrom, setExportDateFrom] = useState('')
   const [exportDateTo, setExportDateTo] = useState('')
+  const [isRefreshing, setIsRefreshing] = useState(false)
+
+  // Refresh function
+  const handleRefresh = async () => {
+    setIsRefreshing(true)
+    router.refresh()
+    // Give visual feedback for at least 500ms
+    setTimeout(() => setIsRefreshing(false), 500)
+  }
 
   // Get unique categories from procedures
   const categories = useMemo(() => {
@@ -219,6 +230,14 @@ export default function DashboardClient({
           <p className="text-gray-600 mt-1">Track your interventional radiology procedures</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="flex items-center justify-center p-2.5 sm:p-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+            title="Refresh"
+          >
+            <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+          </button>
           <button
             onClick={() => setShowExportModal(true)}
             className="flex items-center justify-center gap-2 border border-gray-300 text-gray-700 px-4 py-2.5 sm:py-2 rounded-lg font-medium hover:bg-gray-50 transition-colors flex-1 sm:flex-none"

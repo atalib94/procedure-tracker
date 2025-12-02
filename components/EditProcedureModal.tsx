@@ -1,8 +1,22 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase-client'
-import { X, Upload, Loader2, Trash2 } from 'lucide-react'
+import { X, Upload, Loader2, Trash2, FileText, Plus, Eye } from 'lucide-react'
+
+interface PDFFile {
+  file: File
+  title: string
+  category: string
+}
+
+interface LinkedDocument {
+  id: string
+  title: string
+  file_url: string
+  file_size: number | null
+  category: string | null
+}
 
 interface EditProcedureModalProps {
   procedure: {
@@ -37,6 +51,24 @@ export default function EditProcedureModal({
   const [imagePreview, setImagePreview] = useState<string | null>(procedure.image_url)
   const [removeImage, setRemoveImage] = useState(false)
 
+  // PDF Upload State
+  const [pdfFiles, setPdfFiles] = useState<PDFFile[]>([])
+  const [pdfDragActive, setPdfDragActive] = useState(false)
+  const [linkedDocuments, setLinkedDocuments] = useState<LinkedDocument[]>([])
+  const [loadingDocs, setLoadingDocs] = useState(true)
+  const [unlinkingId, setUnlinkingId] = useState<string | null>(null)
+
+  const pdfCategories = [
+    'Anatomy',
+    'Technique',
+    'Case Study',
+    'Guidelines',
+    'Research',
+    'Protocol',
+    'Reference',
+    'Other'
+  ]
+
   const [formData, setFormData] = useState({
     procedure_name: procedure.procedure_name,
     procedure_date: procedure.procedure_date,
@@ -46,6 +78,34 @@ export default function EditProcedureModal({
     operator_role: procedure.operator_role || '1st Operator',
     notes: procedure.notes || '',
   })
+
+  // Fetch linked documents on mount
+  useEffect(() => {
+    const fetchLinkedDocs = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('procedure_learning_links')
+          .select(`
+            learning_material_id,
+            learning_materials (
+              id, title, file_url, file_size, category
+            )
+          `)
+          .eq('procedure_id', procedure.id)
+
+        if (error) throw error
+
+        const docs = data?.map(link => link.learning_materials as unknown as LinkedDocument) || []
+        setLinkedDocuments(docs)
+      } catch (err) {
+        console.error('Error fetching linked docs:', err)
+      } finally {
+        setLoadingDocs(false)
+      }
+    }
+
+    fetchLinkedDocs()
+  }, [procedure.id, supabase])
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -64,6 +124,108 @@ export default function EditProcedureModal({
     setImageFile(null)
     setImagePreview(null)
     setRemoveImage(true)
+  }
+
+  // PDF Handlers
+  const handlePdfDrag = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setPdfDragActive(true)
+    } else if (e.type === 'dragleave') {
+      setPdfDragActive(false)
+    }
+  }, [])
+
+  const handlePdfDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setPdfDragActive(false)
+
+    if (e.dataTransfer.files) {
+      const newFiles = Array.from(e.dataTransfer.files)
+        .filter(file => file.type === 'application/pdf')
+        .map(file => ({
+          file,
+          title: file.name.replace('.pdf', ''),
+          category: ''
+        }))
+      
+      if (newFiles.length > 0) {
+        setPdfFiles(prev => [...prev, ...newFiles])
+      }
+    }
+  }, [])
+
+  const handlePdfFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files)
+        .filter(file => file.type === 'application/pdf')
+        .map(file => ({
+          file,
+          title: file.name.replace('.pdf', ''),
+          category: ''
+        }))
+      
+      if (newFiles.length > 0) {
+        setPdfFiles(prev => [...prev, ...newFiles])
+      }
+    }
+    e.target.value = ''
+  }
+
+  const updatePdfFile = (index: number, updates: Partial<PDFFile>) => {
+    setPdfFiles(prev => prev.map((pdf, i) => 
+      i === index ? { ...pdf, ...updates } : pdf
+    ))
+  }
+
+  const removePdfFile = (index: number) => {
+    setPdfFiles(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const handleUnlinkDocument = async (materialId: string) => {
+    if (!confirm('Remove this document from this case?')) return
+    
+    setUnlinkingId(materialId)
+    try {
+      const { error } = await supabase
+        .from('procedure_learning_links')
+        .delete()
+        .eq('procedure_id', procedure.id)
+        .eq('learning_material_id', materialId)
+
+      if (error) throw error
+
+      // Check if material is still linked to any procedure
+      const { count } = await supabase
+        .from('procedure_learning_links')
+        .select('*', { count: 'exact', head: true })
+        .eq('learning_material_id', materialId)
+
+      if (count === 0) {
+        await supabase
+          .from('learning_materials')
+          .update({ is_linked_to_procedure: false })
+          .eq('id', materialId)
+      }
+
+      setLinkedDocuments(prev => prev.filter(d => d.id !== materialId))
+    } catch (err) {
+      console.error('Error unlinking document:', err)
+      alert('Failed to unlink document')
+    } finally {
+      setUnlinkingId(null)
+    }
+  }
+
+  const formatFileSize = (bytes: number | null): string => {
+    if (!bytes) return ''
+    if (bytes === 0) return '0 Bytes'
+    const k = 1024
+    const sizes = ['Bytes', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -122,6 +284,70 @@ export default function EditProcedureModal({
 
       if (updateError) {
         throw new Error(`Failed to update procedure: ${updateError.message}`)
+      }
+
+      // Upload new PDFs and link them to the procedure
+      if (pdfFiles.length > 0) {
+        // Get environment_id from procedure
+        const { data: procData } = await supabase
+          .from('procedures')
+          .select('environment_id')
+          .eq('id', procedure.id)
+          .single()
+
+        for (const pdf of pdfFiles) {
+          // Upload PDF to storage
+          const fileExt = pdf.file.name.split('.').pop()
+          const fileName = `${session.user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
+          
+          const { error: pdfUploadError } = await supabase.storage
+            .from('learning-materials')
+            .upload(fileName, pdf.file, {
+              cacheControl: '3600',
+              upsert: false
+            })
+
+          if (pdfUploadError) {
+            console.error('PDF upload error:', pdfUploadError)
+            continue
+          }
+
+          // Get public URL
+          const { data: { publicUrl } } = supabase.storage
+            .from('learning-materials')
+            .getPublicUrl(fileName)
+
+          // Insert learning material record
+          const { data: materialData, error: materialError } = await supabase
+            .from('learning_materials')
+            .insert({
+              user_id: session.user.id,
+              environment_id: procData?.environment_id,
+              title: pdf.title.trim() || pdf.file.name.replace('.pdf', ''),
+              file_url: publicUrl,
+              file_type: 'pdf',
+              file_size: pdf.file.size,
+              category: pdf.category || null,
+              is_linked_to_procedure: true
+            })
+            .select('id')
+            .single()
+
+          if (materialError) {
+            console.error('Material insert error:', materialError)
+            continue
+          }
+
+          // Link PDF to procedure
+          if (materialData) {
+            await supabase
+              .from('procedure_learning_links')
+              .insert({
+                procedure_id: procedure.id,
+                learning_material_id: materialData.id
+              })
+          }
+        }
       }
 
       onSuccess()
@@ -324,6 +550,143 @@ export default function EditProcedureModal({
                     <p className="text-xs text-gray-500 mt-1">PNG, JPG up to 10MB</p>
                   </label>
                 )}
+              </div>
+            </div>
+
+            {/* Linked PDF Documents */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                PDF Documents
+              </label>
+              
+              {/* Already Linked Documents */}
+              {loadingDocs ? (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
+                </div>
+              ) : linkedDocuments.length > 0 && (
+                <div className="space-y-2 mb-3">
+                  <p className="text-xs text-gray-500">Linked documents:</p>
+                  {linkedDocuments.map(doc => (
+                    <div key={doc.id} className="bg-gray-50 rounded-lg p-3 flex items-center gap-3">
+                      <div className="w-8 h-8 bg-red-100 rounded flex items-center justify-center flex-shrink-0">
+                        <FileText className="w-4 h-4 text-red-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{doc.title}</p>
+                        <p className="text-xs text-gray-500">
+                          {doc.category && `${doc.category} • `}
+                          {formatFileSize(doc.file_size)}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <a
+                          href={doc.file_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                          title="View PDF"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => handleUnlinkDocument(doc.id)}
+                          disabled={unlinkingId === doc.id}
+                          className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+                          title="Unlink document"
+                        >
+                          {unlinkingId === doc.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <X className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* New PDFs to Upload */}
+              {pdfFiles.length > 0 && (
+                <div className="space-y-2 mb-3">
+                  <p className="text-xs text-gray-500">New documents to upload:</p>
+                  {pdfFiles.map((pdf, index) => (
+                    <div key={index} className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 bg-red-100 rounded flex items-center justify-center flex-shrink-0">
+                          <FileText className="w-4 h-4 text-red-600" />
+                        </div>
+                        <div className="flex-1 min-w-0 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm font-medium text-gray-900 truncate">{pdf.file.name}</p>
+                              <p className="text-xs text-gray-500">{formatFileSize(pdf.file.size)}</p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removePdfFile(index)}
+                              className="p-1 text-gray-400 hover:text-red-600"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <input
+                              type="text"
+                              placeholder="Title"
+                              value={pdf.title}
+                              onChange={(e) => updatePdfFile(index, { title: e.target.value })}
+                              className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                            <select
+                              value={pdf.category}
+                              onChange={(e) => updatePdfFile(index, { category: e.target.value })}
+                              className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                              <option value="">Category</option>
+                              {pdfCategories.map((cat) => (
+                                <option key={cat} value={cat}>{cat}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* PDF Drop Zone */}
+              <div
+                onDragEnter={handlePdfDrag}
+                onDragLeave={handlePdfDrag}
+                onDragOver={handlePdfDrag}
+                onDrop={handlePdfDrop}
+                className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors ${
+                  pdfDragActive
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-300 hover:border-gray-400'
+                }`}
+              >
+                <label className="cursor-pointer block">
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    multiple
+                    onChange={handlePdfFileChange}
+                    className="hidden"
+                  />
+                  <div className="flex items-center justify-center gap-2 text-gray-400 mb-1">
+                    <FileText className="w-6 h-6" />
+                    <Plus className="w-4 h-4" />
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    {pdfFiles.length > 0 || linkedDocuments.length > 0 ? 'Add more PDFs' : 'Drag & drop PDFs here'}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">PDF files up to 50MB</p>
+                </label>
               </div>
             </div>
           </form>

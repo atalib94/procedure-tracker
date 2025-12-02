@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase-client'
-import { Plus, Search, Filter, Grid, List, FileText, Loader2, ArrowUpDown, ArrowUp, ArrowDown, Eye, Link2, Trash2 } from 'lucide-react'
+import { Plus, Search, Filter, Grid, List, FileText, Loader2, ArrowUpDown, ArrowUp, ArrowDown, Eye, Link2, Trash2, RefreshCw } from 'lucide-react'
 import PDFCard from './PDFCard'
 import PDFViewer from './PDFViewer'
 import PDFUploadForm from './PDFUploadForm'
@@ -40,12 +40,20 @@ export default function LibraryClient({ initialMaterials, environmentId }: Libra
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [sortField, setSortField] = useState<SortField>('created_at')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
+  const [isRefreshing, setIsRefreshing] = useState(false)
   
   // Modal states
   const [showUploadForm, setShowUploadForm] = useState(false)
   const [viewingPDF, setViewingPDF] = useState<LearningMaterial | null>(null)
   const [linkingMaterial, setLinkingMaterial] = useState<LearningMaterial | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+
+  // Refresh function
+  const handleRefresh = async () => {
+    setIsRefreshing(true)
+    await fetchMaterials()
+    setTimeout(() => setIsRefreshing(false), 300)
+  }
 
   const categories = [
     'All Categories',
@@ -223,13 +231,23 @@ export default function LibraryClient({ initialMaterials, environmentId }: Libra
           <h1 className="text-3xl font-bold text-gray-900">Learning Library</h1>
           <p className="text-gray-600 mt-1">Upload and organize your medical learning materials</p>
         </div>
-        <button
-          onClick={() => setShowUploadForm(true)}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="w-5 h-5" />
-          Upload PDF
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="inline-flex items-center justify-center p-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+            title="Refresh"
+          >
+            <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+          </button>
+          <button
+            onClick={() => setShowUploadForm(true)}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+            Upload PDF
+          </button>
+        </div>
       </div>
 
       {/* Filters */}

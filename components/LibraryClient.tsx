@@ -117,19 +117,40 @@ export default function LibraryClient({ initialMaterials, environmentId }: Libra
 
     setDeletingId(id)
     try {
+      // Get the material to find the file URL
+      const material = materials.find(m => m.id === id)
+      
       // Delete links first
       await supabase
         .from('procedure_learning_links')
         .delete()
         .eq('learning_material_id', id)
 
-      // Delete the material
+      // Delete the material record
       const { error } = await supabase
         .from('learning_materials')
         .delete()
         .eq('id', id)
 
       if (error) throw error
+
+      // Try to delete the file from storage
+      if (material?.file_url) {
+        try {
+          // Extract the file path from the URL
+          // URL format: https://<project>.supabase.co/storage/v1/object/public/learning-materials/<user_id>/<filename>
+          const urlParts = material.file_url.split('/learning-materials/')
+          if (urlParts.length > 1) {
+            const filePath = urlParts[1]
+            await supabase.storage
+              .from('learning-materials')
+              .remove([filePath])
+          }
+        } catch (storageErr) {
+          // Log but don't fail if storage deletion fails
+          console.error('Error deleting file from storage:', storageErr)
+        }
+      }
 
       // Update local state
       setMaterials(prev => prev.filter(m => m.id !== id))

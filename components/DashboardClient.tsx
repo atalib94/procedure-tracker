@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Plus, Search, ArrowUpDown, ArrowUp, ArrowDown, Calendar, Filter } from 'lucide-react'
+import { Plus, Search, ArrowUpDown, ArrowUp, ArrowDown, Calendar, Filter, Download, FileSpreadsheet, X, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import ProcedureCard from '@/components/ProcedureCard'
 import StatsCards from '@/components/StatsCards'
@@ -30,6 +30,10 @@ export default function DashboardClient({
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [categoryFilter, setCategoryFilter] = useState('')
   const [showFilters, setShowFilters] = useState(false)
+  const [showExportModal, setShowExportModal] = useState(false)
+  const [exportLoading, setExportLoading] = useState(false)
+  const [exportDateFrom, setExportDateFrom] = useState('')
+  const [exportDateTo, setExportDateTo] = useState('')
 
   // Get unique categories from procedures
   const categories = useMemo(() => {
@@ -97,6 +101,112 @@ export default function DashboardClient({
     { value: 'created_at', label: 'Added' },
   ]
 
+  // Export to CSV (EBIR format)
+  const handleExport = (format: 'csv' | 'ebir') => {
+    setExportLoading(true)
+    
+    try {
+      // Filter by date range if specified
+      let dataToExport = [...procedures]
+      
+      if (exportDateFrom) {
+        dataToExport = dataToExport.filter(p => p.procedure_date >= exportDateFrom)
+      }
+      if (exportDateTo) {
+        dataToExport = dataToExport.filter(p => p.procedure_date <= exportDateTo)
+      }
+
+      // Sort by date
+      dataToExport.sort((a, b) => new Date(a.procedure_date).getTime() - new Date(b.procedure_date).getTime())
+
+      let csvContent = ''
+      let filename = ''
+
+      if (format === 'ebir') {
+        // EBIR Format: specific columns for European Board of Interventional Radiology
+        const headers = [
+          'Date',
+          'EBIR Category Code',
+          'EBIR Category',
+          'Procedure Name',
+          'Role',
+          'Medical Centre',
+          'Accession Number',
+          'Notes'
+        ]
+        
+        csvContent = headers.join(';') + '\n'
+        
+        dataToExport.forEach(p => {
+          const row = [
+            p.procedure_date,
+            p.ebir_categories?.code || '',
+            p.ebir_categories?.name || '',
+            p.procedure_name || '',
+            p.operator_role || '',
+            p.medical_centres?.name || '',
+            p.accession_number || '',
+            (p.notes || '').replace(/;/g, ',').replace(/\n/g, ' ')
+          ]
+          csvContent += row.join(';') + '\n'
+        })
+        
+        filename = `EBIR_Logbook_${new Date().toISOString().split('T')[0]}.csv`
+      } else {
+        // Standard CSV format
+        const headers = [
+          'Date',
+          'Procedure Name',
+          'Category',
+          'Category Code',
+          'Operator Role',
+          'Medical Centre',
+          'Accession Number',
+          'Notes',
+          'Created At'
+        ]
+        
+        csvContent = headers.join(',') + '\n'
+        
+        dataToExport.forEach(p => {
+          const row = [
+            p.procedure_date,
+            `"${(p.procedure_name || '').replace(/"/g, '""')}"`,
+            `"${(p.ebir_categories?.name || '').replace(/"/g, '""')}"`,
+            p.ebir_categories?.code || '',
+            p.operator_role || '',
+            `"${(p.medical_centres?.name || '').replace(/"/g, '""')}"`,
+            p.accession_number || '',
+            `"${(p.notes || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`,
+            p.created_at?.split('T')[0] || ''
+          ]
+          csvContent += row.join(',') + '\n'
+        })
+        
+        filename = `Procedures_Export_${new Date().toISOString().split('T')[0]}.csv`
+      }
+
+      // Create and download file
+      const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' })
+      const link = document.createElement('a')
+      link.href = URL.createObjectURL(blob)
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(link.href)
+
+      setShowExportModal(false)
+      setExportDateFrom('')
+      setExportDateTo('')
+    } catch (error) {
+      console.error('Export error:', error)
+      alert('Failed to export data')
+    } finally {
+      setExportLoading(false)
+    }
+  }
+
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* HIPAA Notice */}
@@ -108,13 +218,22 @@ export default function DashboardClient({
           <h1 className="text-3xl font-bold text-gray-900">Procedure Log</h1>
           <p className="text-gray-600 mt-1">Track your interventional radiology procedures</p>
         </div>
-        <Link
-          href="/dashboard/procedures/new"
-          className="flex items-center justify-center gap-2 bg-purple-600 text-white px-4 py-2.5 sm:py-2 rounded-lg font-medium hover:bg-purple-700 transition-colors w-full sm:w-auto"
-        >
-          <Plus className="w-5 h-5" />
-          Log Procedure
-        </Link>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <button
+            onClick={() => setShowExportModal(true)}
+            className="flex items-center justify-center gap-2 border border-gray-300 text-gray-700 px-4 py-2.5 sm:py-2 rounded-lg font-medium hover:bg-gray-50 transition-colors flex-1 sm:flex-none"
+          >
+            <Download className="w-5 h-5" />
+            <span className="sm:inline">Export</span>
+          </button>
+          <Link
+            href="/dashboard/procedures/new"
+            className="flex items-center justify-center gap-2 bg-purple-600 text-white px-4 py-2.5 sm:py-2 rounded-lg font-medium hover:bg-purple-700 transition-colors flex-1 sm:flex-none"
+          >
+            <Plus className="w-5 h-5" />
+            Log Procedure
+          </Link>
+        </div>
       </div>
 
       {/* Stats */}
@@ -265,6 +384,121 @@ export default function DashboardClient({
           )}
         </div>
       </div>
+
+      {/* Export Modal */}
+      {showExportModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <FileSpreadsheet className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">Export Procedures</h2>
+                    <p className="text-sm text-gray-500">Download your procedure log</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowExportModal(false)}
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Date Range Filter */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Date Range <span className="text-gray-400">(optional)</span>
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">From</label>
+                    <input
+                      type="date"
+                      value={exportDateFrom}
+                      onChange={(e) => setExportDateFrom(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">To</label>
+                    <input
+                      type="date"
+                      value={exportDateTo}
+                      onChange={(e) => setExportDateTo(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Leave empty to export all {procedures.length} procedures
+                </p>
+              </div>
+
+              {/* Export Format Options */}
+              <div className="space-y-3">
+                <button
+                  onClick={() => handleExport('ebir')}
+                  disabled={exportLoading}
+                  className="w-full p-4 border-2 border-purple-200 bg-purple-50 rounded-xl text-left hover:border-purple-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-semibold text-purple-900">EBIR Format</div>
+                      <div className="text-sm text-purple-700">
+                        European Board of Interventional Radiology logbook format
+                      </div>
+                      <div className="text-xs text-purple-600 mt-1">
+                        Semicolon-separated (.csv) • Ready for EBIR submission
+                      </div>
+                    </div>
+                    {exportLoading ? (
+                      <Loader2 className="w-5 h-5 text-purple-600 animate-spin" />
+                    ) : (
+                      <Download className="w-5 h-5 text-purple-600" />
+                    )}
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => handleExport('csv')}
+                  disabled={exportLoading}
+                  className="w-full p-4 border-2 border-gray-200 rounded-xl text-left hover:border-gray-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="font-semibold text-gray-900">Standard CSV</div>
+                      <div className="text-sm text-gray-600">
+                        Compatible with Excel, Google Sheets, etc.
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        Comma-separated (.csv) • All fields included
+                      </div>
+                    </div>
+                    {exportLoading ? (
+                      <Loader2 className="w-5 h-5 text-gray-600 animate-spin" />
+                    ) : (
+                      <Download className="w-5 h-5 text-gray-400" />
+                    )}
+                  </div>
+                </button>
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <button
+                  onClick={() => setShowExportModal(false)}
+                  className="w-full px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -33,32 +33,12 @@ export default async function SettingsPage() {
         <p className="text-gray-600 mt-1">Manage your account preferences</p>
       </div>
 
-      {/* Profile Settings */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-6">Profile Information</h2>
-        <SettingsForm
-          profile={profile}
-          environments={environments || []}
-          medicalCentres={centres || []}
-        />
-      </div>
-
-      {/* Account Info */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Account Information</h2>
-        <div className="space-y-3 text-sm">
-          <div className="flex justify-between">
-            <span className="text-gray-600">Email</span>
-            <span className="font-medium text-gray-900">{session.user.email}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">Account Created</span>
-            <span className="font-medium text-gray-900">
-              {new Date(session.user.created_at).toLocaleDateString()}
-            </span>
-          </div>
-        </div>
-      </div>
+      {/* Settings Form - includes Profile Picture, Profile Info, Security, and Account Info */}
+      <SettingsForm
+        profile={profile}
+        environments={environments || []}
+        medicalCentres={centres || []}
+      />
     </div>
   )
 }

@@ -370,19 +370,22 @@ export default function NewProcedureForm({ environments, categories, medicalCent
         />
       </div>
 
-      {/* Accession Number */}
+      {/* Case ID */}
       <div>
         <label htmlFor="accession" className="block text-sm font-medium text-gray-700 mb-2">
-          Accession Number <span className="text-gray-400">(optional)</span>
+          Case ID <span className="text-gray-400">(optional)</span>
         </label>
         <input
           type="text"
           id="accession"
-          placeholder="e.g., ACC-12345"
+          placeholder="e.g., IR-2024-0042"
           value={formData.accession_number}
           onChange={(e) => setFormData({ ...formData, accession_number: e.target.value })}
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
         />
+        <p className="mt-1 text-xs text-gray-500">
+          Your own reference code. See <a href="/dashboard/privacy-guidance" className="text-purple-600 hover:underline">Privacy Guide</a> for linking to PACS.
+        </p>
       </div>
 
       {/* Notes */}

@@ -14,6 +14,7 @@ export interface Database {
           id: string
           email: string
           full_name: string | null
+          avatar_url: string | null
           role: string
           selected_environment_id: string | null
           default_medical_centre_id: string | null
@@ -25,6 +26,7 @@ export interface Database {
           id: string
           email: string
           full_name?: string | null
+          avatar_url?: string | null
           role?: string
           selected_environment_id?: string | null
           default_medical_centre_id?: string | null
@@ -36,6 +38,7 @@ export interface Database {
           id?: string
           email?: string
           full_name?: string | null
+          avatar_url?: string | null
           role?: string
           selected_environment_id?: string | null
           default_medical_centre_id?: string | null

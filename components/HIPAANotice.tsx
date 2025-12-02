@@ -1,18 +1,19 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Shield, X, AlertTriangle } from 'lucide-react'
+import { Shield, X, AlertTriangle, ExternalLink } from 'lucide-react'
+import Link from 'next/link'
 
-interface HIPAANoticeProps {
+interface PrivacyNoticeProps {
   variant?: 'banner' | 'compact'
 }
 
-export default function HIPAANotice({ variant = 'banner' }: HIPAANoticeProps) {
+export default function HIPAANotice({ variant = 'banner' }: PrivacyNoticeProps) {
   const [dismissed, setDismissed] = useState(false)
   const [showFull, setShowFull] = useState(false)
 
   useEffect(() => {
-    const dismissedUntil = localStorage.getItem('hipaa_notice_dismissed')
+    const dismissedUntil = localStorage.getItem('privacy_notice_dismissed')
     if (dismissedUntil) {
       const dismissedDate = new Date(dismissedUntil)
       if (dismissedDate > new Date()) {
@@ -25,7 +26,7 @@ export default function HIPAANotice({ variant = 'banner' }: HIPAANoticeProps) {
     // Dismiss for 7 days
     const dismissUntil = new Date()
     dismissUntil.setDate(dismissUntil.getDate() + 7)
-    localStorage.setItem('hipaa_notice_dismissed', dismissUntil.toISOString())
+    localStorage.setItem('privacy_notice_dismissed', dismissUntil.toISOString())
     setDismissed(true)
   }
 
@@ -47,26 +48,29 @@ export default function HIPAANotice({ variant = 'banner' }: HIPAANoticeProps) {
 
   return (
     <>
-      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 relative">
+      <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-4 relative">
         <div className="flex gap-3">
           <div className="flex-shrink-0">
-            <Shield className="w-5 h-5 text-amber-600 mt-0.5" />
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
+              <Shield className="w-5 h-5 text-white" />
+            </div>
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold text-amber-800 flex items-center gap-2">
-              Patient Privacy Notice
+            <h3 className="text-sm font-semibold text-amber-900 flex items-center gap-2">
+              Patient Data Protection (GDPR &amp; HIPAA)
             </h3>
-            <div className="mt-1 text-sm text-amber-700">
+            <div className="mt-1 text-sm text-amber-800">
               <p>
-                While we've implemented security measures to protect your data, we strongly recommend 
-                <strong> avoiding direct patient identifiers</strong> such as names, dates of birth, or 
-                other personally identifiable information.
+                <strong>Never enter patient identifiers.</strong> Use Case IDs to track procedures, 
+                and maintain a separate secure mapping to PACS accession numbers within your institution.
               </p>
-              <p className="mt-2">
-                <strong>Best practice:</strong> Use accession numbers or your own reference codes for cases, 
-                and maintain a separate, secure reference document linking these to patient records within 
-                your institution's compliant systems.
-              </p>
+              <Link 
+                href="/dashboard/privacy-guidance"
+                className="inline-flex items-center gap-1 mt-2 text-amber-700 hover:text-amber-900 font-medium underline underline-offset-2"
+              >
+                View full privacy guidance
+                <ExternalLink className="w-3.5 h-3.5" />
+              </Link>
             </div>
           </div>
           <button
@@ -85,8 +89,10 @@ export default function HIPAANotice({ variant = 'banner' }: HIPAANoticeProps) {
           <div className="bg-white rounded-xl shadow-xl w-full max-w-lg">
             <div className="p-4 border-b border-gray-200 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Shield className="w-5 h-5 text-amber-600" />
-                <h2 className="text-lg font-bold text-gray-900">Patient Privacy Notice</h2>
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center">
+                  <Shield className="w-4 h-4 text-white" />
+                </div>
+                <h2 className="text-lg font-bold text-gray-900">Patient Data Protection</h2>
               </div>
               <button
                 onClick={() => setShowFull(false)}
@@ -96,44 +102,45 @@ export default function HIPAANotice({ variant = 'banner' }: HIPAANoticeProps) {
               </button>
             </div>
             <div className="p-6">
-              <div className="flex gap-4 p-4 bg-amber-50 rounded-lg border border-amber-200 mb-4">
+              <div className="flex gap-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border border-amber-200 mb-4">
                 <AlertTriangle className="w-6 h-6 text-amber-600 flex-shrink-0" />
                 <p className="text-sm text-amber-800">
-                  This application is designed for educational tracking and professional development purposes.
+                  This application is for <strong>educational tracking</strong>. Never store patient identifiers.
                 </p>
               </div>
               
               <div className="space-y-4 text-sm text-gray-700">
                 <p>
-                  While we've implemented robust security measures to protect your data, we strongly 
-                  recommend <strong>avoiding the upload or entry of direct patient identifiers</strong>, including:
+                  Under both <strong>GDPR</strong> (EU) and <strong>HIPAA</strong> (US), you must not enter:
                 </p>
                 <ul className="list-disc list-inside space-y-1 ml-2 text-gray-600">
-                  <li>Patient names</li>
-                  <li>Dates of birth</li>
-                  <li>Medical record numbers</li>
-                  <li>Social security numbers</li>
+                  <li>Patient names or initials</li>
+                  <li>Dates of birth or exact ages</li>
+                  <li>Medical Record Numbers (MRN)</li>
+                  <li>PACS Accession Numbers</li>
                   <li>Contact information</li>
-                  <li>Any other Protected Health Information (PHI)</li>
+                  <li>Any identifiable images without de-identification</li>
                 </ul>
                 <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                  <p className="font-medium text-blue-900 mb-2">Recommended Approach</p>
+                  <p className="font-medium text-blue-900 mb-2">Use Case IDs Instead</p>
                   <p className="text-blue-800">
-                    Use accession numbers, case reference codes, or your own numbering system to identify 
-                    procedures. Maintain a separate, secure reference document within your institution's 
-                    HIPAA-compliant systems to link these references to patient records when needed.
+                    Create your own Case ID system (e.g., <code className="bg-white px-1 rounded">IR-2024-0042</code>) 
+                    and maintain a separate, secure mapping to PACS accession numbers on your hospital network.
                   </p>
                 </div>
-                <p className="text-gray-500 text-xs">
-                  By using this application, you acknowledge your responsibility to comply with HIPAA 
-                  regulations and your institution's privacy policies.
-                </p>
               </div>
             </div>
-            <div className="p-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
+            <div className="p-4 border-t border-gray-200 bg-gray-50 rounded-b-xl flex gap-3">
+              <Link
+                href="/dashboard/privacy-guidance"
+                onClick={() => setShowFull(false)}
+                className="flex-1 px-4 py-2.5 text-purple-700 bg-purple-50 border border-purple-200 rounded-lg font-medium hover:bg-purple-100 transition-colors text-center"
+              >
+                Read Full Guide
+              </Link>
               <button
                 onClick={() => setShowFull(false)}
-                className="w-full px-4 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                className="flex-1 px-4 py-2.5 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors"
               >
                 I Understand
               </button>

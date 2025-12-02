@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Procedure Tracker",
-  description: "Track your interventional radiology procedures",
+  description: "Reflect. Improve. Thrive.",
   manifest: "/manifest.json",
   themeColor: "#2563eb",
   appleWebApp: {

@@ -35,7 +35,7 @@ export default async function DashboardLayout({
             />
             <div className="hidden sm:block">
               <h1 className="text-lg font-bold text-gray-900">Procedure Tracker</h1>
-              <p className="text-xs text-gray-500">Track your procedures</p>
+              <p className="text-xs text-gray-500">Reflect, improve, and thrive. </p>
             </div>
           </div>
           <UserMenu user={session.user} profile={profile} />

@@ -148,3 +148,84 @@ USING (bucket_id = 'learning-materials');
 --    - Link it to a case
 --    - View the PDF in the case detail page
 -- ============================================
+
+
+-- ============================================
+-- MIGRATION: Profile Picture & Avatar Support
+-- ============================================
+-- Added: Profile picture upload functionality
+-- ============================================
+
+-- 1. Add avatar_url column to profiles table
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+
+-- 2. Create avatars storage bucket
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+    'avatars',
+    'avatars',
+    true,
+    2097152, -- 2MB limit
+    ARRAY['image/jpeg', 'image/png', 'image/gif', 'image/webp']::text[]
+)
+ON CONFLICT (id) DO UPDATE SET
+    public = true,
+    file_size_limit = 2097152,
+    allowed_mime_types = ARRAY['image/jpeg', 'image/png', 'image/gif', 'image/webp']::text[];
+
+-- 3. Storage policies for avatars bucket
+
+-- Allow authenticated users to upload their own avatar
+CREATE POLICY "Users can upload their own avatar"
+ON storage.objects
+FOR INSERT
+TO authenticated
+WITH CHECK (
+    bucket_id = 'avatars' 
+    AND (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Allow authenticated users to update their own avatar
+CREATE POLICY "Users can update their own avatar"
+ON storage.objects
+FOR UPDATE
+TO authenticated
+USING (
+    bucket_id = 'avatars' 
+    AND (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Allow authenticated users to delete their own avatar
+CREATE POLICY "Users can delete their own avatar"
+ON storage.objects
+FOR DELETE
+TO authenticated
+USING (
+    bucket_id = 'avatars' 
+    AND (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Allow public read access to avatars
+CREATE POLICY "Public read access to avatars"
+ON storage.objects
+FOR SELECT
+TO public
+USING (bucket_id = 'avatars');
+
+-- ============================================
+-- IMPORTANT NOTES FOR AVATAR SETUP:
+-- ============================================
+-- 
+-- 1. If the storage bucket creation fails, create it manually:
+--    - Go to Supabase Dashboard > Storage
+--    - Click "New bucket"
+--    - Name: avatars
+--    - Public bucket: Yes
+--    - File size limit: 2MB
+--    - Allowed MIME types: image/jpeg, image/png, image/gif, image/webp
+--
+-- 2. Test the setup:
+--    - Go to Settings page
+--    - Upload a profile picture
+--    - Check if it appears in the top-right user menu
+-- ============================================

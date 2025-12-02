@@ -284,7 +284,7 @@ export default function NewProcedureForm({ environments, categories, medicalCent
             required
             value={formData.procedure_date}
             onChange={(e) => setFormData({ ...formData, procedure_date: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           />
         </div>
 
@@ -298,7 +298,7 @@ export default function NewProcedureForm({ environments, categories, medicalCent
             required
             value={formData.medical_centre_id}
             onChange={(e) => setFormData({ ...formData, medical_centre_id: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           >
             {medicalCentres.length === 0 ? (
               <option value="">No centres available</option>
@@ -325,7 +325,7 @@ export default function NewProcedureForm({ environments, categories, medicalCent
           id="category"
           value={formData.ebir_category_id}
           onChange={(e) => setFormData({ ...formData, ebir_category_id: e.target.value })}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
         >
           <option value="">Select category</option>
           {categories.map((cat) => (
@@ -346,7 +346,7 @@ export default function NewProcedureForm({ environments, categories, medicalCent
           required
           value={formData.operator_role}
           onChange={(e) => setFormData({ ...formData, operator_role: e.target.value })}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
         >
           <option value="1st Operator">1st Operator</option>
           <option value="2nd Operator">2nd Operator</option>
@@ -366,7 +366,7 @@ export default function NewProcedureForm({ environments, categories, medicalCent
           placeholder="e.g., TACE, PTA, Nephrostomy"
           value={formData.procedure_name}
           onChange={(e) => setFormData({ ...formData, procedure_name: e.target.value })}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
         />
       </div>
 
@@ -381,7 +381,7 @@ export default function NewProcedureForm({ environments, categories, medicalCent
           placeholder="e.g., ACC-12345"
           value={formData.accession_number}
           onChange={(e) => setFormData({ ...formData, accession_number: e.target.value })}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
         />
       </div>
 
@@ -396,7 +396,7 @@ export default function NewProcedureForm({ environments, categories, medicalCent
           placeholder="Add any relevant details, complications, or observations..."
           value={formData.notes}
           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
         />
       </div>
 
@@ -479,12 +479,12 @@ export default function NewProcedureForm({ environments, categories, medicalCent
                         placeholder="Document title"
                         value={pdf.title}
                         onChange={(e) => updatePdfFile(index, { title: e.target.value })}
-                        className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       />
                       <select
                         value={pdf.category}
                         onChange={(e) => updatePdfFile(index, { category: e.target.value })}
-                        className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       >
                         <option value="">Select category</option>
                         {pdfCategories.map((cat) => (
@@ -507,7 +507,7 @@ export default function NewProcedureForm({ environments, categories, medicalCent
           onDrop={handlePdfDrop}
           className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
             pdfDragActive
-              ? 'border-blue-500 bg-blue-50'
+              ? 'border-purple-500 bg-purple-50'
               : 'border-gray-300 hover:border-gray-400'
           }`}
         >
@@ -552,7 +552,7 @@ export default function NewProcedureForm({ environments, categories, medicalCent
         <button
           type="submit"
           disabled={loading}
-          className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? 'Saving...' : 'Save Procedure'}
         </button>

@@ -242,7 +242,7 @@ export default function LibraryClient({ initialMaterials, environmentId }: Libra
           </button>
           <button
             onClick={() => setShowUploadForm(true)}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors"
           >
             <Plus className="w-5 h-5" />
             Upload PDF
@@ -261,7 +261,7 @@ export default function LibraryClient({ initialMaterials, environmentId }: Libra
               placeholder="Search by title, description, or tags..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
           </div>
 
@@ -270,7 +270,7 @@ export default function LibraryClient({ initialMaterials, environmentId }: Libra
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             >
               {categories.map(cat => (
                 <option key={cat} value={cat}>{cat}</option>
@@ -283,7 +283,7 @@ export default function LibraryClient({ initialMaterials, environmentId }: Libra
             <select
               value={sortField}
               onChange={(e) => setSortField(e.target.value as SortField)}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
             >
               {sortOptions.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -306,13 +306,13 @@ export default function LibraryClient({ initialMaterials, environmentId }: Libra
           <div className="flex border border-gray-300 rounded-lg overflow-hidden">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-2 ${viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+              className={`p-2 ${viewMode === 'grid' ? 'bg-purple-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
             >
               <Grid className="w-5 h-5" />
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`p-2 ${viewMode === 'list' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+              className={`p-2 ${viewMode === 'list' ? 'bg-purple-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
             >
               <List className="w-5 h-5" />
             </button>
@@ -329,7 +329,7 @@ export default function LibraryClient({ initialMaterials, environmentId }: Libra
       {/* Content */}
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+          <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
         </div>
       ) : filteredAndSortedMaterials.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
@@ -347,7 +347,7 @@ export default function LibraryClient({ initialMaterials, environmentId }: Libra
           {!searchQuery && !categoryFilter && (
             <button
               onClick={() => setShowUploadForm(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors"
             >
               <Plus className="w-4 h-4" />
               Upload PDF
@@ -441,7 +441,7 @@ export default function LibraryClient({ initialMaterials, environmentId }: Libra
                         <FileText className="w-5 h-5 text-red-600" />
                       </div>
                       <div className="min-w-0">
-                        <p className="font-medium text-gray-900 truncate hover:text-blue-600">{material.title}</p>
+                        <p className="font-medium text-gray-900 truncate hover:text-purple-600">{material.title}</p>
                         {material.description && (
                           <p className="text-sm text-gray-500 truncate">{material.description}</p>
                         )}
@@ -472,7 +472,7 @@ export default function LibraryClient({ initialMaterials, environmentId }: Libra
                     <div className="flex items-center justify-end gap-1">
                       <button
                         onClick={() => setViewingPDF(material)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
                         title="View PDF"
                       >
                         <Eye className="w-4 h-4" />

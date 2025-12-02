@@ -177,7 +177,7 @@ export default function LinkPDFModal({ materialId, materialTitle, onClose, onSuc
               placeholder="Search procedures..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
           </div>
         </div>
@@ -193,7 +193,7 @@ export default function LinkPDFModal({ materialId, materialTitle, onClose, onSuc
         <div className="flex-1 overflow-y-auto p-4">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-6 h-6 text-blue-600 animate-spin" />
+              <Loader2 className="w-6 h-6 text-purple-600 animate-spin" />
             </div>
           ) : filteredProcedures.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
@@ -209,13 +209,13 @@ export default function LinkPDFModal({ materialId, materialTitle, onClose, onSuc
                     onClick={() => toggleProcedure(procedure.id)}
                     className={`w-full p-3 rounded-lg border text-left transition-all ${
                       isSelected
-                        ? 'border-blue-500 bg-blue-50'
+                        ? 'border-purple-500 bg-purple-50'
                         : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <div className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 ${
-                        isSelected ? 'bg-blue-600' : 'border-2 border-gray-300'
+                        isSelected ? 'bg-purple-600' : 'border-2 border-gray-300'
                       }`}>
                         {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
                       </div>
@@ -258,7 +258,7 @@ export default function LinkPDFModal({ materialId, materialTitle, onClose, onSuc
             <button
               onClick={handleSave}
               disabled={saving || !hasChanges()}
-              className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2.5 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {saving ? (
                 <>

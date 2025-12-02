@@ -54,7 +54,7 @@ export default function PDFCard({ material, onView, onLink, onDelete }: PDFCardP
   const getCardColor = () => {
     const colors = [
       'from-red-50 to-red-100',
-      'from-blue-50 to-blue-100', 
+      'from-purple-50 to-purple-100', 
       'from-green-50 to-green-100',
       'from-purple-50 to-purple-100',
       'from-amber-50 to-amber-100',
@@ -64,7 +64,7 @@ export default function PDFCard({ material, onView, onLink, onDelete }: PDFCardP
     ]
     const iconColors = [
       'text-red-500',
-      'text-blue-500',
+      'text-purple-500',
       'text-green-500', 
       'text-purple-500',
       'text-amber-500',
@@ -187,7 +187,7 @@ export default function PDFCard({ material, onView, onLink, onDelete }: PDFCardP
             <div className="flex items-center gap-1 flex-wrap">
               <Tag className="w-3 h-3 text-gray-400" />
               {material.tags.slice(0, 2).map((tag, i) => (
-                <span key={i} className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded-full text-xs">
+                <span key={i} className="bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded-full text-xs">
                   {tag}
                 </span>
               ))}
@@ -213,7 +213,7 @@ export default function PDFCard({ material, onView, onLink, onDelete }: PDFCardP
       <div className="px-3 pb-3 flex gap-2">
         <button
           onClick={onView}
-          className="flex-1 px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-1.5"
+          className="flex-1 px-3 py-1.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center gap-1.5"
         >
           <Eye className="w-4 h-4" />
           View

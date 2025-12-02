@@ -142,7 +142,7 @@ export default function DashboardClient({
           'Procedure Name',
           'Role',
           'Medical Centre',
-          'Accession Number',
+          'Case ID',
           'Notes'
         ]
         
@@ -172,7 +172,7 @@ export default function DashboardClient({
           'Category Code',
           'Operator Role',
           'Medical Centre',
-          'Accession Number',
+          'Case ID',
           'Notes',
           'Created At'
         ]
@@ -471,7 +471,7 @@ export default function DashboardClient({
                         European Board of Interventional Radiology logbook format
                       </div>
                       <div className="text-xs text-purple-600 mt-1">
-                        Semicolon-separated (.csv) • Ready for EBIR submission
+                        Semicolon-separated (.csv) â€¢ Ready for EBIR submission
                       </div>
                     </div>
                     {exportLoading ? (
@@ -494,7 +494,7 @@ export default function DashboardClient({
                         Compatible with Excel, Google Sheets, etc.
                       </div>
                       <div className="text-xs text-gray-500 mt-1">
-                        Comma-separated (.csv) • All fields included
+                        Comma-separated (.csv) â€¢ All fields included
                       </div>
                     </div>
                     {exportLoading ? (

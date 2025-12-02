@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase-client'
-import { Plus, Search, Filter, Grid, List, FileText, Loader2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
+import { Plus, Search, Filter, Grid, List, FileText, Loader2, ArrowUpDown, ArrowUp, ArrowDown, Eye, Link2, Trash2 } from 'lucide-react'
 import PDFCard from './PDFCard'
 import PDFViewer from './PDFViewer'
 import PDFUploadForm from './PDFUploadForm'
@@ -413,19 +413,22 @@ export default function LibraryClient({ initialMaterials, environmentId }: Libra
             </thead>
             <tbody className="divide-y divide-gray-200">
               {filteredAndSortedMaterials.map(material => (
-                <tr key={material.id} className="hover:bg-gray-50">
+                <tr key={material.id} className="hover:bg-gray-50 group">
                   <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <button
+                      onClick={() => setViewingPDF(material)}
+                      className="flex items-center gap-3 text-left w-full"
+                    >
+                      <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-red-200 transition-colors">
                         <FileText className="w-5 h-5 text-red-600" />
                       </div>
                       <div className="min-w-0">
-                        <p className="font-medium text-gray-900 truncate">{material.title}</p>
+                        <p className="font-medium text-gray-900 truncate hover:text-blue-600">{material.title}</p>
                         {material.description && (
                           <p className="text-sm text-gray-500 truncate">{material.description}</p>
                         )}
                       </div>
-                    </div>
+                    </button>
                   </td>
                   <td className="px-4 py-3 hidden sm:table-cell">
                     {material.category && (
@@ -448,25 +451,32 @@ export default function LibraryClient({ initialMaterials, environmentId }: Libra
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-2">
+                    <div className="flex items-center justify-end gap-1">
                       <button
                         onClick={() => setViewingPDF(material)}
-                        className="px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="View PDF"
                       >
-                        View
+                        <Eye className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => setLinkingMaterial(material)}
-                        className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                        className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                        title="Link to case"
                       >
-                        Link
+                        <Link2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(material.id)}
                         disabled={deletingId === material.id}
-                        className="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                        title="Delete"
                       >
-                        {deletingId === material.id ? '...' : 'Delete'}
+                        {deletingId === material.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
                       </button>
                     </div>
                   </td>

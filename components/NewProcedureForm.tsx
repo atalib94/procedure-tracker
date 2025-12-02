@@ -1,9 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-client'
-import { Upload } from 'lucide-react'
+import { Upload, FileText, X, Plus, Loader2 } from 'lucide-react'
+
+interface PDFFile {
+  file: File
+  title: string
+  category: string
+}
 
 interface NewProcedureFormProps {
   environments: any[]
@@ -19,6 +25,21 @@ export default function NewProcedureForm({ environments, categories, medicalCent
   const [error, setError] = useState<string | null>(null)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
+  
+  // PDF Upload State
+  const [pdfFiles, setPdfFiles] = useState<PDFFile[]>([])
+  const [pdfDragActive, setPdfDragActive] = useState(false)
+
+  const pdfCategories = [
+    'Anatomy',
+    'Technique',
+    'Case Study',
+    'Guidelines',
+    'Research',
+    'Protocol',
+    'Reference',
+    'Other'
+  ]
 
   const [formData, setFormData] = useState({
     procedure_name: '',
@@ -40,6 +61,73 @@ export default function NewProcedureForm({ environments, categories, medicalCent
       }
       reader.readAsDataURL(file)
     }
+  }
+
+  // PDF Handlers
+  const handlePdfDrag = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setPdfDragActive(true)
+    } else if (e.type === 'dragleave') {
+      setPdfDragActive(false)
+    }
+  }, [])
+
+  const handlePdfDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setPdfDragActive(false)
+
+    if (e.dataTransfer.files) {
+      const newFiles = Array.from(e.dataTransfer.files)
+        .filter(file => file.type === 'application/pdf')
+        .map(file => ({
+          file,
+          title: file.name.replace('.pdf', ''),
+          category: ''
+        }))
+      
+      if (newFiles.length > 0) {
+        setPdfFiles(prev => [...prev, ...newFiles])
+      }
+    }
+  }, [])
+
+  const handlePdfFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files)
+        .filter(file => file.type === 'application/pdf')
+        .map(file => ({
+          file,
+          title: file.name.replace('.pdf', ''),
+          category: ''
+        }))
+      
+      if (newFiles.length > 0) {
+        setPdfFiles(prev => [...prev, ...newFiles])
+      }
+    }
+    // Reset input
+    e.target.value = ''
+  }
+
+  const updatePdfFile = (index: number, updates: Partial<PDFFile>) => {
+    setPdfFiles(prev => prev.map((pdf, i) => 
+      i === index ? { ...pdf, ...updates } : pdf
+    ))
+  }
+
+  const removePdfFile = (index: number) => {
+    setPdfFiles(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes'
+    const k = 1024
+    const sizes = ['Bytes', 'KB', 'MB', 'GB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -91,7 +179,7 @@ export default function NewProcedureForm({ environments, categories, medicalCent
       }
 
       // Insert procedure
-      const { error: insertError } = await supabase
+      const { data: procedureData, error: insertError } = await supabase
         .from('procedures')
         .insert({
           ...formData,
@@ -101,9 +189,68 @@ export default function NewProcedureForm({ environments, categories, medicalCent
           // Convert empty strings to null for optional UUID fields
           ebir_category_id: formData.ebir_category_id || null,
         })
+        .select('id')
+        .single()
 
       if (insertError) {
         throw new Error(`Failed to save procedure: ${insertError.message}`)
+      }
+
+      // Upload PDFs and link them to the procedure
+      if (pdfFiles.length > 0 && procedureData) {
+        for (const pdf of pdfFiles) {
+          // Upload PDF to storage
+          const fileExt = pdf.file.name.split('.').pop()
+          const fileName = `${session.user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
+          
+          const { error: pdfUploadError } = await supabase.storage
+            .from('learning-materials')
+            .upload(fileName, pdf.file, {
+              cacheControl: '3600',
+              upsert: false
+            })
+
+          if (pdfUploadError) {
+            console.error('PDF upload error:', pdfUploadError)
+            continue
+          }
+
+          // Get public URL
+          const { data: { publicUrl } } = supabase.storage
+            .from('learning-materials')
+            .getPublicUrl(fileName)
+
+          // Insert learning material record
+          const { data: materialData, error: materialError } = await supabase
+            .from('learning_materials')
+            .insert({
+              user_id: session.user.id,
+              environment_id: environments[0]?.id,
+              title: pdf.title.trim() || pdf.file.name.replace('.pdf', ''),
+              file_url: publicUrl,
+              file_type: 'pdf',
+              file_size: pdf.file.size,
+              category: pdf.category || null,
+              is_linked_to_procedure: true
+            })
+            .select('id')
+            .single()
+
+          if (materialError) {
+            console.error('Material insert error:', materialError)
+            continue
+          }
+
+          // Link PDF to procedure
+          if (materialData) {
+            await supabase
+              .from('procedure_learning_links')
+              .insert({
+                procedure_id: procedureData.id,
+                learning_material_id: materialData.id
+              })
+          }
+        }
       }
 
       router.push('/dashboard')
@@ -295,6 +442,101 @@ export default function NewProcedureForm({ environments, categories, medicalCent
             </label>
           )}
         </div>
+      </div>
+
+      {/* PDF Upload Section */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          PDF Documents <span className="text-gray-400">(optional)</span>
+        </label>
+        
+        {/* Uploaded PDFs List */}
+        {pdfFiles.length > 0 && (
+          <div className="space-y-3 mb-4">
+            {pdfFiles.map((pdf, index) => (
+              <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <FileText className="w-5 h-5 text-red-600" />
+                  </div>
+                  <div className="flex-1 min-w-0 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-900 truncate">{pdf.file.name}</p>
+                        <p className="text-xs text-gray-500">{formatFileSize(pdf.file.size)}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removePdfFile(index)}
+                        className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <input
+                        type="text"
+                        placeholder="Document title"
+                        value={pdf.title}
+                        onChange={(e) => updatePdfFile(index, { title: e.target.value })}
+                        className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                      <select
+                        value={pdf.category}
+                        onChange={(e) => updatePdfFile(index, { category: e.target.value })}
+                        className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">Select category</option>
+                        {pdfCategories.map((cat) => (
+                          <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* PDF Drop Zone */}
+        <div
+          onDragEnter={handlePdfDrag}
+          onDragLeave={handlePdfDrag}
+          onDragOver={handlePdfDrag}
+          onDrop={handlePdfDrop}
+          className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+            pdfDragActive
+              ? 'border-blue-500 bg-blue-50'
+              : 'border-gray-300 hover:border-gray-400'
+          }`}
+        >
+          <label className="cursor-pointer block">
+            <input
+              type="file"
+              accept="application/pdf"
+              multiple
+              onChange={handlePdfFileChange}
+              className="hidden"
+            />
+            <div className="flex items-center justify-center gap-2 text-gray-400 mb-2">
+              <FileText className="w-8 h-8" />
+              <Plus className="w-5 h-5" />
+            </div>
+            <p className="text-sm font-medium text-gray-700">
+              {pdfFiles.length > 0 ? 'Add more PDFs' : 'Drag & drop PDFs here, or click to browse'}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              PDF files up to 50MB each
+            </p>
+          </label>
+        </div>
+        
+        {pdfFiles.length > 0 && (
+          <p className="text-xs text-gray-500 mt-2">
+            {pdfFiles.length} PDF{pdfFiles.length !== 1 ? 's' : ''} will be uploaded and linked to this procedure
+          </p>
+        )}
       </div>
 
       {/* Submit */}

@@ -1,32 +1,83 @@
 'use client'
 
-import { useState } from 'react'
-import { FileText, Eye, Download, ExternalLink, Link2, Trash2, MoreVertical, Calendar, Tag } from 'lucide-react'
-import { format } from 'date-fns'
+import { useState, useCallback } from 'react'
+import { createClient } from '@/lib/supabase-client'
+import { Upload, X, FileText, Check, Loader2 } from 'lucide-react'
 
-interface PDFCardProps {
-  material: {
-    id: string
-    title: string
-    description: string | null
-    file_url: string
-    file_size: number | null
-    category: string | null
-    tags: string[] | null
-    created_at: string
-    is_linked_to_procedure: boolean
-    linked_procedures_count?: number
-  }
-  onView: () => void
-  onLink: () => void
-  onDelete: () => void
+interface PDFUploadFormProps {
+  environmentId: string | null
+  onSuccess: () => void
+  onCancel: () => void
 }
 
-export default function PDFCard({ material, onView, onLink, onDelete }: PDFCardProps) {
-  const [showMenu, setShowMenu] = useState(false)
+export default function PDFUploadForm({ environmentId, onSuccess, onCancel }: PDFUploadFormProps) {
+  const supabase = createClient()
+  
+  const [file, setFile] = useState<File | null>(null)
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [category, setCategory] = useState('')
+  const [tags, setTags] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [dragActive, setDragActive] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
 
-  const formatFileSize = (bytes: number | null): string => {
-    if (!bytes) return 'Unknown size'
+  const categories = [
+    'Anatomy',
+    'Technique',
+    'Case Study',
+    'Guidelines',
+    'Research',
+    'Protocol',
+    'Reference',
+    'Other'
+  ]
+
+  const handleDrag = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive(true)
+    } else if (e.type === 'dragleave') {
+      setDragActive(false)
+    }
+  }, [])
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragActive(false)
+
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const droppedFile = e.dataTransfer.files[0]
+      if (droppedFile.type === 'application/pdf') {
+        setFile(droppedFile)
+        if (!title) {
+          setTitle(droppedFile.name.replace('.pdf', ''))
+        }
+      } else {
+        setError('Please upload a PDF file')
+      }
+    }
+  }, [title])
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0]
+      if (selectedFile.type === 'application/pdf') {
+        setFile(selectedFile)
+        if (!title) {
+          setTitle(selectedFile.name.replace('.pdf', ''))
+        }
+        setError(null)
+      } else {
+        setError('Please upload a PDF file')
+      }
+    }
+  }
+
+  const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes'
     const k = 1024
     const sizes = ['Bytes', 'KB', 'MB', 'GB']
@@ -34,204 +85,276 @@ export default function PDFCard({ material, onView, onLink, onDelete }: PDFCardP
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
-  const handleDownload = () => {
-    const link = document.createElement('a')
-    link.href = material.file_url
-    link.download = material.title + '.pdf'
-    link.target = '_blank'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    setShowMenu(false)
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!file) {
+      setError('Please select a PDF file')
+      return
+    }
 
-  const handleOpenExternal = () => {
-    window.open(material.file_url, '_blank')
-    setShowMenu(false)
-  }
+    if (!title.trim()) {
+      setError('Please enter a title')
+      return
+    }
 
-  // Generate a color based on the title for visual variety
-  const getCardColor = () => {
-    const colors = [
-      'from-red-50 to-red-100',
-      'from-purple-50 to-purple-100', 
-      'from-green-50 to-green-100',
-      'from-purple-50 to-purple-100',
-      'from-amber-50 to-amber-100',
-      'from-cyan-50 to-cyan-100',
-      'from-pink-50 to-pink-100',
-      'from-indigo-50 to-indigo-100',
-    ]
-    const iconColors = [
-      'text-red-500',
-      'text-purple-500',
-      'text-green-500', 
-      'text-purple-500',
-      'text-amber-500',
-      'text-cyan-500',
-      'text-pink-500',
-      'text-indigo-500',
-    ]
-    const hash = material.title.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
-    const index = hash % colors.length
-    return { bg: colors[index], icon: iconColors[index] }
-  }
+    setLoading(true)
+    setError(null)
+    setUploadProgress(0)
 
-  const cardColor = getCardColor()
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        throw new Error('You must be logged in to upload files')
+      }
+
+      // Upload file to Supabase Storage
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${session.user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
+      
+      setUploadProgress(10)
+
+      const { error: uploadError } = await supabase.storage
+        .from('learning-materials')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        })
+
+      if (uploadError) {
+        throw new Error(`Upload failed: ${uploadError.message}`)
+      }
+
+      setUploadProgress(70)
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('learning-materials')
+        .getPublicUrl(fileName)
+
+      setUploadProgress(80)
+
+      // Parse tags
+      const tagArray = tags
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(tag => tag.length > 0)
+
+      // Insert record into learning_materials table
+      const { error: insertError } = await supabase
+        .from('learning_materials')
+        .insert({
+          user_id: session.user.id,
+          environment_id: environmentId,
+          title: title.trim(),
+          description: description.trim() || null,
+          file_url: publicUrl,
+          file_type: 'pdf',
+          file_size: file.size,
+          category: category || null,
+          tags: tagArray.length > 0 ? tagArray : null,
+          is_linked_to_procedure: false
+        })
+
+      if (insertError) {
+        throw new Error(`Failed to save: ${insertError.message}`)
+      }
+
+      setUploadProgress(100)
+      
+      // Small delay to show completion
+      setTimeout(() => {
+        onSuccess()
+      }, 500)
+
+    } catch (err: any) {
+      console.error('Upload error:', err)
+      setError(err.message || 'An error occurred during upload')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow overflow-hidden">
-      {/* Preview Area */}
-      <div 
-        className={`h-36 bg-gradient-to-br ${cardColor.bg} flex items-center justify-center cursor-pointer relative group`}
-        onClick={onView}
-      >
-        <div className="text-center">
-          <div className="w-14 h-14 bg-white rounded-xl shadow-md flex items-center justify-center mx-auto mb-2">
-            <FileText className={`w-7 h-7 ${cardColor.icon}`} />
-          </div>
-          <span className={`text-xs font-medium ${cardColor.icon} bg-white/80 px-2 py-1 rounded`}>
-            PDF
-          </span>
-        </div>
-        
-        {/* Hover Overlay */}
-        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-          <span className="text-white font-medium flex items-center gap-2">
-            <Eye className="w-5 h-5" />
-            View PDF
-          </span>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="p-3">
-        <div className="flex items-start justify-between gap-2 mb-1">
-          <h3 className="font-semibold text-gray-900 line-clamp-2 flex-1 text-sm">{material.title}</h3>
-          
-          {/* Menu Button */}
-          <div className="relative">
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-gray-900">Upload PDF</h2>
             <button
-              onClick={() => setShowMenu(!showMenu)}
-              className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              onClick={onCancel}
+              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <MoreVertical className="w-4 h-4" />
+              <X className="w-5 h-5" />
             </button>
-
-            {showMenu && (
-              <>
-                <div 
-                  className="fixed inset-0 z-10" 
-                  onClick={() => setShowMenu(false)} 
-                />
-                <div className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20 min-w-[160px]">
-                  <button
-                    onClick={() => { onView(); setShowMenu(false); }}
-                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                  >
-                    <Eye className="w-4 h-4" />
-                    View PDF
-                  </button>
-                  <button
-                    onClick={handleDownload}
-                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                  >
-                    <Download className="w-4 h-4" />
-                    Download
-                  </button>
-                  <button
-                    onClick={handleOpenExternal}
-                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    Open in new tab
-                  </button>
-                  <button
-                    onClick={() => { onLink(); setShowMenu(false); }}
-                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                  >
-                    <Link2 className="w-4 h-4" />
-                    Link to case
-                  </button>
-                  <hr className="my-1" />
-                  <button
-                    onClick={() => { onDelete(); setShowMenu(false); }}
-                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    Delete
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Meta Info */}
-        <div className="space-y-1.5 text-xs text-gray-500">
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1">
-              <Calendar className="w-3 h-3" />
-              {format(new Date(material.created_at), 'MMM dd, yyyy')}
-            </span>
-            <span>{formatFileSize(material.file_size)}</span>
           </div>
 
-          {material.category && (
-            <span className="inline-block bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full">
-              {material.category}
-            </span>
-          )}
-
-          {material.tags && material.tags.length > 0 && (
-            <div className="flex items-center gap-1 flex-wrap">
-              <Tag className="w-3 h-3 text-gray-400" />
-              {material.tags.slice(0, 2).map((tag, i) => (
-                <span key={i} className="bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded-full text-xs">
-                  {tag}
-                </span>
-              ))}
-              {material.tags.length > 2 && (
-                <span className="text-gray-500">+{material.tags.length - 2}</span>
-              )}
+          {error && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg text-sm">
+              {error}
             </div>
           )}
-        </div>
 
-        {/* Linked Indicator */}
-        {material.is_linked_to_procedure && (
-          <div className="mt-2 pt-2 border-t border-gray-100">
-            <span className="text-xs text-green-600 flex items-center gap-1">
-              <Link2 className="w-3 h-3" />
-              Linked to {material.linked_procedures_count || 0} case{(material.linked_procedures_count || 0) !== 1 ? 's' : ''}
-            </span>
+          <div className="space-y-5">
+            {/* File Upload Area */}
+            <div
+              onDragEnter={handleDrag}
+              onDragLeave={handleDrag}
+              onDragOver={handleDrag}
+              onDrop={handleDrop}
+              className={`border-2 border-dashed rounded-xl p-6 text-center transition-colors ${
+                dragActive
+                  ? 'border-purple-500 bg-purple-50'
+                  : file
+                  ? 'border-green-300 bg-green-50'
+                  : 'border-gray-300 hover:border-gray-400'
+              }`}
+            >
+              {file ? (
+                <div className="space-y-3">
+                  <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center mx-auto">
+                    <FileText className="w-6 h-6 text-red-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900 truncate">{file.name}</p>
+                    <p className="text-sm text-gray-500">{formatFileSize(file.size)}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setFile(null)}
+                    className="text-sm text-red-600 hover:text-red-700 font-medium"
+                  >
+                    Remove file
+                  </button>
+                </div>
+              ) : (
+                <label className="cursor-pointer block">
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
+                  <Upload className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                  <p className="text-sm font-medium text-gray-700">
+                    Drag & drop your PDF here, or click to browse
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    PDF files up to 50MB
+                  </p>
+                </label>
+              )}
+            </div>
+
+            {/* Title */}
+            <div>
+              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1.5">
+                Title <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Enter document title"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Description */}
+            <div>
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1.5">
+                Description <span className="text-gray-400">(optional)</span>
+              </label>
+              <textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Brief description of the document"
+                rows={2}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+              />
+            </div>
+
+            {/* Category */}
+            <div>
+              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1.5">
+                Category <span className="text-gray-400">(optional)</span>
+              </label>
+              <select
+                id="category"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              >
+                <option value="">Select category</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Tags */}
+            <div>
+              <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-1.5">
+                Tags <span className="text-gray-400">(optional, comma-separated)</span>
+              </label>
+              <input
+                type="text"
+                id="tags"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                placeholder="e.g., TACE, liver, oncology"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Progress Bar */}
+            {loading && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Uploading...</span>
+                  <span className="text-gray-900 font-medium">{uploadProgress}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-purple-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Buttons */}
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={onCancel}
+                disabled={loading}
+                className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={loading || !file}
+                className="flex-1 px-4 py-2.5 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4" />
+                    Upload
+                  </>
+                )}
+              </button>
+            </div>
           </div>
-        )}
-      </div>
-
-      {/* Quick Actions */}
-      <div className="px-3 pb-3 flex gap-2">
-        <button
-          onClick={onView}
-          className="flex-1 px-3 py-1.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center gap-1.5"
-        >
-          <Eye className="w-4 h-4" />
-          View
-        </button>
-        <button
-          onClick={onLink}
-          className="flex-1 px-3 py-1.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-1.5"
-        >
-          <Link2 className="w-4 h-4" />
-          Link
-        </button>
-        <button
-          onClick={onDelete}
-          className="px-3 py-1.5 border border-red-200 text-red-600 text-sm font-medium rounded-lg hover:bg-red-50 transition-colors flex items-center justify-center"
-          title="Delete PDF"
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
+        </div>
       </div>
     </div>
   )

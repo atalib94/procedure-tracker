@@ -225,6 +225,13 @@ export default function PDFCard({ material, onView, onLink, onDelete }: PDFCardP
           <Link2 className="w-4 h-4" />
           Link
         </button>
+        <button
+          onClick={onDelete}
+          className="px-3 py-1.5 border border-red-200 text-red-600 text-sm font-medium rounded-lg hover:bg-red-50 transition-colors flex items-center justify-center"
+          title="Delete PDF"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
       </div>
     </div>
   )

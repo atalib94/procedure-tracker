@@ -90,7 +90,7 @@ export default function ProcedureCard({ procedure }: ProcedureCardProps) {
                 </div>
               )}
               {procedure.accession_number && (
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1" title="Case ID">
                   <Hash className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate">{procedure.accession_number}</span>
                 </div>

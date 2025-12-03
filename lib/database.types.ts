@@ -193,6 +193,7 @@ export interface Database {
           description: string | null
           file_url: string
           file_type: string
+          file_size: number | null
           category: string | null
           tags: string[] | null
           is_linked_to_procedure: boolean
@@ -207,6 +208,7 @@ export interface Database {
           description?: string | null
           file_url: string
           file_type?: string
+          file_size?: number | null
           category?: string | null
           tags?: string[] | null
           is_linked_to_procedure?: boolean
@@ -221,6 +223,7 @@ export interface Database {
           description?: string | null
           file_url?: string
           file_type?: string
+          file_size?: number | null
           category?: string | null
           tags?: string[] | null
           is_linked_to_procedure?: boolean
@@ -283,9 +286,6 @@ export interface Database {
           updated_at?: string
         }
       }
-      // =====================================================
-      // TOOLBOX TABLES (NEW)
-      // =====================================================
       tool_categories: {
         Row: {
           id: string

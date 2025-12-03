@@ -14,7 +14,6 @@ export interface Database {
           id: string
           email: string
           full_name: string | null
-          avatar_url: string | null
           role: string
           selected_environment_id: string | null
           default_medical_centre_id: string | null
@@ -26,7 +25,6 @@ export interface Database {
           id: string
           email: string
           full_name?: string | null
-          avatar_url?: string | null
           role?: string
           selected_environment_id?: string | null
           default_medical_centre_id?: string | null
@@ -38,7 +36,6 @@ export interface Database {
           id?: string
           email?: string
           full_name?: string | null
-          avatar_url?: string | null
           role?: string
           selected_environment_id?: string | null
           default_medical_centre_id?: string | null
@@ -196,7 +193,6 @@ export interface Database {
           description: string | null
           file_url: string
           file_type: string
-          file_size: number | null
           category: string | null
           tags: string[] | null
           is_linked_to_procedure: boolean
@@ -211,7 +207,6 @@ export interface Database {
           description?: string | null
           file_url: string
           file_type?: string
-          file_size?: number | null
           category?: string | null
           tags?: string[] | null
           is_linked_to_procedure?: boolean
@@ -226,7 +221,6 @@ export interface Database {
           description?: string | null
           file_url?: string
           file_type?: string
-          file_size?: number | null
           category?: string | null
           tags?: string[] | null
           is_linked_to_procedure?: boolean
@@ -234,7 +228,7 @@ export interface Database {
           updated_at?: string
         }
       }
-      procedure_learning_links: {
+      procedure_documents: {
         Row: {
           id: string
           procedure_id: string
@@ -287,6 +281,117 @@ export interface Database {
           license_end_date?: string | null
           created_at?: string
           updated_at?: string
+        }
+      }
+      // =====================================================
+      // TOOLBOX TABLES (NEW)
+      // =====================================================
+      tool_categories: {
+        Row: {
+          id: string
+          name: string
+          code: string
+          description: string | null
+          icon: string
+          order_index: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          code: string
+          description?: string | null
+          icon?: string
+          order_index?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          code?: string
+          description?: string | null
+          icon?: string
+          order_index?: number
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      tools: {
+        Row: {
+          id: string
+          user_id: string
+          category_id: string | null
+          name: string
+          manufacturer: string | null
+          model_number: string | null
+          description: string | null
+          specifications: string | null
+          notes: string | null
+          image_url: string | null
+          is_favorite: boolean
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          category_id?: string | null
+          name: string
+          manufacturer?: string | null
+          model_number?: string | null
+          description?: string | null
+          specifications?: string | null
+          notes?: string | null
+          image_url?: string | null
+          is_favorite?: boolean
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          category_id?: string | null
+          name?: string
+          manufacturer?: string | null
+          model_number?: string | null
+          description?: string | null
+          specifications?: string | null
+          notes?: string | null
+          image_url?: string | null
+          is_favorite?: boolean
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      procedure_tools: {
+        Row: {
+          id: string
+          procedure_id: string
+          tool_id: string
+          quantity: number
+          notes: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          procedure_id: string
+          tool_id: string
+          quantity?: number
+          notes?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          procedure_id?: string
+          tool_id?: string
+          quantity?: number
+          notes?: string | null
+          created_at?: string
         }
       }
     }

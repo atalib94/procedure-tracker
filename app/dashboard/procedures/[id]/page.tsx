@@ -1,408 +1,81 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+import { createServerClient } from '@/lib/supabase-server'
+import { redirect, notFound } from 'next/navigation'
+import ProcedureDetailClient from '@/components/ProcedureDetailClient'
 
-export interface Database {
-  public: {
-    Tables: {
-      profiles: {
-        Row: {
-          id: string
-          email: string
-          full_name: string | null
-          role: string
-          selected_environment_id: string | null
-          default_medical_centre_id: string | null
-          is_active: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id: string
-          email: string
-          full_name?: string | null
-          role?: string
-          selected_environment_id?: string | null
-          default_medical_centre_id?: string | null
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          email?: string
-          full_name?: string | null
-          role?: string
-          selected_environment_id?: string | null
-          default_medical_centre_id?: string | null
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      environments: {
-        Row: {
-          id: string
-          name: string
-          code: string
-          description: string | null
-          is_active: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          code: string
-          description?: string | null
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          code?: string
-          description?: string | null
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      ebir_categories: {
-        Row: {
-          id: string
-          environment_id: string
-          name: string
-          code: string
-          description: string | null
-          order_index: number
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          environment_id: string
-          name: string
-          code: string
-          description?: string | null
-          order_index?: number
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          environment_id?: string
-          name?: string
-          code?: string
-          description?: string | null
-          order_index?: number
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      medical_centres: {
-        Row: {
-          id: string
-          name: string
-          code: string | null
-          city: string | null
-          country: string
-          is_active: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          code?: string | null
-          city?: string | null
-          country?: string
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          code?: string | null
-          city?: string | null
-          country?: string
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      procedures: {
-        Row: {
-          id: string
-          user_id: string
-          environment_id: string | null
-          ebir_category_id: string | null
-          medical_centre_id: string | null
-          procedure_name: string
-          procedure_date: string
-          accession_number: string | null
-          operator_role: string | null
-          notes: string | null
-          image_url: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          environment_id?: string | null
-          ebir_category_id?: string | null
-          medical_centre_id?: string | null
-          procedure_name: string
-          procedure_date: string
-          accession_number?: string | null
-          operator_role?: string | null
-          notes?: string | null
-          image_url?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          environment_id?: string | null
-          ebir_category_id?: string | null
-          medical_centre_id?: string | null
-          procedure_name?: string
-          procedure_date?: string
-          accession_number?: string | null
-          operator_role?: string | null
-          notes?: string | null
-          image_url?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      learning_materials: {
-        Row: {
-          id: string
-          user_id: string
-          environment_id: string | null
-          title: string
-          description: string | null
-          file_url: string
-          file_type: string
-          category: string | null
-          tags: string[] | null
-          is_linked_to_procedure: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          environment_id?: string | null
-          title: string
-          description?: string | null
-          file_url: string
-          file_type?: string
-          category?: string | null
-          tags?: string[] | null
-          is_linked_to_procedure?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          environment_id?: string | null
-          title?: string
-          description?: string | null
-          file_url?: string
-          file_type?: string
-          category?: string | null
-          tags?: string[] | null
-          is_linked_to_procedure?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      procedure_documents: {
-        Row: {
-          id: string
-          procedure_id: string
-          learning_material_id: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          procedure_id: string
-          learning_material_id: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          procedure_id?: string
-          learning_material_id?: string
-          created_at?: string
-        }
-      }
-      institutions: {
-        Row: {
-          id: string
-          name: string
-          license_type: string | null
-          max_users: number
-          is_active: boolean
-          license_start_date: string | null
-          license_end_date: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          license_type?: string | null
-          max_users?: number
-          is_active?: boolean
-          license_start_date?: string | null
-          license_end_date?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          license_type?: string | null
-          max_users?: number
-          is_active?: boolean
-          license_start_date?: string | null
-          license_end_date?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      // =====================================================
-      // TOOLBOX TABLES (NEW)
-      // =====================================================
-      tool_categories: {
-        Row: {
-          id: string
-          name: string
-          code: string
-          description: string | null
-          icon: string
-          order_index: number
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          code: string
-          description?: string | null
-          icon?: string
-          order_index?: number
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          code?: string
-          description?: string | null
-          icon?: string
-          order_index?: number
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      tools: {
-        Row: {
-          id: string
-          user_id: string
-          category_id: string | null
-          name: string
-          manufacturer: string | null
-          model_number: string | null
-          description: string | null
-          specifications: string | null
-          notes: string | null
-          image_url: string | null
-          is_favorite: boolean
-          is_active: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          category_id?: string | null
-          name: string
-          manufacturer?: string | null
-          model_number?: string | null
-          description?: string | null
-          specifications?: string | null
-          notes?: string | null
-          image_url?: string | null
-          is_favorite?: boolean
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          category_id?: string | null
-          name?: string
-          manufacturer?: string | null
-          model_number?: string | null
-          description?: string | null
-          specifications?: string | null
-          notes?: string | null
-          image_url?: string | null
-          is_favorite?: boolean
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-      }
-      procedure_tools: {
-        Row: {
-          id: string
-          procedure_id: string
-          tool_id: string
-          quantity: number
-          notes: string | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          procedure_id: string
-          tool_id: string
-          quantity?: number
-          notes?: string | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          procedure_id?: string
-          tool_id?: string
-          quantity?: number
-          notes?: string | null
-          created_at?: string
-        }
-      }
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      [_ in never]: never
-    }
-    Enums: {
-      [_ in never]: never
-    }
+export default async function ProcedureDetailPage({ params }: { params: { id: string } }) {
+  const supabase = createServerClient()
+  
+  const { data: { session } } = await supabase.auth.getSession()
+  
+  if (!session) {
+    redirect('/')
   }
+
+  // Fetch the procedure with related data
+  const { data: procedure, error } = await supabase
+    .from('procedures')
+    .select(`
+      *,
+      ebir_categories (name, code),
+      medical_centres (name, city, country)
+    `)
+    .eq('id', params.id)
+    .eq('user_id', session.user.id)
+    .single()
+
+  if (error || !procedure) {
+    notFound()
+  }
+
+  // Fetch linked documents
+  const { data: linkedDocsData } = await supabase
+    .from('procedure_documents')
+    .select(`
+      learning_material_id,
+      learning_materials (
+        id, title, description, file_url, file_size, category, created_at
+      )
+    `)
+    .eq('procedure_id', params.id)
+
+  const linkedDocuments = linkedDocsData?.map(link => link.learning_materials as any).filter(Boolean) || []
+
+  // Fetch linked tools
+  const { data: linkedToolsData } = await supabase
+    .from('procedure_tools')
+    .select(`
+      id,
+      tool_id,
+      quantity,
+      notes,
+      tools (
+        id, name, manufacturer, model_number, image_url,
+        tool_categories (id, name)
+      )
+    `)
+    .eq('procedure_id', params.id)
+
+  const linkedTools = linkedToolsData || []
+
+  // Fetch categories and medical centres for edit modal
+  const { data: categories } = await supabase
+    .from('ebir_categories')
+    .select('id, name')
+    .order('order_index', { ascending: true })
+
+  const { data: medicalCentres } = await supabase
+    .from('medical_centres')
+    .select('id, name')
+    .eq('is_active', true)
+    .order('name', { ascending: true })
+
+  return (
+    <ProcedureDetailClient
+      procedure={procedure}
+      linkedDocuments={linkedDocuments}
+      linkedTools={linkedTools}
+      categories={categories || []}
+      medicalCentres={medicalCentres || []}
+    />
+  )
 }

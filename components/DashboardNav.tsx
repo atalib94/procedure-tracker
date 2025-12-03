@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ClipboardList, FileText, Settings, Shield } from 'lucide-react'
+import { ClipboardList, FileText, Wrench, Settings } from 'lucide-react'
 
 const navItems = [
   {
@@ -16,9 +16,9 @@ const navItems = [
     icon: FileText,
   },
   {
-    name: 'Privacy',
-    href: '/dashboard/privacy-guidance',
-    icon: Shield,
+    name: 'Toolbox',
+    href: '/dashboard/toolbox',
+    icon: Wrench,
   },
   {
     name: 'Settings',

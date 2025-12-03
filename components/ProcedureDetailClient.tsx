@@ -8,6 +8,7 @@ import { Calendar, Building2, Hash, User, ArrowLeft, Edit3, Trash2, Loader2 } fr
 import Link from 'next/link'
 import Image from 'next/image'
 import ProcedureDocuments from './ProcedureDocuments'
+import ProcedureTools from './ProcedureTools'
 import EditProcedureModal from './EditProcedureModal'
 
 interface LearningMaterial {
@@ -18,6 +19,21 @@ interface LearningMaterial {
   file_size: number | null
   category: string | null
   created_at: string
+}
+
+interface LinkedTool {
+  id: string
+  tool_id: string
+  quantity: number
+  notes: string | null
+  tools: {
+    id: string
+    name: string
+    manufacturer: string | null
+    model_number: string | null
+    image_url: string | null
+    tool_categories: { id: string; name: string } | null
+  }
 }
 
 interface ProcedureDetailClientProps {
@@ -35,6 +51,7 @@ interface ProcedureDetailClientProps {
     medical_centres: { name: string; city: string | null; country: string } | null
   }
   linkedDocuments: LearningMaterial[]
+  linkedTools: LinkedTool[]
   categories: { id: string; name: string }[]
   medicalCentres: { id: string; name: string }[]
 }
@@ -42,6 +59,7 @@ interface ProcedureDetailClientProps {
 export default function ProcedureDetailClient({ 
   procedure: initialProcedure, 
   linkedDocuments,
+  linkedTools,
   categories,
   medicalCentres
 }: ProcedureDetailClientProps) {
@@ -54,7 +72,7 @@ export default function ProcedureDetailClient({
 
   const getCategoryColor = (code: string) => {
     const colors: { [key: string]: string } = {
-      'vascular_access': 'bg-purple-100 text-purple-800',
+      'vascular_access': 'bg-blue-100 text-blue-800',
       'angiography_vascular': 'bg-green-100 text-green-800',
       'neurointervention': 'bg-purple-100 text-purple-800',
       'non_vascular': 'bg-orange-100 text-orange-800',
@@ -74,113 +92,95 @@ export default function ProcedureDetailClient({
 
   const getRoleBadge = (role: string) => {
     if (role === '1st Operator') return 'bg-green-100 text-green-800'
-    if (role === '2nd Operator') return 'bg-purple-100 text-purple-800'
+    if (role === '2nd Operator') return 'bg-blue-100 text-blue-800'
     return 'bg-gray-100 text-gray-800'
   }
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this case? This action cannot be undone.')) {
+    if (!confirm('Are you sure you want to delete this procedure? This action cannot be undone.')) {
       return
     }
 
     setDeleting(true)
+    
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
+      // Delete procedure image if exists
+      if (procedure.image_url) {
+        const path = procedure.image_url.split('/procedure-images/')[1]
+        if (path) {
+          await supabase.storage.from('procedure-images').remove([path])
+        }
+      }
 
-      // Delete linked documents first
-      await supabase
-        .from('procedure_learning_links')
-        .delete()
-        .eq('procedure_id', procedure.id)
-
-      // Delete the procedure
+      // Delete procedure
       const { error } = await supabase
         .from('procedures')
         .delete()
         .eq('id', procedure.id)
-        .eq('user_id', session.user.id)
 
       if (error) throw error
 
       router.push('/dashboard')
       router.refresh()
     } catch (err) {
-      console.error('Error deleting procedure:', err)
-      alert('Failed to delete case')
-    } finally {
+      console.error('Failed to delete procedure:', err)
       setDeleting(false)
     }
   }
 
-  const handleEditSuccess = async () => {
-    // Refetch the procedure data
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return
-
-    const { data } = await supabase
-      .from('procedures')
-      .select(`
-        *,
-        ebir_categories (name, code),
-        medical_centres (name, city, country)
-      `)
-      .eq('id', procedure.id)
-      .eq('user_id', session.user.id)
-      .single()
-
-    if (data) {
-      setProcedure(data)
-    }
+  const handleProcedureUpdated = (updatedProcedure: typeof procedure) => {
+    setProcedure(updatedProcedure)
     setShowEditModal(false)
-    router.refresh()
   }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-20 lg:pb-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to procedures
-          </Link>
-          
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{procedure.procedure_name}</h1>
-          <p className="text-gray-600 mt-1">
-            {format(new Date(procedure.procedure_date), 'EEEE, MMMM dd, yyyy')}
-          </p>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <button
-            onClick={() => setShowEditModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-          >
-            <Edit3 className="w-4 h-4" />
-            <span className="hidden sm:inline">Edit</span>
-          </button>
-          <button
-            onClick={handleDelete}
-            disabled={deleting}
-            className="inline-flex items-center gap-2 px-4 py-2 text-red-600 bg-white border border-red-200 rounded-lg hover:bg-red-50 transition-colors font-medium disabled:opacity-50"
-          >
-            {deleting ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Trash2 className="w-4 h-4" />
-            )}
-            <span className="hidden sm:inline">{deleting ? 'Deleting...' : 'Delete'}</span>
-          </button>
+      {/* Back button and header */}
+      <div>
+        <Link
+          href="/dashboard"
+          className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to procedures
+        </Link>
+        
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{procedure.procedure_name}</h1>
+            <p className="text-gray-600 mt-1">
+              {format(new Date(procedure.procedure_date), 'EEEE, MMMM d, yyyy')}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowEditModal(true)}
+              className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              title="Edit procedure"
+            >
+              <Edit3 className="w-5 h-5" />
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+              title="Delete procedure"
+            >
+              {deleting ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <Trash2 className="w-5 h-5" />
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
+      {/* Procedure Info Card */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        {/* Image */}
         {procedure.image_url && (
-          <div className="w-full h-64 sm:h-96 relative bg-gray-100">
+          <div className="aspect-video bg-gray-100 relative">
             <Image
               src={procedure.image_url}
               alt={procedure.procedure_name}
@@ -190,7 +190,9 @@ export default function ProcedureDetailClient({
           </div>
         )}
 
-        <div className="p-6 space-y-6">
+        {/* Details */}
+        <div className="p-6 space-y-4">
+          {/* Category & Role badges */}
           <div className="flex flex-wrap gap-2">
             {procedure.ebir_categories && (
               <span className={`px-3 py-1 rounded-full text-sm font-medium ${getCategoryColor(procedure.ebir_categories.code)}`}>
@@ -204,68 +206,67 @@ export default function ProcedureDetailClient({
             )}
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div className="flex items-start gap-3">
-              <Calendar className="w-5 h-5 text-gray-400 mt-0.5" />
+          {/* Info grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex items-center gap-3 text-gray-600">
+              <Calendar className="w-5 h-5 text-gray-400" />
               <div>
-                <p className="text-sm text-gray-500">Date</p>
-                <p className="font-medium text-gray-900">
-                  {format(new Date(procedure.procedure_date), 'MMM dd, yyyy')}
-                </p>
+                <div className="text-sm text-gray-500">Date</div>
+                <div className="font-medium">{format(new Date(procedure.procedure_date), 'dd MMM yyyy')}</div>
               </div>
             </div>
 
             {procedure.medical_centres && (
-              <div className="flex items-start gap-3">
-                <Building2 className="w-5 h-5 text-gray-400 mt-0.5" />
+              <div className="flex items-center gap-3 text-gray-600">
+                <Building2 className="w-5 h-5 text-gray-400" />
                 <div>
-                  <p className="text-sm text-gray-500">Medical Centre</p>
-                  <p className="font-medium text-gray-900 truncate">{procedure.medical_centres.name}</p>
-                  {procedure.medical_centres.city && (
-                    <p className="text-sm text-gray-500">
-                      {procedure.medical_centres.city}
-                    </p>
-                  )}
+                  <div className="text-sm text-gray-500">Medical Centre</div>
+                  <div className="font-medium">
+                    {procedure.medical_centres.name}
+                    {procedure.medical_centres.city && `, ${procedure.medical_centres.city}`}
+                  </div>
                 </div>
               </div>
             )}
 
             {procedure.accession_number && (
-              <div className="flex items-start gap-3">
-                <Hash className="w-5 h-5 text-gray-400 mt-0.5" />
+              <div className="flex items-center gap-3 text-gray-600">
+                <Hash className="w-5 h-5 text-gray-400" />
                 <div>
-                  <p className="text-sm text-gray-500">Case ID</p>
-                  <p className="font-medium text-gray-900">{procedure.accession_number}</p>
+                  <div className="text-sm text-gray-500">Accession Number</div>
+                  <div className="font-medium">{procedure.accession_number}</div>
                 </div>
               </div>
             )}
 
             {procedure.operator_role && (
-              <div className="flex items-start gap-3">
-                <User className="w-5 h-5 text-gray-400 mt-0.5" />
+              <div className="flex items-center gap-3 text-gray-600">
+                <User className="w-5 h-5 text-gray-400" />
                 <div>
-                  <p className="text-sm text-gray-500">Your Role</p>
-                  <p className="font-medium text-gray-900">{procedure.operator_role}</p>
+                  <div className="text-sm text-gray-500">Role</div>
+                  <div className="font-medium">{procedure.operator_role}</div>
                 </div>
               </div>
             )}
           </div>
 
+          {/* Notes */}
           {procedure.notes && (
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">Notes</h2>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-gray-700 whitespace-pre-wrap">{procedure.notes}</p>
-              </div>
+            <div className="pt-4 border-t">
+              <h3 className="text-sm font-medium text-gray-500 mb-2">Notes</h3>
+              <p className="text-gray-700 whitespace-pre-wrap">{procedure.notes}</p>
             </div>
           )}
-
-          {/* Linked Documents Section */}
-          <ProcedureDocuments 
-            procedureId={procedure.id} 
-            initialDocuments={linkedDocuments} 
-          />
         </div>
+      </div>
+
+      {/* Linked Documents & Tools */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Linked PDFs */}
+        <ProcedureDocuments procedureId={procedure.id} />
+        
+        {/* Linked Tools */}
+        <ProcedureTools procedureId={procedure.id} />
       </div>
 
       {/* Edit Modal */}
@@ -275,7 +276,7 @@ export default function ProcedureDetailClient({
           categories={categories}
           medicalCentres={medicalCentres}
           onClose={() => setShowEditModal(false)}
-          onSuccess={handleEditSuccess}
+          onSuccess={handleProcedureUpdated}
         />
       )}
     </div>

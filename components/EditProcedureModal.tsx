@@ -4,21 +4,26 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase-client'
 import { X, Loader2 } from 'lucide-react'
 
+interface Procedure {
+  id: string
+  procedure_name: string
+  procedure_date: string
+  ebir_category_id: string | null
+  medical_centre_id: string | null
+  accession_number: string | null
+  operator_role: string | null
+  notes: string | null
+  image_url?: string | null
+  ebir_categories?: { name: string; code: string } | null
+  medical_centres?: { name: string; city: string | null; country: string } | null
+}
+
 interface EditProcedureModalProps {
-  procedure: {
-    id: string
-    procedure_name: string
-    procedure_date: string
-    ebir_category_id: string | null
-    medical_centre_id: string | null
-    accession_number: string | null
-    operator_role: string | null
-    notes: string | null
-  }
+  procedure: Procedure
   categories: { id: string; name: string }[]
   medicalCentres: { id: string; name: string }[]
   onClose: () => void
-  onSuccess: () => void
+  onSuccess: (updatedProcedure: Procedure) => void
 }
 
 export default function EditProcedureModal({
@@ -71,7 +76,18 @@ export default function EditProcedureModal({
 
       if (updateError) throw updateError
 
-      onSuccess()
+      // Fetch updated procedure with relations
+      const { data: updatedProcedure } = await supabase
+        .from('procedures')
+        .select(`
+          *,
+          ebir_categories (name, code),
+          medical_centres (name, city, country)
+        `)
+        .eq('id', procedure.id)
+        .single()
+
+      onSuccess(updatedProcedure || procedure)
     } catch (err: any) {
       setError(err.message || 'Failed to update procedure')
     } finally {

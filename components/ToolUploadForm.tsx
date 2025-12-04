@@ -10,6 +10,7 @@ interface ToolCategory {
   name: string
   code: string
   icon: string
+  order_index?: number
 }
 
 interface Tool {

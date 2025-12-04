@@ -231,6 +231,35 @@ export interface Database {
           updated_at?: string
         }
       }
+      procedure_images: {
+        Row: {
+          id: string
+          procedure_id: string
+          image_url: string
+          caption: string | null
+          display_order: number
+          is_primary: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          procedure_id: string
+          image_url: string
+          caption?: string | null
+          display_order?: number
+          is_primary?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          procedure_id?: string
+          image_url?: string
+          caption?: string | null
+          display_order?: number
+          is_primary?: boolean
+          created_at?: string
+        }
+      }
       procedure_documents: {
         Row: {
           id: string

@@ -263,7 +263,7 @@ export default function ProcedureDetailClient({
       {/* Linked Documents & Tools */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Linked PDFs */}
-        <ProcedureDocuments procedureId={procedure.id} />
+        <ProcedureDocuments procedureId={procedure.id} initialDocuments={linkedDocuments} />
         
         {/* Linked Tools */}
         <ProcedureTools procedureId={procedure.id} />

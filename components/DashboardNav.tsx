@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ClipboardList, FileText, Wrench, Settings, Pill } from 'lucide-react'
+import { ClipboardList, FileText, Wrench, Settings, Pill, GraduationCap } from 'lucide-react'
 
 const navItems = [
   {
@@ -24,6 +24,11 @@ const navItems = [
     name: 'Meds',
     href: '/dashboard/anticoagulation',
     icon: Pill,
+  },
+  {
+    name: 'Syllabus',
+    href: '/dashboard/syllabus',
+    icon: GraduationCap,
   },
   {
     name: 'Settings',

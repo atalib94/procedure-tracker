@@ -33,7 +33,7 @@ interface LinkedTool {
     model_number: string | null
     image_url: string | null
     tool_categories: { id: string; name: string } | null
-  }
+  } | null
 }
 
 interface ProcedureDetailClientProps {

@@ -13,9 +13,9 @@ interface Procedure {
   accession_number: string | null
   operator_role: string | null
   notes: string | null
-  image_url?: string | null
-  ebir_categories?: { name: string; code: string } | null
-  medical_centres?: { name: string; city: string | null; country: string } | null
+  image_url: string | null
+  ebir_categories: { name: string; code: string } | null
+  medical_centres: { name: string; city: string | null; country: string } | null
 }
 
 interface EditProcedureModalProps {

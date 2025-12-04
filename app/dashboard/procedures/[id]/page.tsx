@@ -67,6 +67,13 @@ export default async function ProcedureDetailPage({ params }: { params: { id: st
     }
   })
 
+  // Fetch procedure images
+  const { data: procedureImages } = await supabase
+    .from('procedure_images')
+    .select('id, image_url, caption, display_order, is_primary')
+    .eq('procedure_id', params.id)
+    .order('display_order', { ascending: true })
+
   // Fetch categories and medical centres for edit modal
   const { data: categories } = await supabase
     .from('ebir_categories')
@@ -82,6 +89,7 @@ export default async function ProcedureDetailPage({ params }: { params: { id: st
   return (
     <ProcedureDetailClient
       procedure={procedure}
+      procedureImages={procedureImages || []}
       linkedDocuments={linkedDocuments}
       linkedTools={linkedTools}
       categories={categories || []}

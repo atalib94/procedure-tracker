@@ -4,12 +4,13 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-client'
 import { format } from 'date-fns'
-import { Calendar, Building2, Hash, User, ArrowLeft, Edit3, Trash2, Loader2 } from 'lucide-react'
+import { Calendar, Building2, Hash, User, ArrowLeft, Edit3, Trash2, Loader2, ImageIcon } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import ProcedureDocuments from './ProcedureDocuments'
 import ProcedureTools from './ProcedureTools'
 import EditProcedureModal from './EditProcedureModal'
+import ImageGallery from './ImageGallery'
 
 interface LearningMaterial {
   id: string
@@ -36,6 +37,14 @@ interface LinkedTool {
   } | null
 }
 
+interface ProcedureImage {
+  id: string
+  image_url: string
+  caption: string | null
+  display_order: number
+  is_primary: boolean
+}
+
 interface ProcedureDetailClientProps {
   procedure: {
     id: string
@@ -50,6 +59,7 @@ interface ProcedureDetailClientProps {
     ebir_categories: { name: string; code: string } | null
     medical_centres: { name: string; city: string | null; country: string } | null
   }
+  procedureImages: ProcedureImage[]
   linkedDocuments: LearningMaterial[]
   linkedTools: LinkedTool[]
   categories: { id: string; name: string }[]
@@ -58,6 +68,7 @@ interface ProcedureDetailClientProps {
 
 export default function ProcedureDetailClient({ 
   procedure: initialProcedure, 
+  procedureImages: initialImages,
   linkedDocuments,
   linkedTools,
   categories,
@@ -67,6 +78,7 @@ export default function ProcedureDetailClient({
   const supabase = createClient()
   
   const [procedure, setProcedure] = useState(initialProcedure)
+  const [images, setImages] = useState<ProcedureImage[]>(initialImages)
   const [showEditModal, setShowEditModal] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
@@ -178,14 +190,45 @@ export default function ProcedureDetailClient({
 
       {/* Procedure Info Card */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        {/* Image */}
-        {procedure.image_url && (
-          <div className="aspect-video bg-gray-100 relative">
-            <Image
-              src={procedure.image_url}
-              alt={procedure.procedure_name}
-              fill
-              className="object-contain"
+        {/* Images Gallery */}
+        {(images.length > 0 || procedure.image_url) && (
+          <div className="p-4 border-b border-gray-100">
+            <div className="flex items-center gap-2 mb-3">
+              <ImageIcon className="w-5 h-5 text-gray-500" />
+              <h3 className="font-medium text-gray-900">Images</h3>
+            </div>
+            {images.length > 0 ? (
+              <ImageGallery 
+                images={images} 
+                procedureId={procedure.id}
+                editable={true}
+                onImagesChange={setImages}
+              />
+            ) : procedure.image_url && (
+              <div className="aspect-video bg-gray-100 relative rounded-lg overflow-hidden max-w-md">
+                <Image
+                  src={procedure.image_url}
+                  alt={procedure.procedure_name}
+                  fill
+                  className="object-contain"
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Add images if none exist */}
+        {images.length === 0 && !procedure.image_url && (
+          <div className="p-4 border-b border-gray-100">
+            <div className="flex items-center gap-2 mb-3">
+              <ImageIcon className="w-5 h-5 text-gray-500" />
+              <h3 className="font-medium text-gray-900">Images</h3>
+            </div>
+            <ImageGallery 
+              images={[]} 
+              procedureId={procedure.id}
+              editable={true}
+              onImagesChange={setImages}
             />
           </div>
         )}

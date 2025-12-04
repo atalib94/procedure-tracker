@@ -55,7 +55,17 @@ export default async function ProcedureDetailPage({ params }: { params: { id: st
     `)
     .eq('procedure_id', params.id)
 
-  const linkedTools = linkedToolsData || []
+  // Transform the data to match expected interface (Supabase returns nested objects)
+  const linkedTools = (linkedToolsData || []).map(item => {
+    const tool = Array.isArray(item.tools) ? item.tools[0] : item.tools
+    return {
+      ...item,
+      tools: tool ? {
+        ...tool,
+        tool_categories: Array.isArray(tool.tool_categories) ? tool.tool_categories[0] : tool.tool_categories
+      } : null
+    }
+  })
 
   // Fetch categories and medical centres for edit modal
   const { data: categories } = await supabase

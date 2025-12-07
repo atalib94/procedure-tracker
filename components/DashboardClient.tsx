@@ -611,14 +611,14 @@ export default function DashboardClient({
               <div className="flex rounded-lg border border-gray-300 overflow-hidden">
                 <button
                   onClick={() => setViewMode('active')}
-                  className={`px-4 py-2 text-sm font-medium flex items-center gap-2 transition-colors ${
+                  className={`px-2.5 sm:px-4 py-2 text-sm font-medium flex items-center gap-1.5 sm:gap-2 transition-colors ${
                     viewMode === 'active'
                       ? 'bg-purple-600 text-white'
                       : 'bg-white text-gray-700 hover:bg-gray-50'
                   }`}
                 >
                   <FolderOpen className="w-4 h-4" />
-                  Active
+                  <span className="hidden sm:inline">Active</span>
                   <span className={`px-1.5 py-0.5 rounded text-xs ${
                     viewMode === 'active' ? 'bg-purple-500' : 'bg-gray-200'
                   }`}>
@@ -627,14 +627,14 @@ export default function DashboardClient({
                 </button>
                 <button
                   onClick={() => setViewMode('complicated')}
-                  className={`px-4 py-2 text-sm font-medium flex items-center gap-2 transition-colors border-l border-gray-300 ${
+                  className={`px-2.5 sm:px-4 py-2 text-sm font-medium flex items-center gap-1.5 sm:gap-2 transition-colors border-l border-gray-300 ${
                     viewMode === 'complicated'
                       ? 'bg-amber-500 text-white'
                       : 'bg-white text-gray-700 hover:bg-gray-50'
                   }`}
                 >
                   <AlertTriangle className="w-4 h-4" />
-                  Complicated
+                  <span className="hidden sm:inline">Complicated</span>
                   <span className={`px-1.5 py-0.5 rounded text-xs ${
                     viewMode === 'complicated' ? 'bg-amber-400' : 'bg-gray-200'
                   }`}>
@@ -643,14 +643,14 @@ export default function DashboardClient({
                 </button>
                 <button
                   onClick={() => setViewMode('archived')}
-                  className={`px-4 py-2 text-sm font-medium flex items-center gap-2 transition-colors border-l border-gray-300 ${
+                  className={`px-2.5 sm:px-4 py-2 text-sm font-medium flex items-center gap-1.5 sm:gap-2 transition-colors border-l border-gray-300 ${
                     viewMode === 'archived'
                       ? 'bg-gray-700 text-white'
                       : 'bg-white text-gray-700 hover:bg-gray-50'
                   }`}
                 >
                   <Archive className="w-4 h-4" />
-                  Archived
+                  <span className="hidden sm:inline">Archived</span>
                   <span className={`px-1.5 py-0.5 rounded text-xs ${
                     viewMode === 'archived' ? 'bg-gray-600' : 'bg-gray-200'
                   }`}>

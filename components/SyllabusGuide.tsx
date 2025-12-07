@@ -714,103 +714,120 @@ export default function SyllabusGuide() {
     }
   }
 
-  // Swipe handlers with Tinder-like animation
+  // Swipe handlers - Instagram style
+  // Key insight: use touch-action CSS and detect direction very early
   const onTouchStart = (e: React.TouchEvent) => {
     if (isAnimating) return
-    setTouchStart({ x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY })
-    setTouchCurrent({ x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY })
+    const touch = e.targetTouches[0]
+    setTouchStart({ x: touch.clientX, y: touch.clientY })
+    setTouchCurrent({ x: touch.clientX, y: touch.clientY })
     setIsHorizontalSwipe(null)
+    setSwipeOffset(0)
   }
 
   const onTouchMove = (e: React.TouchEvent) => {
     if (!touchStart || isAnimating) return
     
-    const currentX = e.targetTouches[0].clientX
-    const currentY = e.targetTouches[0].clientY
-    const deltaX = currentX - touchStart.x
-    const deltaY = currentY - touchStart.y
+    const touch = e.targetTouches[0]
+    const deltaX = touch.clientX - touchStart.x
+    const deltaY = touch.clientY - touchStart.y
     
-    // Determine swipe direction on first significant movement
-    if (isHorizontalSwipe === null && (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10)) {
-      const isHorizontal = Math.abs(deltaX) > Math.abs(deltaY)
+    // Determine direction on first move (very low threshold)
+    if (isHorizontalSwipe === null) {
+      // Need at least some movement to decide
+      if (Math.abs(deltaX) < 5 && Math.abs(deltaY) < 5) return
+      
+      // Instagram trick: if horizontal movement is greater, lock to horizontal
+      // Use a ratio - if moving more horizontal than vertical, it's a swipe
+      const isHorizontal = Math.abs(deltaX) > Math.abs(deltaY) * 1.2
       setIsHorizontalSwipe(isHorizontal)
       
-      // If vertical swipe, don't interfere
       if (!isHorizontal) {
+        // Let the page scroll naturally
+        setTouchStart(null)
         return
       }
     }
     
-    // Only track horizontal swipes
-    if (isHorizontalSwipe) {
-      e.preventDefault() // Prevent vertical scroll during horizontal swipe
-      setTouchCurrent({ x: currentX, y: currentY })
+    // We've locked to horizontal - prevent ALL default behavior
+    if (isHorizontalSwipe === true) {
+      e.preventDefault()
+      e.stopPropagation()
       
-      // Limit swipe at boundaries
+      setTouchCurrent({ x: touch.clientX, y: touch.clientY })
+      
+      // Apply swipe offset with boundary resistance
       const canSwipeLeft = currentEndpointIndex < readerEndpoints.length - 1
       const canSwipeRight = currentEndpointIndex > 0
       
       if ((deltaX < 0 && canSwipeLeft) || (deltaX > 0 && canSwipeRight)) {
         setSwipeOffset(deltaX)
       } else {
-        // Rubber band effect at boundaries
-        setSwipeOffset(deltaX * 0.2)
+        // Rubber band at boundaries
+        setSwipeOffset(deltaX * 0.15)
       }
     }
   }
 
   const onTouchEnd = () => {
-    if (!touchStart || !touchCurrent || isAnimating || !isHorizontalSwipe) {
-      setTouchStart(null)
-      setTouchCurrent(null)
-      setSwipeOffset(0)
-      setIsHorizontalSwipe(null)
+    if (!touchStart || isAnimating) {
+      resetSwipeState()
+      return
+    }
+    
+    if (!isHorizontalSwipe || !touchCurrent) {
+      resetSwipeState()
       return
     }
     
     const deltaX = touchCurrent.x - touchStart.x
     const screenWidth = window.innerWidth
-    const swipePercentage = Math.abs(deltaX) / screenWidth
+    const velocity = Math.abs(deltaX) / screenWidth
     
-    const shouldSwipe = swipePercentage > swipeThreshold || Math.abs(deltaX) > minSwipeDistance
+    // Trigger swipe if moved enough OR moved fast enough
+    const shouldSwipe = velocity > 0.25 || Math.abs(deltaX) > 60
     
     if (shouldSwipe) {
       if (deltaX < 0 && currentEndpointIndex < readerEndpoints.length - 1) {
         // Swipe left - go next
-        setSwipeDirection('left')
-        setIsAnimating(true)
-        setSwipeOffset(-screenWidth)
-        setTimeout(() => {
-          setCurrentEndpointIndex(prev => prev + 1)
-          setSwipeOffset(0)
-          setIsAnimating(false)
-          setSwipeDirection(null)
-        }, 300)
+        animateSwipe('left')
       } else if (deltaX > 0 && currentEndpointIndex > 0) {
-        // Swipe right - go previous
-        setSwipeDirection('right')
-        setIsAnimating(true)
-        setSwipeOffset(screenWidth)
-        setTimeout(() => {
-          setCurrentEndpointIndex(prev => prev - 1)
-          setSwipeOffset(0)
-          setIsAnimating(false)
-          setSwipeDirection(null)
-        }, 300)
+        // Swipe right - go previous  
+        animateSwipe('right')
       } else {
-        // Snap back
-        setSwipeOffset(0)
+        snapBack()
       }
     } else {
-      // Snap back
-      setSwipeOffset(0)
+      snapBack()
     }
-    
-    setTouchStart(null)
-    setTouchCurrent(null)
-    setIsHorizontalSwipe(null)
   }
 
+  const animateSwipe = (direction: 'left' | 'right') => {
+    const screenWidth = window.innerWidth
+    setSwipeDirection(direction)
+    setIsAnimating(true)
+    setSwipeOffset(direction === 'left' ? -screenWidth : screenWidth)
+    
+    setTimeout(() => {
+      setCurrentEndpointIndex(prev => direction === 'left' ? prev + 1 : prev - 1)
+      resetSwipeState()
+    }, 250)
+  }
+
+  const snapBack = () => {
+    setIsAnimating(true)
+    setSwipeOffset(0)
+    setTimeout(resetSwipeState, 200)
+  }
+
+  const resetSwipeState = () => {
+    setTouchStart(null)
+    setTouchCurrent(null)
+    setSwipeOffset(0)
+    setIsAnimating(false)
+    setSwipeDirection(null)
+    setIsHorizontalSwipe(null)
+  }
   return (
     <div className="max-w-6xl mx-auto pb-20 lg:pb-6">
       {/* Header */}
@@ -1131,17 +1148,19 @@ export default function SyllabusGuide() {
             <>
               {/* Reader Content with Swipe Animation */}
               <div 
-                className="overflow-hidden"
+                className="overflow-hidden touch-pan-y"
+                style={{ touchAction: 'pan-y pinch-zoom' }}
                 onTouchStart={onTouchStart}
                 onTouchMove={onTouchMove}
                 onTouchEnd={onTouchEnd}
               >
                 <div 
-                  className="p-6 sm:p-8 min-h-[60vh] select-none"
+                  className="p-6 sm:p-8 min-h-[60vh]"
                   style={{
-                    transform: `translateX(${swipeOffset}px) rotate(${swipeOffset * 0.02}deg)`,
-                    transition: isAnimating ? 'transform 0.3s ease-out' : 'none',
-                    opacity: isAnimating ? 0.8 : 1 - Math.abs(swipeOffset) * 0.001,
+                    transform: `translateX(${swipeOffset}px)`,
+                    transition: isAnimating ? 'transform 0.25s ease-out, opacity 0.25s ease-out' : 'none',
+                    opacity: 1 - Math.abs(swipeOffset) * 0.0015,
+                    willChange: isAnimating ? 'transform, opacity' : 'auto',
                   }}
                 >
                   {/* Breadcrumb */}

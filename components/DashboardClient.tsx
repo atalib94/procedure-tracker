@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Plus, Search, ArrowUp, ArrowDown, Filter, Download, FileSpreadsheet, X, Loader2, RefreshCw, Archive, ArchiveRestore, FolderOpen, CheckSquare, Square, Trash2, AlertTriangle } from 'lucide-react'
+import { Plus, Search, ArrowUp, ArrowDown, Filter, Download, FileSpreadsheet, X, Loader2, RefreshCw, Archive, ArchiveRestore, FolderOpen, CheckSquare, Square, Trash2, AlertTriangle, Upload } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import ProcedureCard from '@/components/ProcedureCard'
@@ -15,6 +15,9 @@ interface DashboardClientProps {
   asFirstOperator: number
   medicalCentres: number
   categoriesUsed: number
+  categories: { id: string; name: string; code: string }[]
+  medicalCentresList: { id: string; name: string }[]
+  environmentId: string | null
 }
 
 type SortField = 'procedure_date' | 'procedure_name' | 'created_at'
@@ -27,6 +30,9 @@ export default function DashboardClient({
   asFirstOperator,
   medicalCentres,
   categoriesUsed,
+  categories,
+  medicalCentresList,
+  environmentId,
 }: DashboardClientProps) {
   const router = useRouter()
   const supabase = createClient()
@@ -48,6 +54,14 @@ export default function DashboardClient({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [isSelectionMode, setIsSelectionMode] = useState(false)
   const [bulkActionLoading, setBulkActionLoading] = useState(false)
+
+  // Import state
+  const [showImportModal, setShowImportModal] = useState(false)
+  const [importLoading, setImportLoading] = useState(false)
+  const [importFile, setImportFile] = useState<File | null>(null)
+  const [importPreview, setImportPreview] = useState<any[]>([])
+  const [importError, setImportError] = useState<string | null>(null)
+  const [importSuccess, setImportSuccess] = useState<number>(0)
 
   const handleRefresh = async () => {
     setIsRefreshing(true)
@@ -109,6 +123,256 @@ export default function DashboardClient({
     }
     
     setBulkActionLoading(false)
+  }
+
+  // Download import template
+  const handleDownloadTemplate = () => {
+    const headers = [
+      'imported_id',
+      'procedure_date',
+      'procedure_name',
+      'operator_role',
+      'other_operator_name',
+      'medical_centre',
+      'category',
+      'accession_number',
+      'is_complicated',
+      'complication_type',
+      'complication_severity',
+      'complication_timing',
+      'complication_description',
+      'complication_management',
+      'complication_outcome',
+      'lessons_learned',
+      'notes'
+    ]
+    
+    // Create example rows
+    const exampleRows = [
+      [
+        'IMP-001',
+        '2024-01-15',
+        'TACE for HCC',
+        '1st Operator',
+        'Dr. Smith',
+        medicalCentresList[0]?.name || 'Hospital Name',
+        categories[0]?.name || 'Category Name',
+        'ACC-12345',
+        'false',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        'Successful procedure'
+      ],
+      [
+        'IMP-002',
+        '2024-01-20',
+        'UFE',
+        '2nd Operator',
+        'Dr. Johnson',
+        medicalCentresList[0]?.name || 'Hospital Name',
+        categories[1]?.name || 'Category Name',
+        'ACC-12346',
+        'true',
+        'Bleeding / Hemorrhage',
+        'minor',
+        'early',
+        'Minor groin hematoma',
+        'Compression applied',
+        'Resolved without intervention',
+        'Monitor access site closely',
+        'Patient discharged next day'
+      ]
+    ]
+    
+    const csvContent = [
+      headers.join(','),
+      ...exampleRows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n')
+    
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = 'procedure_import_template.csv'
+    link.click()
+    URL.revokeObjectURL(link.href)
+  }
+
+  // Parse CSV file
+  const parseCSV = (text: string): any[] => {
+    const lines = text.split('\n').filter(line => line.trim())
+    if (lines.length < 2) return []
+    
+    const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim())
+    const rows: any[] = []
+    
+    for (let i = 1; i < lines.length; i++) {
+      const values: string[] = []
+      let current = ''
+      let inQuotes = false
+      
+      for (const char of lines[i]) {
+        if (char === '"') {
+          inQuotes = !inQuotes
+        } else if (char === ',' && !inQuotes) {
+          values.push(current.trim())
+          current = ''
+        } else {
+          current += char
+        }
+      }
+      values.push(current.trim())
+      
+      const row: any = {}
+      headers.forEach((header, index) => {
+        row[header] = values[index] || ''
+      })
+      rows.push(row)
+    }
+    
+    return rows
+  }
+
+  // Handle file selection
+  const handleImportFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    
+    setImportFile(file)
+    setImportError(null)
+    setImportSuccess(0)
+    
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      try {
+        const text = event.target?.result as string
+        const parsed = parseCSV(text)
+        setImportPreview(parsed.slice(0, 5)) // Preview first 5 rows
+      } catch (err) {
+        setImportError('Failed to parse CSV file')
+        setImportPreview([])
+      }
+    }
+    reader.readAsText(file)
+  }
+
+  // Handle import
+  const handleImport = async () => {
+    if (!importFile) return
+    
+    setImportLoading(true)
+    setImportError(null)
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        setImportError('You must be logged in to import procedures')
+        setImportLoading(false)
+        return
+      }
+
+      const reader = new FileReader()
+      reader.onload = async (event) => {
+        try {
+          const text = event.target?.result as string
+          const rows = parseCSV(text)
+          
+          if (rows.length === 0) {
+            setImportError('No valid data found in the file')
+            setImportLoading(false)
+            return
+          }
+
+          let successCount = 0
+          const errors: string[] = []
+
+          for (const row of rows) {
+            // Skip empty rows
+            if (!row.procedure_name && !row.procedure_date) continue
+            
+            // Find matching medical centre
+            const matchedCentre = medicalCentresList.find(
+              mc => mc.name.toLowerCase() === (row.medical_centre || '').toLowerCase()
+            )
+            
+            // Find matching category
+            const matchedCategory = categories.find(
+              cat => cat.name.toLowerCase() === (row.category || '').toLowerCase()
+            )
+
+            // Generate imported ID
+            const importedId = row.imported_id?.startsWith('IMP-') 
+              ? row.imported_id 
+              : `IMP-${row.imported_id || Date.now()}-${Math.random().toString(36).substring(7)}`
+
+            const procedureData = {
+              user_id: session.user.id,
+              environment_id: environmentId,
+              procedure_name: row.procedure_name || 'Imported Procedure',
+              procedure_date: row.procedure_date || new Date().toISOString().split('T')[0],
+              operator_role: row.operator_role || '1st Operator',
+              medical_centre_id: matchedCentre?.id || null,
+              ebir_category_id: matchedCategory?.id || null,
+              accession_number: importedId, // Use imported ID as accession number
+              notes: [
+                row.notes,
+                row.other_operator_name ? `Other operator: ${row.other_operator_name}` : '',
+                `[Imported: ${importedId}]`
+              ].filter(Boolean).join('\n'),
+              archived: true, // Imported cases go to archive
+              is_complicated: row.is_complicated?.toLowerCase() === 'true',
+              complication_type: row.complication_type || null,
+              complication_severity: row.complication_severity || null,
+              complication_timing: row.complication_timing || null,
+              complication_description: row.complication_description || null,
+              complication_management: row.complication_management || null,
+              complication_outcome: row.complication_outcome || null,
+              lessons_learned: row.lessons_learned || null,
+            }
+
+            const { error } = await supabase
+              .from('procedures')
+              .insert(procedureData)
+
+            if (error) {
+              errors.push(`Row ${row.imported_id || 'unknown'}: ${error.message}`)
+            } else {
+              successCount++
+            }
+          }
+
+          setImportSuccess(successCount)
+          
+          if (errors.length > 0) {
+            setImportError(`Imported ${successCount} procedures. ${errors.length} failed: ${errors.slice(0, 3).join('; ')}${errors.length > 3 ? '...' : ''}`)
+          }
+          
+          if (successCount > 0) {
+            router.refresh()
+          }
+        } catch (err: any) {
+          setImportError(err.message || 'Import failed')
+        } finally {
+          setImportLoading(false)
+        }
+      }
+      reader.readAsText(importFile)
+    } catch (err: any) {
+      setImportError(err.message || 'Import failed')
+      setImportLoading(false)
+    }
+  }
+
+  const resetImportModal = () => {
+    setShowImportModal(false)
+    setImportFile(null)
+    setImportPreview([])
+    setImportError(null)
+    setImportSuccess(0)
   }
 
   const toggleSelection = (id: string) => {
@@ -424,6 +688,14 @@ export default function DashboardClient({
                 title="Export"
               >
                 <Download className="w-5 h-5" />
+              </button>
+
+              <button
+                onClick={() => setShowImportModal(true)}
+                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                title="Import"
+              >
+                <Upload className="w-5 h-5" />
               </button>
 
               <Link
@@ -868,6 +1140,195 @@ export default function DashboardClient({
                   className="w-full px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium transition-colors"
                 >
                   Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Import Modal */}
+      {showImportModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                    <Upload className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">Import Procedures</h2>
+                    <p className="text-sm text-gray-500">Import cases from CSV file</p>
+                  </div>
+                </div>
+                <button
+                  onClick={resetImportModal}
+                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Info banner */}
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700 flex items-start gap-2">
+                <Archive className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <span>Imported procedures will be automatically added to your <strong>Archive</strong> to distinguish them from natively created cases.</span>
+              </div>
+
+              {/* Success message */}
+              {importSuccess > 0 && (
+                <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+                  ✓ Successfully imported {importSuccess} procedure{importSuccess !== 1 ? 's' : ''}
+                </div>
+              )}
+
+              {/* Error message */}
+              {importError && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                  {importError}
+                </div>
+              )}
+
+              {/* Download template */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Step 1: Download Template
+                </label>
+                <button
+                  onClick={handleDownloadTemplate}
+                  className="w-full p-4 border-2 border-dashed border-gray-300 rounded-xl text-left hover:border-green-400 hover:bg-green-50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <FileSpreadsheet className="w-8 h-8 text-gray-400" />
+                    <div>
+                      <div className="font-medium text-gray-900">Download CSV Template</div>
+                      <div className="text-sm text-gray-500">
+                        Pre-filled with your hospitals & categories
+                      </div>
+                    </div>
+                    <Download className="w-5 h-5 text-gray-400 ml-auto" />
+                  </div>
+                </button>
+              </div>
+
+              {/* File upload */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Step 2: Upload Filled CSV
+                </label>
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept=".csv"
+                    onChange={handleImportFileChange}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                  <div className={`p-4 border-2 border-dashed rounded-xl text-center transition-colors ${
+                    importFile ? 'border-green-400 bg-green-50' : 'border-gray-300 hover:border-green-400'
+                  }`}>
+                    {importFile ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <FileSpreadsheet className="w-5 h-5 text-green-600" />
+                        <span className="text-green-700 font-medium">{importFile.name}</span>
+                      </div>
+                    ) : (
+                      <>
+                        <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                        <div className="text-sm text-gray-600">
+                          Click to select or drag & drop your CSV file
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Preview */}
+              {importPreview.length > 0 && (
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Preview (first {importPreview.length} rows)
+                  </label>
+                  <div className="border border-gray-200 rounded-lg overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-2 py-1.5 text-left font-medium text-gray-600">ID</th>
+                            <th className="px-2 py-1.5 text-left font-medium text-gray-600">Date</th>
+                            <th className="px-2 py-1.5 text-left font-medium text-gray-600">Procedure</th>
+                            <th className="px-2 py-1.5 text-left font-medium text-gray-600">Role</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                          {importPreview.map((row, idx) => (
+                            <tr key={idx} className="hover:bg-gray-50">
+                              <td className="px-2 py-1.5 text-gray-600">{row.imported_id || '-'}</td>
+                              <td className="px-2 py-1.5 text-gray-600">{row.procedure_date || '-'}</td>
+                              <td className="px-2 py-1.5 text-gray-900 max-w-[150px] truncate">{row.procedure_name || '-'}</td>
+                              <td className="px-2 py-1.5 text-gray-600">{row.operator_role || '-'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Template field reference */}
+              <div className="mb-6">
+                <details className="text-sm">
+                  <summary className="cursor-pointer text-gray-600 hover:text-gray-800 font-medium">
+                    View all template fields
+                  </summary>
+                  <div className="mt-2 p-3 bg-gray-50 rounded-lg space-y-1 text-xs text-gray-600">
+                    <div><strong>imported_id</strong> - Unique ID (e.g., IMP-001)</div>
+                    <div><strong>procedure_date</strong> - Date (YYYY-MM-DD)</div>
+                    <div><strong>procedure_name</strong> - Name of procedure</div>
+                    <div><strong>operator_role</strong> - 1st Operator / 2nd Operator</div>
+                    <div><strong>other_operator_name</strong> - Name of other operator</div>
+                    <div><strong>medical_centre</strong> - Hospital name (must match existing)</div>
+                    <div><strong>category</strong> - EBIR category (must match existing)</div>
+                    <div><strong>accession_number</strong> - Case/Accession number</div>
+                    <div><strong>is_complicated</strong> - true/false</div>
+                    <div><strong>complication_type</strong> - Type of complication</div>
+                    <div><strong>complication_severity</strong> - minor/moderate/major/life-threatening/death</div>
+                    <div><strong>complication_timing</strong> - intraprocedural/early/delayed</div>
+                    <div><strong>complication_description</strong> - Description</div>
+                    <div><strong>complication_management</strong> - How it was managed</div>
+                    <div><strong>complication_outcome</strong> - Outcome</div>
+                    <div><strong>lessons_learned</strong> - Lessons learned</div>
+                    <div><strong>notes</strong> - Additional notes</div>
+                  </div>
+                </details>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3">
+                <button
+                  onClick={resetImportModal}
+                  className="flex-1 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleImport}
+                  disabled={!importFile || importLoading}
+                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {importLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Importing...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4" />
+                      Import to Archive
+                    </>
+                  )}
                 </button>
               </div>
             </div>

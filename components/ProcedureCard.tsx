@@ -1,13 +1,20 @@
+'use client'
+
 import { format } from 'date-fns'
-import { Calendar, Building2, Hash, User } from 'lucide-react'
+import { Calendar, Building2, Hash, Archive, ArchiveRestore, Loader2 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useState } from 'react'
 
 interface ProcedureCardProps {
   procedure: any
+  onArchiveToggle?: (id: string, archived: boolean) => Promise<void>
+  showArchiveButton?: boolean
 }
 
-export default function ProcedureCard({ procedure }: ProcedureCardProps) {
+export default function ProcedureCard({ procedure, onArchiveToggle, showArchiveButton = true }: ProcedureCardProps) {
+  const [isArchiving, setIsArchiving] = useState(false)
+
   const getCategoryColor = (code: string) => {
     const colors: { [key: string]: string } = {
       'vascular_access': 'bg-blue-100 text-blue-800',
@@ -34,78 +41,128 @@ export default function ProcedureCard({ procedure }: ProcedureCardProps) {
     return 'bg-gray-100 text-gray-800'
   }
 
-  return (
-    <Link
-      href={`/dashboard/procedures/${procedure.id}`}
-      className="block hover:bg-gray-50 transition-colors"
-    >
-      <div className="p-4">
-        <div className="flex gap-4">
-          {/* Image */}
-          <div className="flex-shrink-0">
-            {procedure.image_url ? (
-              <Image
-                src={procedure.image_url}
-                alt={procedure.procedure_name}
-                width={80}
-                height={80}
-                className="w-20 h-20 object-cover rounded-lg"
-              />
-            ) : (
-              <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center">
-                <ClipboardList className="w-8 h-8 text-gray-400" />
-              </div>
-            )}
-          </div>
+  const handleArchiveClick = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    if (!onArchiveToggle || isArchiving) return
+    
+    setIsArchiving(true)
+    try {
+      await onArchiveToggle(procedure.id, !procedure.archived)
+    } finally {
+      setIsArchiving(false)
+    }
+  }
 
-          {/* Content */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-4 mb-2">
-              <div className="min-w-0 flex-1">
-                <h3 className="font-semibold text-gray-900 mb-1 truncate">
-                  {procedure.procedure_name}
-                </h3>
-                {procedure.ebir_categories && (
-                  <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(procedure.ebir_categories.code)} truncate max-w-full`}>
-                    {procedure.ebir_categories.name}
+  return (
+    <div className={`relative group ${procedure.archived ? 'opacity-75' : ''}`}>
+      <Link
+        href={`/dashboard/procedures/${procedure.id}`}
+        className="block hover:bg-gray-50 transition-colors"
+      >
+        <div className="p-4">
+          <div className="flex gap-4">
+            {/* Image */}
+            <div className="flex-shrink-0 relative">
+              {procedure.image_url ? (
+                <Image
+                  src={procedure.image_url}
+                  alt={procedure.procedure_name}
+                  width={80}
+                  height={80}
+                  className="w-20 h-20 object-cover rounded-lg"
+                />
+              ) : (
+                <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center">
+                  <ClipboardList className="w-8 h-8 text-gray-400" />
+                </div>
+              )}
+              {procedure.archived && (
+                <div className="absolute inset-0 bg-gray-900/20 rounded-lg flex items-center justify-center">
+                  <Archive className="w-6 h-6 text-gray-600" />
+                </div>
+              )}
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-4 mb-2">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-semibold text-gray-900 mb-1 truncate">
+                      {procedure.procedure_name}
+                    </h3>
+                    {procedure.archived && (
+                      <span className="flex-shrink-0 px-2 py-0.5 rounded text-xs font-medium bg-gray-200 text-gray-600">
+                        Archived
+                      </span>
+                    )}
+                  </div>
+                  {procedure.ebir_categories && (
+                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(procedure.ebir_categories.code)} truncate max-w-full`}>
+                      {procedure.ebir_categories.name}
+                    </span>
+                  )}
+                </div>
+                {procedure.operator_role && (
+                  <span className={`flex-shrink-0 px-2 py-1 rounded-full text-xs font-medium ${getRoleBadge(procedure.operator_role)}`}>
+                    {procedure.operator_role}
                   </span>
                 )}
               </div>
-              {procedure.operator_role && (
-                <span className={`flex-shrink-0 px-2 py-1 rounded-full text-xs font-medium ${getRoleBadge(procedure.operator_role)}`}>
-                  {procedure.operator_role}
-                </span>
-              )}
-            </div>
 
-            <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-              <div className="flex items-center gap-1">
-                <Calendar className="w-4 h-4 flex-shrink-0" />
-                <span className="truncate">{format(new Date(procedure.procedure_date), 'MMM dd, yyyy')}</span>
+              <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                <div className="flex items-center gap-1">
+                  <Calendar className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate">{format(new Date(procedure.procedure_date), 'MMM dd, yyyy')}</span>
+                </div>
+                {procedure.medical_centres && (
+                  <div className="flex items-center gap-1 min-w-0">
+                    <Building2 className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">{procedure.medical_centres.name}</span>
+                  </div>
+                )}
+                {procedure.accession_number && (
+                  <div className="flex items-center gap-1" title="Case ID">
+                    <Hash className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">{procedure.accession_number}</span>
+                  </div>
+                )}
               </div>
-              {procedure.medical_centres && (
-                <div className="flex items-center gap-1 min-w-0">
-                  <Building2 className="w-4 h-4 flex-shrink-0" />
-                  <span className="truncate">{procedure.medical_centres.name}</span>
-                </div>
-              )}
-              {procedure.accession_number && (
-                <div className="flex items-center gap-1" title="Case ID">
-                  <Hash className="w-4 h-4 flex-shrink-0" />
-                  <span className="truncate">{procedure.accession_number}</span>
-                </div>
+
+              {procedure.notes && (
+                <p className="mt-2 text-sm text-gray-600 line-clamp-2">
+                  {procedure.notes}
+                </p>
               )}
             </div>
-
-            {procedure.notes && (
-              <p className="mt-2 text-sm text-gray-600 line-clamp-2">
-                {procedure.notes}
-              </p>
-            )}
           </div>
         </div>
-      </div>
-    </Link>
+      </Link>
+
+      {/* Archive Button */}
+      {showArchiveButton && onArchiveToggle && (
+        <button
+          onClick={handleArchiveClick}
+          disabled={isArchiving}
+          className={`absolute top-4 right-4 p-2 rounded-lg transition-all ${
+            procedure.archived
+              ? 'bg-green-100 text-green-600 hover:bg-green-200 opacity-100'
+              : 'bg-gray-100 text-gray-500 hover:bg-gray-200 opacity-0 group-hover:opacity-100'
+          } disabled:opacity-50`}
+          title={procedure.archived ? 'Restore from archive' : 'Archive procedure'}
+        >
+          {isArchiving ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : procedure.archived ? (
+            <ArchiveRestore className="w-4 h-4" />
+          ) : (
+            <Archive className="w-4 h-4" />
+          )}
+        </button>
+      )}
+    </div>
   )
 }
 

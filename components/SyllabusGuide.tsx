@@ -416,6 +416,9 @@ export default function SyllabusGuide() {
   const [showTTSSettings, setShowTTSSettings] = useState(false)
   const [currentReadingPart, setCurrentReadingPart] = useState<'question' | 'answer' | null>(null)
   const speechSynthRef = useRef<SpeechSynthesisUtterance | null>(null)
+  const silentAudioRef = useRef<HTMLAudioElement | null>(null)
+  const audioContextRef = useRef<AudioContext | null>(null)
+  const keepAliveIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   const supabase = createClient()
 
@@ -862,7 +865,96 @@ export default function SyllabusGuide() {
     }
   }, [])
 
-  // Stop speech when leaving reader mode or changing endpoint
+  // Initialize silent audio for background playback
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Create a silent audio element to keep audio session alive
+      const audio = new Audio()
+      // Tiny silent MP3 (base64 encoded)
+      audio.src = 'data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAAYYoRwmHAAAAAAD/+1DEAAAIAANIAAAAQAAAaQAAAAQAAANIAAAAQAAAaQAAAAQAAATEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//tQxB4AAADSAAAAAAAAANIAAAAATEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVU='
+      audio.loop = true
+      audio.volume = 0.01 // Nearly silent
+      silentAudioRef.current = audio
+
+      // Setup Media Session API for lock screen controls
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: 'EBIR Study Guide',
+          artist: 'Syllabus Reader',
+          album: 'Interventional Radiology'
+        })
+      }
+    }
+
+    return () => {
+      if (silentAudioRef.current) {
+        silentAudioRef.current.pause()
+        silentAudioRef.current = null
+      }
+      if (keepAliveIntervalRef.current) {
+        clearInterval(keepAliveIntervalRef.current)
+      }
+    }
+  }, [])
+
+  // Update Media Session handlers when speaking state changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'mediaSession' in navigator) {
+      navigator.mediaSession.setActionHandler('play', () => {
+        if (isPaused) {
+          window.speechSynthesis?.resume()
+          setIsPaused(false)
+        } else if (!isSpeaking) {
+          startReading()
+        }
+        navigator.mediaSession.playbackState = 'playing'
+      })
+
+      navigator.mediaSession.setActionHandler('pause', () => {
+        window.speechSynthesis?.pause()
+        setIsPaused(true)
+        navigator.mediaSession.playbackState = 'paused'
+      })
+
+      navigator.mediaSession.setActionHandler('nexttrack', () => {
+        if (currentEndpointIndex < readerEndpoints.length - 1) {
+          skipToNext()
+        }
+      })
+
+      navigator.mediaSession.setActionHandler('previoustrack', () => {
+        if (currentEndpointIndex > 0) {
+          stopSpeaking()
+          setCurrentEndpointIndex(prev => prev - 1)
+          setTimeout(startReading, 300)
+          setIsSpeaking(true)
+        }
+      })
+
+      // Update playback state
+      if (isSpeaking && !isPaused) {
+        navigator.mediaSession.playbackState = 'playing'
+      } else if (isPaused) {
+        navigator.mediaSession.playbackState = 'paused'
+      } else {
+        navigator.mediaSession.playbackState = 'none'
+      }
+    }
+  }, [isSpeaking, isPaused, currentEndpointIndex, readerEndpoints.length])
+
+  // Update metadata when endpoint changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'mediaSession' in navigator && readerEndpoints[currentEndpointIndex]) {
+      const endpoint = readerEndpoints[currentEndpointIndex]
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: endpoint.text.substring(0, 100) + (endpoint.text.length > 100 ? '...' : ''),
+        artist: endpoint.sectionTitle,
+        album: 'EBIR Syllabus'
+      })
+    }
+  }, [currentEndpointIndex, readerEndpoints])
+
+  // Stop speech when leaving reader mode
   useEffect(() => {
     return () => {
       if (typeof window !== 'undefined' && window.speechSynthesis) {
@@ -878,10 +970,51 @@ export default function SyllabusGuide() {
     }
   }, [currentEndpointIndex])
 
+  // Keep-alive: periodically "ping" speech synthesis to prevent browser from killing it
+  useEffect(() => {
+    if (isSpeaking && !isPaused) {
+      keepAliveIntervalRef.current = setInterval(() => {
+        // This helps prevent some browsers from stopping speech synthesis
+        if (window.speechSynthesis && window.speechSynthesis.speaking) {
+          window.speechSynthesis.pause()
+          window.speechSynthesis.resume()
+        }
+      }, 10000) // Every 10 seconds
+    } else {
+      if (keepAliveIntervalRef.current) {
+        clearInterval(keepAliveIntervalRef.current)
+        keepAliveIntervalRef.current = null
+      }
+    }
+
+    return () => {
+      if (keepAliveIntervalRef.current) {
+        clearInterval(keepAliveIntervalRef.current)
+      }
+    }
+  }, [isSpeaking, isPaused])
+
   const stripHtml = (html: string): string => {
     const tmp = document.createElement('div')
     tmp.innerHTML = html
     return tmp.textContent || tmp.innerText || ''
+  }
+
+  const startAudioSession = async () => {
+    // Start silent audio to keep audio session alive
+    if (silentAudioRef.current) {
+      try {
+        await silentAudioRef.current.play()
+      } catch (e) {
+        console.log('Silent audio play failed:', e)
+      }
+    }
+  }
+
+  const stopAudioSession = () => {
+    if (silentAudioRef.current) {
+      silentAudioRef.current.pause()
+    }
   }
 
   const speakText = (text: string, part: 'question' | 'answer', onEnd?: () => void) => {
@@ -903,17 +1036,21 @@ export default function SyllabusGuide() {
       if (onEnd) onEnd()
     }
 
-    utterance.onerror = () => {
-      setCurrentReadingPart(null)
-      setIsSpeaking(false)
-      setIsPaused(false)
+    utterance.onerror = (e) => {
+      // Don't treat interruption as error (happens on skip/stop)
+      if (e.error !== 'interrupted') {
+        setCurrentReadingPart(null)
+        setIsSpeaking(false)
+        setIsPaused(false)
+        stopAudioSession()
+      }
     }
 
     speechSynthRef.current = utterance
     window.speechSynthesis.speak(utterance)
   }
 
-  const startReading = () => {
+  const startReading = async () => {
     if (!window.speechSynthesis) return
 
     const endpoint = readerEndpoints[currentEndpointIndex]
@@ -922,6 +1059,9 @@ export default function SyllabusGuide() {
     window.speechSynthesis.cancel()
     setIsSpeaking(true)
     setIsPaused(false)
+
+    // Start audio session for background playback
+    await startAudioSession()
 
     const questionText = endpoint.text
     const answerText = stripHtml(endpoint.note) || 'No notes for this topic yet.'
@@ -938,11 +1078,12 @@ export default function SyllabusGuide() {
               setCurrentEndpointIndex(prev => prev + 1)
               // Continue reading next card after a brief pause
               setTimeout(() => {
-                if (isSpeaking) startReading()
+                startReading()
               }, 500)
             }, 300)
           } else {
             setIsSpeaking(false)
+            stopAudioSession()
           }
         })
       }, 400)
@@ -969,11 +1110,12 @@ export default function SyllabusGuide() {
     setIsSpeaking(false)
     setIsPaused(false)
     setCurrentReadingPart(null)
+    stopAudioSession()
   }
 
   const skipToNext = () => {
     if (currentEndpointIndex < readerEndpoints.length - 1) {
-      stopSpeaking()
+      window.speechSynthesis?.cancel()
       setCurrentEndpointIndex(prev => prev + 1)
       setTimeout(startReading, 300)
       setIsSpeaking(true)

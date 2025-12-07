@@ -1,7 +1,7 @@
 'use client'
 
 import { format } from 'date-fns'
-import { Calendar, Building2, Hash, Archive, ArchiveRestore, Loader2 } from 'lucide-react'
+import { Calendar, Building2, Hash, Archive, ArchiveRestore, Loader2, AlertTriangle } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
@@ -93,6 +93,11 @@ export default function ProcedureCard({ procedure, onArchiveToggle, showArchiveB
                     <h3 className="font-semibold text-gray-900 mb-1 truncate">
                       {procedure.procedure_name}
                     </h3>
+                    {procedure.is_complicated && (
+                      <span className="flex-shrink-0 p-1 bg-amber-100 text-amber-600 rounded" title="Complicated case">
+                        <AlertTriangle className="w-3.5 h-3.5" />
+                      </span>
+                    )}
                     {procedure.archived && (
                       <span className="flex-shrink-0 px-2 py-0.5 rounded text-xs font-medium bg-gray-200 text-gray-600">
                         Archived

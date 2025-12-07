@@ -8,7 +8,7 @@ export default async function DashboardPage() {
   
   if (!session) return null
 
-  // Fetch procedures with related data
+  // Fetch procedures with related data (including archived)
   const { data: procedures } = await supabase
     .from('procedures')
     .select(`
@@ -18,18 +18,20 @@ export default async function DashboardPage() {
     `)
     .eq('user_id', session.user.id)
     .order('procedure_date', { ascending: false })
-    .limit(50)
+    .limit(100)
 
-  // Fetch stats
+  // Fetch stats (only non-archived procedures)
   const { data: stats } = await supabase
     .from('procedures')
-    .select('id, operator_role, medical_centre_id, ebir_category_id')
+    .select('id, operator_role, medical_centre_id, ebir_category_id, archived')
     .eq('user_id', session.user.id)
 
-  const totalProcedures = stats?.length || 0
-  const asFirstOperator = stats?.filter(p => p.operator_role === '1st Operator').length || 0
-  const medicalCentres = new Set(stats?.map(p => p.medical_centre_id).filter(Boolean)).size
-  const categoriesUsed = new Set(stats?.map(p => p.ebir_category_id).filter(Boolean)).size
+  // Calculate stats excluding archived procedures
+  const activeStats = stats?.filter(p => !p.archived) || []
+  const totalProcedures = activeStats.length
+  const asFirstOperator = activeStats.filter(p => p.operator_role === '1st Operator').length
+  const medicalCentres = new Set(activeStats.map(p => p.medical_centre_id).filter(Boolean)).size
+  const categoriesUsed = new Set(activeStats.map(p => p.ebir_category_id).filter(Boolean)).size
 
   return (
     <DashboardClient

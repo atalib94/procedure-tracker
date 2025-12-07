@@ -6,7 +6,7 @@ import {
   Save, Loader2, CheckCircle2, Expand, Shrink, Bold, Italic, Underline,
   Type, Palette, Image as ImageIcon, X, AlignLeft, AlignCenter, AlignRight,
   List, ListOrdered, Undo, Redo, Trash2, Filter, CheckCircle, Circle,
-  BarChart3, FileText, PenLine, ChevronLeft, BookOpenCheck, Edit3
+  BarChart3, FileText, PenLine, ChevronLeft, BookOpenCheck, Edit3, Menu, ChevronUp
 } from 'lucide-react'
 import { syllabusData, ExamFrequency, Section } from '@/lib/syllabusData'
 import { createClient } from '@/lib/supabase-client'
@@ -390,6 +390,8 @@ export default function SyllabusGuide() {
   const [viewMode, setViewMode] = useState<ViewMode>('editor')
   const [readerFilter, setReaderFilter] = useState<ReaderFilter>('filled')
   const [currentEndpointIndex, setCurrentEndpointIndex] = useState(0)
+  const [showReaderNav, setShowReaderNav] = useState(false)
+  const [statsCollapsed, setStatsCollapsed] = useState(false)
   
   // Swipe handling
   const [touchStart, setTouchStart] = useState<number | null>(null)
@@ -666,69 +668,92 @@ export default function SyllabusGuide() {
         </p>
       </div>
 
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+      {/* Statistics Section - Collapsible */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 overflow-hidden">
+        <button
+          onClick={() => setStatsCollapsed(!statsCollapsed)}
+          className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
+        >
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <FileText className="w-5 h-5 text-purple-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-              <p className="text-xs text-gray-500">Total Topics</p>
-            </div>
+            <BarChart3 className="w-5 h-5 text-purple-600" />
+            <span className="font-semibold text-gray-900">Progress Statistics</span>
+            <span className="text-sm text-gray-500">({stats.percentage}% complete)</span>
           </div>
-        </div>
+          {statsCollapsed ? (
+            <ChevronDown className="w-5 h-5 text-gray-400" />
+          ) : (
+            <ChevronUp className="w-5 h-5 text-gray-400" />
+          )}
+        </button>
         
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <CheckCircle className="w-5 h-5 text-green-600" />
+        {!statsCollapsed && (
+          <div className="px-4 pb-4 border-t border-gray-100">
+            {/* Statistics Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+              <div className="bg-gray-50 rounded-lg p-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <FileText className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                    <p className="text-xs text-gray-500">Total Topics</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-gray-50 rounded-lg p-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900">{stats.completed}</p>
+                    <p className="text-xs text-gray-500">Completed</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-gray-50 rounded-lg p-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-orange-100 rounded-lg">
+                    <PenLine className="w-5 h-5 text-orange-600" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900">{stats.incomplete}</p>
+                    <p className="text-xs text-gray-500">Remaining</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-gray-50 rounded-lg p-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <BarChart3 className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900">{stats.percentage}%</p>
+                    <p className="text-xs text-gray-500">Progress</p>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900">{stats.completed}</p>
-              <p className="text-xs text-gray-500">Completed</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-orange-100 rounded-lg">
-              <PenLine className="w-5 h-5 text-orange-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900">{stats.incomplete}</p>
-              <p className="text-xs text-gray-500">Remaining</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <BarChart3 className="w-5 h-5 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-gray-900">{stats.percentage}%</p>
-              <p className="text-xs text-gray-500">Progress</p>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Progress Bar */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-gray-700">Overall Progress</span>
-          <span className="text-sm text-gray-500">{stats.completed} / {stats.total} topics</span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-3">
-          <div 
-            className="bg-gradient-to-r from-purple-500 to-purple-600 h-3 rounded-full transition-all duration-500"
-            style={{ width: `${stats.percentage}%` }}
-          />
-        </div>
+            {/* Progress Bar */}
+            <div className="mt-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-700">Overall Progress</span>
+                <span className="text-sm text-gray-500">{stats.completed} / {stats.total} topics</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-3">
+                <div 
+                  className="bg-gradient-to-r from-purple-500 to-purple-600 h-3 rounded-full transition-all duration-500"
+                  style={{ width: `${stats.percentage}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Filter and Search */}
@@ -817,16 +842,22 @@ export default function SyllabusGuide() {
 
       {/* Reader Mode */}
       {viewMode === 'reader' ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden relative">
           {/* Reader Header */}
           <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <BookOpenCheck className="w-5 h-5 text-purple-600" />
+                <button
+                  onClick={() => setShowReaderNav(!showReaderNav)}
+                  className="p-1.5 rounded-lg hover:bg-gray-200 transition-colors"
+                  title="Toggle navigator"
+                >
+                  <Menu className="w-5 h-5 text-gray-600" />
+                </button>
                 <h2 className="font-semibold text-gray-900">Reader Mode</h2>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500">Show:</span>
+                <span className="text-sm text-gray-500 hidden sm:inline">Show:</span>
                 <select
                   value={readerFilter}
                   onChange={(e) => { setReaderFilter(e.target.value as ReaderFilter); setCurrentEndpointIndex(0); }}
@@ -838,6 +869,56 @@ export default function SyllabusGuide() {
               </div>
             </div>
           </div>
+
+          {/* Navigator Sidebar */}
+          {showReaderNav && (
+            <>
+              <div 
+                className="fixed inset-0 bg-black/30 z-40 lg:hidden"
+                onClick={() => setShowReaderNav(false)}
+              />
+              <div className="fixed left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-white shadow-xl z-50 flex flex-col lg:absolute lg:top-auto lg:bottom-auto lg:h-[70vh] lg:rounded-r-xl">
+                <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+                  <h3 className="font-semibold text-gray-900">Navigator</h3>
+                  <button
+                    onClick={() => setShowReaderNav(false)}
+                    className="p-1.5 rounded-lg hover:bg-gray-200 transition-colors"
+                  >
+                    <X className="w-5 h-5 text-gray-500" />
+                  </button>
+                </div>
+                <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
+                  {readerEndpoints.map((endpoint, index) => (
+                    <button
+                      key={endpoint.id}
+                      onClick={() => { setCurrentEndpointIndex(index); setShowReaderNav(false); }}
+                      className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors ${
+                        index === currentEndpointIndex ? 'bg-purple-50 border-l-4 border-purple-600' : ''
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <span className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                          index === currentEndpointIndex 
+                            ? 'bg-purple-600 text-white' 
+                            : 'bg-gray-200 text-gray-600'
+                        }`}>
+                          {index + 1}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="text-xs text-gray-500 truncate">{endpoint.sectionTitle}</p>
+                          <p className={`text-sm line-clamp-2 ${
+                            index === currentEndpointIndex ? 'text-purple-700 font-medium' : 'text-gray-700'
+                          }`}>
+                            {endpoint.text}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
 
           {readerEndpoints.length === 0 ? (
             <div className="p-12 text-center text-gray-500">

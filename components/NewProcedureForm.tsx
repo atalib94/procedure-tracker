@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-client'
-import { Upload, FileText, X, Plus, Loader2 } from 'lucide-react'
+import { Upload, FileText, X, Plus, Loader2, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react'
 
 interface PDFFile {
   file: File
@@ -17,6 +17,37 @@ interface NewProcedureFormProps {
   medicalCentres: any[]
 }
 
+const COMPLICATION_TYPES = [
+  'Bleeding / Hemorrhage',
+  'Infection',
+  'Access site complication',
+  'Vessel injury / Dissection',
+  'Thrombosis / Embolism',
+  'Organ injury',
+  'Contrast reaction',
+  'Radiation injury',
+  'Device malfunction',
+  'Non-target embolization',
+  'Pneumothorax',
+  'Nerve injury',
+  'Pain / Discomfort',
+  'Other'
+]
+
+const COMPLICATION_SEVERITY = [
+  { value: 'minor', label: 'Minor', description: 'No therapy required, no consequence' },
+  { value: 'moderate', label: 'Moderate', description: 'Requires therapy, minor hospitalization (<48h)' },
+  { value: 'major', label: 'Major', description: 'Requires major therapy, extended hospitalization, permanent sequelae' },
+  { value: 'life-threatening', label: 'Life-threatening', description: 'Life-threatening, required ICU admission' },
+  { value: 'death', label: 'Death', description: 'Procedure-related death' }
+]
+
+const COMPLICATION_TIMING = [
+  { value: 'intraprocedural', label: 'Intraprocedural', description: 'During the procedure' },
+  { value: 'early', label: 'Early post-procedure', description: 'Within 24-48 hours' },
+  { value: 'delayed', label: 'Delayed', description: 'After 48 hours' }
+]
+
 export default function NewProcedureForm({ environments, categories, medicalCentres }: NewProcedureFormProps) {
   const router = useRouter()
   const supabase = createClient()
@@ -29,6 +60,9 @@ export default function NewProcedureForm({ environments, categories, medicalCent
   // PDF Upload State
   const [pdfFiles, setPdfFiles] = useState<PDFFile[]>([])
   const [pdfDragActive, setPdfDragActive] = useState(false)
+
+  // Complication State
+  const [showComplicationDetails, setShowComplicationDetails] = useState(false)
 
   const pdfCategories = [
     'Anatomy',
@@ -49,6 +83,15 @@ export default function NewProcedureForm({ environments, categories, medicalCent
     accession_number: '',
     operator_role: '1st Operator',
     notes: '',
+    // Complication fields
+    is_complicated: false,
+    complication_type: '',
+    complication_severity: '',
+    complication_timing: '',
+    complication_description: '',
+    complication_management: '',
+    complication_outcome: '',
+    lessons_learned: '',
   })
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,7 +151,6 @@ export default function NewProcedureForm({ environments, categories, medicalCent
         setPdfFiles(prev => [...prev, ...newFiles])
       }
     }
-    // Reset input
     e.target.value = ''
   }
 
@@ -128,6 +170,27 @@ export default function NewProcedureForm({ environments, categories, medicalCent
     const sizes = ['Bytes', 'KB', 'MB', 'GB']
     const i = Math.floor(Math.log(bytes) / Math.log(k))
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  }
+
+  // Handle complication toggle
+  const handleComplicationToggle = (checked: boolean) => {
+    setFormData(prev => ({ 
+      ...prev, 
+      is_complicated: checked,
+      // Clear complication fields if unchecked
+      ...(checked ? {} : {
+        complication_type: '',
+        complication_severity: '',
+        complication_timing: '',
+        complication_description: '',
+        complication_management: '',
+        complication_outcome: '',
+        lessons_learned: '',
+      })
+    }))
+    if (checked) {
+      setShowComplicationDetails(true)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -178,17 +241,33 @@ export default function NewProcedureForm({ environments, categories, medicalCent
         imageUrl = publicUrl
       }
 
+      // Prepare procedure data
+      const procedureData = {
+        procedure_name: formData.procedure_name,
+        procedure_date: formData.procedure_date,
+        ebir_category_id: formData.ebir_category_id || null,
+        medical_centre_id: formData.medical_centre_id,
+        accession_number: formData.accession_number || null,
+        operator_role: formData.operator_role,
+        notes: formData.notes || null,
+        user_id: session.user.id,
+        image_url: imageUrl,
+        environment_id: environments[0]?.id,
+        // Complication fields
+        is_complicated: formData.is_complicated,
+        complication_type: formData.is_complicated ? formData.complication_type || null : null,
+        complication_severity: formData.is_complicated ? formData.complication_severity || null : null,
+        complication_timing: formData.is_complicated ? formData.complication_timing || null : null,
+        complication_description: formData.is_complicated ? formData.complication_description || null : null,
+        complication_management: formData.is_complicated ? formData.complication_management || null : null,
+        complication_outcome: formData.is_complicated ? formData.complication_outcome || null : null,
+        lessons_learned: formData.is_complicated ? formData.lessons_learned || null : null,
+      }
+
       // Insert procedure
-      const { data: procedureData, error: insertError } = await supabase
+      const { data: insertedProcedure, error: insertError } = await supabase
         .from('procedures')
-        .insert({
-          ...formData,
-          user_id: session.user.id,
-          image_url: imageUrl,
-          environment_id: environments[0]?.id,
-          // Convert empty strings to null for optional UUID fields
-          ebir_category_id: formData.ebir_category_id || null,
-        })
+        .insert(procedureData)
         .select('id')
         .single()
 
@@ -197,9 +276,8 @@ export default function NewProcedureForm({ environments, categories, medicalCent
       }
 
       // Upload PDFs and link them to the procedure
-      if (pdfFiles.length > 0 && procedureData) {
+      if (pdfFiles.length > 0 && insertedProcedure) {
         for (const pdf of pdfFiles) {
-          // Upload PDF to storage
           const fileExt = pdf.file.name.split('.').pop()
           const fileName = `${session.user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
           
@@ -215,12 +293,10 @@ export default function NewProcedureForm({ environments, categories, medicalCent
             continue
           }
 
-          // Get public URL
           const { data: { publicUrl } } = supabase.storage
             .from('learning-materials')
             .getPublicUrl(fileName)
 
-          // Insert learning material record
           const { data: materialData, error: materialError } = await supabase
             .from('learning_materials')
             .insert({
@@ -231,7 +307,6 @@ export default function NewProcedureForm({ environments, categories, medicalCent
               file_type: 'pdf',
               file_size: pdf.file.size,
               category: pdf.category || null,
-              is_linked_to_procedure: true
             })
             .select('id')
             .single()
@@ -241,13 +316,12 @@ export default function NewProcedureForm({ environments, categories, medicalCent
             continue
           }
 
-          // Link PDF to procedure
           if (materialData) {
             await supabase
-              .from('procedure_learning_links')
+              .from('procedure_documents')
               .insert({
-                procedure_id: procedureData.id,
-                learning_material_id: materialData.id
+                procedure_id: insertedProcedure.id,
+                learning_material_id: materialData.id,
               })
           }
         }
@@ -256,8 +330,7 @@ export default function NewProcedureForm({ environments, categories, medicalCent
       router.push('/dashboard')
       router.refresh()
     } catch (err: any) {
-      console.error('Error:', err)
-      setError(err.message || 'An unexpected error occurred. Please try again.')
+      setError(err.message || 'Something went wrong')
     } finally {
       setLoading(false)
     }
@@ -266,60 +339,51 @@ export default function NewProcedureForm({ environments, categories, medicalCent
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg text-sm">
-          <p className="font-medium">Error</p>
-          <p>{error}</p>
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+          {error}
         </div>
       )}
 
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Date */}
-        <div>
-          <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
-            Date <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="date"
-            id="date"
-            required
-            value={formData.procedure_date}
-            onChange={(e) => setFormData({ ...formData, procedure_date: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-          />
-        </div>
+      {/* Procedure Date */}
+      <div>
+        <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
+          Procedure Date <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="date"
+          id="date"
+          required
+          value={formData.procedure_date}
+          onChange={(e) => setFormData({ ...formData, procedure_date: e.target.value })}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+        />
+      </div>
 
-        {/* Medical Centre */}
-        <div>
-          <label htmlFor="centre" className="block text-sm font-medium text-gray-700 mb-2">
-            Medical Centre <span className="text-red-500">*</span>
-          </label>
-          <select
-            id="centre"
-            required
-            value={formData.medical_centre_id}
-            onChange={(e) => setFormData({ ...formData, medical_centre_id: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-          >
-            {medicalCentres.length === 0 ? (
-              <option value="">No centres available</option>
-            ) : (
-              <>
-                <option value="">Select centre</option>
-                {medicalCentres.map((centre) => (
-                  <option key={centre.id} value={centre.id}>
-                    {centre.name}
-                  </option>
-                ))}
-              </>
-            )}
-          </select>
-        </div>
+      {/* Medical Centre */}
+      <div>
+        <label htmlFor="centre" className="block text-sm font-medium text-gray-700 mb-2">
+          Medical Centre <span className="text-red-500">*</span>
+        </label>
+        <select
+          id="centre"
+          required
+          value={formData.medical_centre_id}
+          onChange={(e) => setFormData({ ...formData, medical_centre_id: e.target.value })}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+        >
+          <option value="">Select a medical centre</option>
+          {medicalCentres.map((centre) => (
+            <option key={centre.id} value={centre.id}>
+              {centre.name}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* EBIR Category */}
       <div>
         <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
-          EBIR Category <span className="text-gray-400">(optional)</span>
+          EBIR Category
         </label>
         <select
           id="category"
@@ -327,10 +391,10 @@ export default function NewProcedureForm({ environments, categories, medicalCent
           onChange={(e) => setFormData({ ...formData, ebir_category_id: e.target.value })}
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
         >
-          <option value="">Select category</option>
-          {categories.map((cat) => (
-            <option key={cat.id} value={cat.id}>
-              {cat.name}
+          <option value="">Select a category</option>
+          {categories.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.name}
             </option>
           ))}
         </select>
@@ -396,11 +460,182 @@ export default function NewProcedureForm({ environments, categories, medicalCent
         <textarea
           id="notes"
           rows={4}
-          placeholder="Add any relevant details, complications, or observations..."
+          placeholder="Add any relevant details, observations, or technique notes..."
           value={formData.notes}
           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
         />
+      </div>
+
+      {/* Complication Section */}
+      <div className="border border-gray-200 rounded-xl overflow-hidden">
+        {/* Complication Toggle Header */}
+        <div 
+          className={`p-4 flex items-center justify-between cursor-pointer transition-colors ${
+            formData.is_complicated ? 'bg-amber-50 border-b border-amber-200' : 'bg-gray-50 hover:bg-gray-100'
+          }`}
+          onClick={() => formData.is_complicated && setShowComplicationDetails(!showComplicationDetails)}
+        >
+          <label className="flex items-center gap-3 cursor-pointer" onClick={(e) => e.stopPropagation()}>
+            <input
+              type="checkbox"
+              checked={formData.is_complicated}
+              onChange={(e) => handleComplicationToggle(e.target.checked)}
+              className="w-5 h-5 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+            />
+            <div className="flex items-center gap-2">
+              <AlertTriangle className={`w-5 h-5 ${formData.is_complicated ? 'text-amber-600' : 'text-gray-400'}`} />
+              <span className={`font-medium ${formData.is_complicated ? 'text-amber-800' : 'text-gray-700'}`}>
+                Mark as Complicated Case
+              </span>
+            </div>
+          </label>
+          {formData.is_complicated && (
+            <button
+              type="button"
+              onClick={() => setShowComplicationDetails(!showComplicationDetails)}
+              className="p-1 text-amber-600 hover:bg-amber-100 rounded"
+            >
+              {showComplicationDetails ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+            </button>
+          )}
+        </div>
+
+        {/* Complication Details */}
+        {formData.is_complicated && showComplicationDetails && (
+          <div className="p-4 bg-amber-50/50 space-y-4">
+            <p className="text-sm text-amber-700">
+              Document the complication details to create a valuable learning case for future reference.
+            </p>
+
+            {/* Complication Type */}
+            <div>
+              <label htmlFor="comp-type" className="block text-sm font-medium text-gray-700 mb-2">
+                Complication Type
+              </label>
+              <select
+                id="comp-type"
+                value={formData.complication_type}
+                onChange={(e) => setFormData({ ...formData, complication_type: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              >
+                <option value="">Select type...</option>
+                {COMPLICATION_TYPES.map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Severity & Timing Row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Severity */}
+              <div>
+                <label htmlFor="comp-severity" className="block text-sm font-medium text-gray-700 mb-2">
+                  Severity (SIR Classification)
+                </label>
+                <select
+                  id="comp-severity"
+                  value={formData.complication_severity}
+                  onChange={(e) => setFormData({ ...formData, complication_severity: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                >
+                  <option value="">Select severity...</option>
+                  {COMPLICATION_SEVERITY.map(sev => (
+                    <option key={sev.value} value={sev.value}>{sev.label}</option>
+                  ))}
+                </select>
+                {formData.complication_severity && (
+                  <p className="mt-1 text-xs text-gray-500">
+                    {COMPLICATION_SEVERITY.find(s => s.value === formData.complication_severity)?.description}
+                  </p>
+                )}
+              </div>
+
+              {/* Timing */}
+              <div>
+                <label htmlFor="comp-timing" className="block text-sm font-medium text-gray-700 mb-2">
+                  Timing
+                </label>
+                <select
+                  id="comp-timing"
+                  value={formData.complication_timing}
+                  onChange={(e) => setFormData({ ...formData, complication_timing: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                >
+                  <option value="">Select timing...</option>
+                  {COMPLICATION_TIMING.map(timing => (
+                    <option key={timing.value} value={timing.value}>{timing.label}</option>
+                  ))}
+                </select>
+                {formData.complication_timing && (
+                  <p className="mt-1 text-xs text-gray-500">
+                    {COMPLICATION_TIMING.find(t => t.value === formData.complication_timing)?.description}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Description */}
+            <div>
+              <label htmlFor="comp-desc" className="block text-sm font-medium text-gray-700 mb-2">
+                What Happened?
+              </label>
+              <textarea
+                id="comp-desc"
+                rows={3}
+                placeholder="Describe the complication in detail..."
+                value={formData.complication_description}
+                onChange={(e) => setFormData({ ...formData, complication_description: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Management */}
+            <div>
+              <label htmlFor="comp-mgmt" className="block text-sm font-medium text-gray-700 mb-2">
+                How Was It Managed?
+              </label>
+              <textarea
+                id="comp-mgmt"
+                rows={3}
+                placeholder="Describe the management and interventions performed..."
+                value={formData.complication_management}
+                onChange={(e) => setFormData({ ...formData, complication_management: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Outcome */}
+            <div>
+              <label htmlFor="comp-outcome" className="block text-sm font-medium text-gray-700 mb-2">
+                Outcome
+              </label>
+              <textarea
+                id="comp-outcome"
+                rows={2}
+                placeholder="Final outcome after management..."
+                value={formData.complication_outcome}
+                onChange={(e) => setFormData({ ...formData, complication_outcome: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* Lessons Learned */}
+            <div>
+              <label htmlFor="comp-lessons" className="block text-sm font-medium text-gray-700 mb-2">
+                Lessons Learned
+              </label>
+              <textarea
+                id="comp-lessons"
+                rows={3}
+                placeholder="What would you do differently? What key takeaways will help in future cases?"
+                value={formData.lessons_learned}
+                onChange={(e) => setFormData({ ...formData, lessons_learned: e.target.value })}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Image Upload */}
@@ -555,9 +790,16 @@ export default function NewProcedureForm({ environments, categories, medicalCent
         <button
           type="submit"
           disabled={loading}
-          className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
-          {loading ? 'Saving...' : 'Save Procedure'}
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            'Save Procedure'
+          )}
         </button>
       </div>
     </form>

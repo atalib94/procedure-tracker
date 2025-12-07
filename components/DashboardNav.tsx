@@ -67,10 +67,9 @@ export default function DashboardNav() {
 
       {/* MOBILE: Bottom Navigation Bar */}
       <nav 
-        className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50"
-        style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 8px)' }}
+        className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 pb-safe"
       >
-        <div className="flex items-center justify-around h-14">
+        <div className="flex items-center justify-around py-2 px-1">
           {navItems.map((item) => {
             const isActive = pathname === item.href
             const Icon = item.icon
@@ -79,14 +78,14 @@ export default function DashboardNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center justify-center flex-1 h-full gap-0.5 transition-colors ${
+                className={`flex flex-col items-center justify-center flex-1 py-1.5 gap-0.5 transition-colors ${
                   isActive
                     ? 'text-purple-600'
                     : 'text-gray-500'
                 }`}
               >
-                <Icon className={`w-6 h-6 ${isActive ? 'scale-110' : ''}`} />
-                <span className="text-xs font-medium">{item.name}</span>
+                <Icon className={`w-5 h-5 ${isActive ? 'scale-110' : ''}`} />
+                <span className="text-[10px] font-medium truncate">{item.name}</span>
               </Link>
             )
           })}

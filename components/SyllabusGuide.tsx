@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useMemo } from 'react'
-import { Search, BookOpen, ChevronDown, ChevronRight, GraduationCap, ExternalLink, CheckCircle } from 'lucide-react'
-import { syllabusData, ExamFrequency, KnowledgeItem } from '@/lib/syllabusData'
+import { useState, useMemo, useEffect } from 'react'
+import { Search, BookOpen, ChevronDown, ChevronRight, GraduationCap, ExternalLink, Save, Loader2, CheckCircle2 } from 'lucide-react'
+import { syllabusData, ExamFrequency, Section } from '@/lib/syllabusData'
+import { createClient } from '@/lib/supabase-client'
 
 const frequencyLabels = {
   green: 'Frequently Tested',
@@ -18,11 +19,100 @@ const frequencyColors = {
   purple: 'bg-purple-100 text-purple-800 border-purple-300'
 }
 
+interface UserNote {
+  id?: string
+  endpoint_id: string
+  note_text: string
+  updated_at?: string
+}
+
 export default function SyllabusGuide() {
   const [searchQuery, setSearchQuery] = useState('')
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set(['section-a']))
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
-  const [selectedItem, setSelectedItem] = useState<KnowledgeItem | null>(null)
+  const [selectedSection, setSelectedSection] = useState<Section | null>(null)
+  const [userNotes, setUserNotes] = useState<Record<string, string>>({})
+  const [savingNotes, setSavingNotes] = useState<Set<string>>(new Set())
+  const [savedNotes, setSavedNotes] = useState<Set<string>>(new Set())
+  const [userId, setUserId] = useState<string | null>(null)
+
+  const supabase = createClient()
+
+  // Get current user
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setUserId(user.id)
+        loadUserNotes(user.id)
+      }
+    }
+    getUser()
+  }, [])
+
+  // Load user notes from database
+  const loadUserNotes = async (uid: string) => {
+    const { data, error } = await supabase
+      .from('syllabus_notes')
+      .select('*')
+      .eq('user_id', uid)
+    
+    if (data && !error) {
+      const notesMap: Record<string, string> = {}
+      data.forEach((note: UserNote) => {
+        notesMap[note.endpoint_id] = note.note_text
+      })
+      setUserNotes(notesMap)
+    }
+  }
+
+  // Save note to database
+  const saveNote = async (endpointId: string, noteText: string) => {
+    if (!userId) return
+
+    setSavingNotes(prev => new Set(prev).add(endpointId))
+    setSavedNotes(prev => {
+      const newSet = new Set(prev)
+      newSet.delete(endpointId)
+      return newSet
+    })
+
+    const { error } = await supabase
+      .from('syllabus_notes')
+      .upsert({
+        user_id: userId,
+        endpoint_id: endpointId,
+        note_text: noteText,
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'user_id,endpoint_id'
+      })
+
+    setSavingNotes(prev => {
+      const newSet = new Set(prev)
+      newSet.delete(endpointId)
+      return newSet
+    })
+
+    if (!error) {
+      setSavedNotes(prev => new Set(prev).add(endpointId))
+      setTimeout(() => {
+        setSavedNotes(prev => {
+          const newSet = new Set(prev)
+          newSet.delete(endpointId)
+          return newSet
+        })
+      }, 2000)
+    }
+  }
+
+  // Handle note change
+  const handleNoteChange = (endpointId: string, value: string) => {
+    setUserNotes(prev => ({
+      ...prev,
+      [endpointId]: value
+    }))
+  }
 
   const toggleChapter = (id: string) => {
     const newExpanded = new Set(expandedChapters)
@@ -53,75 +143,22 @@ export default function SyllabusGuide() {
       ...chapter,
       sections: chapter.sections.filter(section => {
         const titleMatch = section.title.toLowerCase().includes(query)
-        const itemMatch = section.knowledgeItems?.some(item => 
-          item.title.toLowerCase().includes(query) || 
-          item.explanation.toLowerCase().includes(query)
+        const endpointMatch = section.knowledgeEndpoints?.some(endpoint => 
+          endpoint.text.toLowerCase().includes(query)
         )
-        return titleMatch || itemMatch
+        return titleMatch || endpointMatch
       })
     })).filter(chapter => chapter.sections.length > 0)
   }, [searchQuery])
 
-  // Count total topics
-  const totalTopics = useMemo(() => {
+  // Count total endpoints
+  const totalEndpoints = useMemo(() => {
     return syllabusData.reduce((acc, chapter) => {
       return acc + chapter.sections.reduce((sAcc, section) => {
-        return sAcc + (section.knowledgeItems?.length || 0)
+        return sAcc + (section.knowledgeEndpoints?.length || 0)
       }, 0)
     }, 0)
   }, [])
-
-  const renderExplanation = (text: string) => {
-    const lines = text.split('\n')
-    return lines.map((line, idx) => {
-      // Headers (bold text on its own line)
-      if (line.startsWith('**') && line.endsWith('**')) {
-        return <h3 key={idx} className="font-bold text-gray-900 mt-4 mb-2 text-base">{line.replace(/\*\*/g, '')}</h3>
-      }
-      // Inline bold with content after
-      if (line.startsWith('**') && line.includes(':**')) {
-        const match = line.match(/^\*\*([^*]+):\*\*(.*)/)
-        if (match) {
-          return (
-            <p key={idx} className="mb-2">
-              <strong className="text-gray-900">{match[1]}:</strong>
-              {match[2]}
-            </p>
-          )
-        }
-      }
-      // Italic terms with colon
-      if (line.startsWith('*') && !line.startsWith('**') && line.includes(':*')) {
-        const parts = line.split(':*')
-        const term = parts[0].replace(/^\*/, '')
-        const rest = parts.slice(1).join(':*').replace(/\*$/, '')
-        return (
-          <p key={idx} className="mb-1 ml-4">
-            <em className="text-gray-800 font-medium">{term}:</em>
-            {rest}
-          </p>
-        )
-      }
-      // Bullet points
-      if (line.startsWith('- ')) {
-        return <li key={idx} className="ml-6 text-gray-700 mb-1">{line.substring(2)}</li>
-      }
-      // Numbered lists
-      if (/^\d+\.\s/.test(line)) {
-        return <li key={idx} className="ml-6 text-gray-700 mb-1 list-decimal">{line.replace(/^\d+\.\s/, '')}</li>
-      }
-      // Empty lines
-      if (line.trim() === '') {
-        return <div key={idx} className="h-2" />
-      }
-      // Horizontal rules / section dividers
-      if (line.trim() === '---') {
-        return <hr key={idx} className="my-4 border-gray-200" />
-      }
-      // Regular paragraph
-      return <p key={idx} className="text-gray-700 mb-2">{line}</p>
-    })
-  }
 
   return (
     <div className="max-w-6xl mx-auto pb-20 lg:pb-6">
@@ -132,7 +169,7 @@ export default function SyllabusGuide() {
           EBIR Syllabus Study Guide
         </h1>
         <p className="text-gray-600 mt-1">
-          European Curriculum and Syllabus for Interventional Radiology (2023) • {totalTopics} topics
+          European Curriculum and Syllabus for Interventional Radiology (2023) • {totalEndpoints} knowledge endpoints
         </p>
       </div>
 
@@ -141,10 +178,10 @@ export default function SyllabusGuide() {
         <div className="flex gap-3">
           <BookOpen className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
           <div className="text-sm text-blue-800">
-            <p className="font-medium">Reference</p>
+            <p className="font-medium">Official CIRSE Knowledge Endpoints</p>
             <p className="mt-1">
-              Based on the European Curriculum and Syllabus for Interventional Radiology, Third Edition (2023), 
-              published by CIRSE and the UEMS Division of Interventional Radiology.
+              These knowledge endpoints are taken directly from the European Curriculum and Syllabus for Interventional Radiology, Third Edition (2023). 
+              Use the text fields below each endpoint to write your own notes and explanations.
             </p>
             <a 
               href="https://www.cirse.org/wp-content/uploads/2023/04/cirse_IRcurriculum_syllabus_2023_web.pdf"
@@ -209,46 +246,25 @@ export default function SyllabusGuide() {
                 {expandedChapters.has(chapter.id) && (
                   <div className="bg-gray-50 border-t border-gray-100">
                     {chapter.sections.map(section => (
-                      <div key={section.id}>
-                        <button
-                          onClick={() => toggleSection(section.id)}
-                          className="w-full px-6 py-2 flex items-center gap-2 hover:bg-gray-100 text-left"
-                        >
-                          {expandedSections.has(section.id) ? (
-                            <ChevronDown className="w-3 h-3 text-gray-400 flex-shrink-0" />
-                          ) : (
-                            <ChevronRight className="w-3 h-3 text-gray-400 flex-shrink-0" />
-                          )}
-                          <span className="text-xs text-gray-500 font-mono">{section.number}</span>
-                          <span className="text-sm text-gray-800 truncate flex-1">{section.title}</span>
-                          {section.frequency && (
-                            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                              section.frequency === 'green' ? 'bg-green-500' :
-                              section.frequency === 'yellow' ? 'bg-yellow-500' :
-                              section.frequency === 'red' ? 'bg-red-500' : 'bg-purple-500'
-                            }`} />
-                          )}
-                        </button>
-
-                        {expandedSections.has(section.id) && section.knowledgeItems && (
-                          <div className="bg-white border-t border-gray-100">
-                            {section.knowledgeItems.map(item => (
-                              <button
-                                key={item.id}
-                                onClick={() => setSelectedItem(item)}
-                                className={`w-full px-8 py-2 text-left text-sm hover:bg-purple-50 flex items-center gap-2 ${
-                                  selectedItem?.id === item.id ? 'bg-purple-50 text-purple-700' : 'text-gray-600'
-                                }`}
-                              >
-                                <CheckCircle className={`w-3 h-3 flex-shrink-0 ${
-                                  selectedItem?.id === item.id ? 'text-purple-500' : 'text-gray-300'
-                                }`} />
-                                <span className="line-clamp-2">{item.title}</span>
-                              </button>
-                            ))}
-                          </div>
+                      <button
+                        key={section.id}
+                        onClick={() => setSelectedSection(section)}
+                        className={`w-full px-6 py-2 flex items-center gap-2 hover:bg-gray-100 text-left ${
+                          selectedSection?.id === section.id ? 'bg-purple-50' : ''
+                        }`}
+                      >
+                        <span className="text-xs text-gray-500 font-mono">{section.number}</span>
+                        <span className={`text-sm flex-1 truncate ${
+                          selectedSection?.id === section.id ? 'text-purple-700 font-medium' : 'text-gray-800'
+                        }`}>{section.title}</span>
+                        {section.frequency && (
+                          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                            section.frequency === 'green' ? 'bg-green-500' :
+                            section.frequency === 'yellow' ? 'bg-yellow-500' :
+                            section.frequency === 'red' ? 'bg-red-500' : 'bg-purple-500'
+                          }`} />
                         )}
-                      </div>
+                      </button>
                     ))}
                   </div>
                 )}
@@ -259,24 +275,87 @@ export default function SyllabusGuide() {
 
         {/* Content */}
         <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-          <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
+          <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
             <h2 className="font-semibold text-gray-900">
-              {selectedItem ? selectedItem.title : 'Select a Topic'}
+              {selectedSection ? selectedSection.title : 'Select a Topic'}
             </h2>
+            {selectedSection?.frequency && (
+              <span className={`px-3 py-1 rounded-full text-xs font-medium border ${frequencyColors[selectedSection.frequency]}`}>
+                {frequencyLabels[selectedSection.frequency]}
+              </span>
+            )}
           </div>
           
-          {selectedItem ? (
+          {selectedSection ? (
             <div className="p-6 max-h-[600px] overflow-y-auto">
-              <div className="prose prose-sm max-w-none">
-                {renderExplanation(selectedItem.explanation)}
+              <p className="text-sm text-gray-600 mb-6">
+                Section {selectedSection.number} • {selectedSection.knowledgeEndpoints?.length || 0} knowledge endpoints
+              </p>
+              
+              <div className="space-y-8">
+                {selectedSection.knowledgeEndpoints?.map((endpoint, index) => (
+                  <div key={endpoint.id} className="border border-gray-200 rounded-lg overflow-hidden">
+                    {/* Knowledge Endpoint Header */}
+                    <div className="bg-purple-50 px-4 py-3 border-b border-gray-200">
+                      <div className="flex items-start gap-3">
+                        <span className="flex-shrink-0 w-6 h-6 bg-purple-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                          {index + 1}
+                        </span>
+                        <p className="text-gray-900 font-medium leading-relaxed">
+                          {endpoint.text}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* User Notes Area */}
+                    <div className="p-4 bg-white">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Your Notes
+                      </label>
+                      <textarea
+                        value={userNotes[endpoint.id] || ''}
+                        onChange={(e) => handleNoteChange(endpoint.id, e.target.value)}
+                        placeholder="Write your own explanation, mnemonics, or study notes here..."
+                        className="w-full h-32 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm resize-none"
+                      />
+                      <div className="mt-2 flex items-center justify-between">
+                        <p className="text-xs text-gray-500">
+                          Your notes are saved to your account
+                        </p>
+                        <button
+                          onClick={() => saveNote(endpoint.id, userNotes[endpoint.id] || '')}
+                          disabled={savingNotes.has(endpoint.id)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          {savingNotes.has(endpoint.id) ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              Saving...
+                            </>
+                          ) : savedNotes.has(endpoint.id) ? (
+                            <>
+                              <CheckCircle2 className="w-4 h-4" />
+                              Saved!
+                            </>
+                          ) : (
+                            <>
+                              <Save className="w-4 h-4" />
+                              Save Note
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           ) : (
             <div className="p-8 text-center text-gray-500">
               <GraduationCap className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p>Select a topic from the contents to view study material</p>
+              <p>Select a topic from the contents to view knowledge endpoints</p>
               <p className="text-sm mt-2">
-                {totalTopics} exam-relevant topics across {syllabusData.length} sections
+                {totalEndpoints} official CIRSE knowledge endpoints across {syllabusData.length} sections
               </p>
             </div>
           )}

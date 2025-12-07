@@ -403,7 +403,7 @@ export default function DashboardClient({
     setIsSelectionMode(!isSelectionMode)
   }
 
-  const categories = useMemo(() => {
+  const categoryNames = useMemo(() => {
     const cats = new Set<string>()
     procedures.forEach(p => {
       if (p.ebir_categories?.name) {
@@ -837,7 +837,7 @@ export default function DashboardClient({
                   className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 >
                   <option value="">All Categories</option>
-                  {categories.map(cat => (
+                  {categoryNames.map(cat => (
                     <option key={cat} value={cat}>{cat}</option>
                   ))}
                 </select>

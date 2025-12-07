@@ -1,8 +1,12 @@
 'use client'
 
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ClipboardList, FileText, Wrench, Settings, Pill, GraduationCap, Brain } from 'lucide-react'
+import { 
+  ClipboardList, FileText, Wrench, Settings, Pill, GraduationCap, Brain,
+  Plus, X, Menu, ClipboardPlus, PackagePlus
+} from 'lucide-react'
 
 const navItems = [
   {
@@ -44,10 +48,35 @@ const navItems = [
 
 export default function DashboardNav() {
   const pathname = usePathname()
+  const [isAddMenuOpen, setIsAddMenuOpen] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const mobileMenuRef = useRef<HTMLDivElement>(null)
+  const addMenuRef = useRef<HTMLDivElement>(null)
+
+  // Close menus when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+        setIsMobileMenuOpen(false)
+      }
+      if (addMenuRef.current && !addMenuRef.current.contains(event.target as Node)) {
+        setIsAddMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  // Close menus on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false)
+    setIsAddMenuOpen(false)
+  }, [pathname])
 
   return (
     <>
-      {/* DESKTOP: Sidebar (links) */}
+      {/* DESKTOP: Sidebar (unchanged) */}
       <nav className="hidden lg:block p-4 space-y-1">
         {navItems.map((item) => {
           const isActive = pathname === item.href
@@ -70,38 +99,95 @@ export default function DashboardNav() {
         })}
       </nav>
 
-      {/* MOBILE: Bottom Navigation Bar */}
-      <nav 
-        className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 pb-safe"
-      >
-        <div 
-          className="grid grid-cols-7 py-2"
-          style={{ 
-            paddingLeft: 'max(env(safe-area-inset-left), 8px)', 
-            paddingRight: 'max(env(safe-area-inset-right), 8px)' 
-          }}
+      {/* MOBILE: Top Menu Button (hamburger) */}
+      <div className="lg:hidden fixed top-3 right-14 z-50" ref={mobileMenuRef}>
+        <button
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="p-2 rounded-lg bg-white border border-gray-200 shadow-sm text-gray-600 hover:bg-gray-50 transition-colors"
+          aria-label="Open menu"
         >
-          {navItems.map((item) => {
-            const isActive = pathname === item.href
-            const Icon = item.icon
+          {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
+
+        {/* Dropdown Menu */}
+        {isMobileMenuOpen && (
+          <div className="absolute right-0 top-12 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
+            {navItems.map((item) => {
+              const isActive = pathname === item.href
+              const Icon = item.icon
+              
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 transition-colors ${
+                    isActive
+                      ? 'bg-purple-50 text-purple-700 font-medium'
+                      : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span>{item.name}</span>
+                </Link>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* MOBILE: Floating Add Button */}
+      <div 
+        className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+        ref={addMenuRef}
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
+        {/* Expanded Menu */}
+        {isAddMenuOpen && (
+          <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex flex-col gap-3 items-center mb-2">
+            {/* Add Procedure Button */}
+            <Link
+              href="/dashboard/procedures/new"
+              onClick={() => setIsAddMenuOpen(false)}
+              className="flex items-center gap-2 px-4 py-3 bg-white rounded-full shadow-lg border border-gray-200 text-gray-700 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-200 transition-all whitespace-nowrap"
+            >
+              <ClipboardPlus className="w-5 h-5" />
+              <span className="font-medium">Add Procedure</span>
+            </Link>
             
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex flex-col items-center justify-center py-1 gap-0.5 transition-colors ${
-                  isActive
-                    ? 'text-purple-600'
-                    : 'text-gray-500'
-                }`}
-              >
-                <Icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'scale-110' : ''}`} />
-                <span className="text-[9px] font-medium leading-tight">{item.name}</span>
-              </Link>
-            )
-          })}
-        </div>
-      </nav>
+            {/* Add Tool Button */}
+            <Link
+              href="/dashboard/toolbox?add=true"
+              onClick={() => setIsAddMenuOpen(false)}
+              className="flex items-center gap-2 px-4 py-3 bg-white rounded-full shadow-lg border border-gray-200 text-gray-700 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-200 transition-all whitespace-nowrap"
+            >
+              <PackagePlus className="w-5 h-5" />
+              <span className="font-medium">Add Tool</span>
+            </Link>
+          </div>
+        )}
+
+        {/* Main FAB Button */}
+        <button
+          onClick={() => setIsAddMenuOpen(!isAddMenuOpen)}
+          className={`w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 ${
+            isAddMenuOpen 
+              ? 'bg-gray-800 rotate-45' 
+              : 'bg-purple-600 hover:bg-purple-700'
+          }`}
+          aria-label={isAddMenuOpen ? 'Close menu' : 'Add new'}
+        >
+          <Plus className="w-7 h-7 text-white" />
+        </button>
+      </div>
+
+      {/* Backdrop when add menu is open */}
+      {isAddMenuOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black/20 z-40"
+          onClick={() => setIsAddMenuOpen(false)}
+        />
+      )}
     </>
   )
 }

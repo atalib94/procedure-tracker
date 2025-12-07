@@ -5,7 +5,8 @@ import {
   Search, BookOpen, ChevronDown, ChevronRight, GraduationCap, ExternalLink, 
   Save, Loader2, CheckCircle2, Expand, Shrink, Bold, Italic, Underline,
   Type, Palette, Image as ImageIcon, X, AlignLeft, AlignCenter, AlignRight,
-  List, ListOrdered, Undo, Redo, Trash2
+  List, ListOrdered, Undo, Redo, Trash2, Filter, CheckCircle, Circle,
+  BarChart3, FileText, PenLine
 } from 'lucide-react'
 import { syllabusData, ExamFrequency, Section } from '@/lib/syllabusData'
 import { createClient } from '@/lib/supabase-client'
@@ -52,6 +53,8 @@ const HIGHLIGHT_COLORS = [
   { label: 'Orange', value: '#fed7aa' },
 ]
 
+type FilterMode = 'all' | 'completed' | 'incomplete'
+
 interface RichTextEditorProps {
   content: string
   onChange: (content: string) => void
@@ -75,7 +78,7 @@ function RichTextEditor({ content, onChange, onSave, isSaving, isSaved, endpoint
     if (editorRef.current && editorRef.current.innerHTML !== content) {
       editorRef.current.innerHTML = content || ''
     }
-  }, [endpointId]) // Only reset when endpoint changes
+  }, [endpointId])
 
   const execCommand = useCallback((command: string, value: string | undefined = undefined) => {
     document.execCommand(command, false, value)
@@ -106,7 +109,6 @@ function RichTextEditor({ content, onChange, onSave, isSaving, isSaved, endpoint
     }
     reader.readAsDataURL(file)
     
-    // Reset file input
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
@@ -163,7 +165,6 @@ function RichTextEditor({ content, onChange, onSave, isSaving, isSaved, endpoint
 
   return (
     <>
-      {/* Backdrop for expanded mode */}
       {isExpanded && (
         <div className="fixed inset-0 bg-black/50 z-40" onClick={() => setIsExpanded(false)} />
       )}
@@ -171,7 +172,6 @@ function RichTextEditor({ content, onChange, onSave, isSaving, isSaved, endpoint
       <div className={editorClasses}>
         {/* Toolbar */}
         <div className="flex items-center gap-1 p-2 bg-gray-50 border-b border-gray-200 flex-wrap">
-          {/* Undo/Redo */}
           <ToolbarButton onClick={() => execCommand('undo')} title="Undo">
             <Undo className="w-4 h-4" />
           </ToolbarButton>
@@ -181,7 +181,6 @@ function RichTextEditor({ content, onChange, onSave, isSaving, isSaved, endpoint
 
           <div className="w-px h-6 bg-gray-300 mx-1" />
 
-          {/* Text formatting */}
           <ToolbarButton onClick={() => execCommand('bold')} title="Bold (Ctrl+B)">
             <Bold className="w-4 h-4" />
           </ToolbarButton>
@@ -197,7 +196,6 @@ function RichTextEditor({ content, onChange, onSave, isSaving, isSaved, endpoint
 
           <div className="w-px h-6 bg-gray-300 mx-1" />
 
-          {/* Font Size */}
           <div className="relative">
             <ToolbarButton onClick={() => { setShowFontSize(!showFontSize); setShowTextColor(false); setShowHighlight(false); }} title="Font Size">
               <Type className="w-4 h-4" />
@@ -215,7 +213,6 @@ function RichTextEditor({ content, onChange, onSave, isSaving, isSaved, endpoint
             </DropdownMenu>
           </div>
 
-          {/* Text Color */}
           <div className="relative">
             <ToolbarButton onClick={() => { setShowTextColor(!showTextColor); setShowFontSize(false); setShowHighlight(false); }} title="Text Color">
               <div className="flex flex-col items-center">
@@ -238,7 +235,6 @@ function RichTextEditor({ content, onChange, onSave, isSaving, isSaved, endpoint
             </DropdownMenu>
           </div>
 
-          {/* Highlight Color */}
           <div className="relative">
             <ToolbarButton onClick={() => { setShowHighlight(!showHighlight); setShowFontSize(false); setShowTextColor(false); }} title="Highlight">
               <Palette className="w-4 h-4" />
@@ -262,7 +258,6 @@ function RichTextEditor({ content, onChange, onSave, isSaving, isSaved, endpoint
 
           <div className="w-px h-6 bg-gray-300 mx-1" />
 
-          {/* Alignment */}
           <ToolbarButton onClick={() => execCommand('justifyLeft')} title="Align Left">
             <AlignLeft className="w-4 h-4" />
           </ToolbarButton>
@@ -275,7 +270,6 @@ function RichTextEditor({ content, onChange, onSave, isSaving, isSaved, endpoint
 
           <div className="w-px h-6 bg-gray-300 mx-1" />
 
-          {/* Lists */}
           <ToolbarButton onClick={() => execCommand('insertUnorderedList')} title="Bullet List">
             <List className="w-4 h-4" />
           </ToolbarButton>
@@ -285,7 +279,6 @@ function RichTextEditor({ content, onChange, onSave, isSaving, isSaved, endpoint
 
           <div className="w-px h-6 bg-gray-300 mx-1" />
 
-          {/* Image Upload */}
           <ToolbarButton onClick={() => fileInputRef.current?.click()} title="Insert Image">
             <ImageIcon className="w-4 h-4" />
           </ToolbarButton>
@@ -297,15 +290,12 @@ function RichTextEditor({ content, onChange, onSave, isSaving, isSaved, endpoint
             className="hidden"
           />
 
-          {/* Clear Formatting */}
           <ToolbarButton onClick={() => execCommand('removeFormat')} title="Clear Formatting">
             <Trash2 className="w-4 h-4" />
           </ToolbarButton>
 
-          {/* Spacer */}
           <div className="flex-1" />
 
-          {/* Expand/Collapse */}
           <ToolbarButton onClick={() => setIsExpanded(!isExpanded)} title={isExpanded ? "Collapse" : "Expand"}>
             {isExpanded ? <Shrink className="w-4 h-4" /> : <Expand className="w-4 h-4" />}
           </ToolbarButton>
@@ -362,7 +352,6 @@ function RichTextEditor({ content, onChange, onSave, isSaving, isSaved, endpoint
         </div>
       </div>
 
-      {/* Placeholder styling */}
       <style jsx global>{`
         [contenteditable]:empty:before {
           content: attr(data-placeholder);
@@ -386,12 +375,13 @@ function RichTextEditor({ content, onChange, onSave, isSaving, isSaved, endpoint
 export default function SyllabusGuide() {
   const [searchQuery, setSearchQuery] = useState('')
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(new Set(['section-a']))
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set())
   const [selectedSection, setSelectedSection] = useState<Section | null>(null)
   const [userNotes, setUserNotes] = useState<Record<string, string>>({})
   const [savingNotes, setSavingNotes] = useState<Set<string>>(new Set())
   const [savedNotes, setSavedNotes] = useState<Set<string>>(new Set())
   const [userId, setUserId] = useState<string | null>(null)
+  const [filterMode, setFilterMode] = useState<FilterMode>('all')
+  const [isLoading, setIsLoading] = useState(true)
 
   const supabase = createClient()
 
@@ -401,8 +391,9 @@ export default function SyllabusGuide() {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         setUserId(user.id)
-        loadUserNotes(user.id)
+        await loadUserNotes(user.id)
       }
+      setIsLoading(false)
     }
     getUser()
   }, [])
@@ -481,31 +472,94 @@ export default function SyllabusGuide() {
     setExpandedChapters(newExpanded)
   }
 
-  // Search functionality
-  const filteredData = useMemo(() => {
-    if (!searchQuery.trim()) return syllabusData
+  // Check if a note has content (not empty or just whitespace/empty HTML)
+  const hasNoteContent = useCallback((endpointId: string) => {
+    const note = userNotes[endpointId]
+    if (!note) return false
+    // Strip HTML tags and check if there's actual content
+    const textContent = note.replace(/<[^>]*>/g, '').trim()
+    return textContent.length > 0
+  }, [userNotes])
 
-    const query = searchQuery.toLowerCase()
-    return syllabusData.map(chapter => ({
-      ...chapter,
-      sections: chapter.sections.filter(section => {
-        const titleMatch = section.title.toLowerCase().includes(query)
-        const endpointMatch = section.knowledgeEndpoints?.some(endpoint => 
-          endpoint.text.toLowerCase().includes(query)
-        )
-        return titleMatch || endpointMatch
+  // Get all endpoint IDs
+  const allEndpointIds = useMemo(() => {
+    const ids: string[] = []
+    syllabusData.forEach(chapter => {
+      chapter.sections.forEach(section => {
+        section.knowledgeEndpoints?.forEach(endpoint => {
+          ids.push(endpoint.id)
+        })
       })
-    })).filter(chapter => chapter.sections.length > 0)
-  }, [searchQuery])
-
-  // Count total endpoints
-  const totalEndpoints = useMemo(() => {
-    return syllabusData.reduce((acc, chapter) => {
-      return acc + chapter.sections.reduce((sAcc, section) => {
-        return sAcc + (section.knowledgeEndpoints?.length || 0)
-      }, 0)
-    }, 0)
+    })
+    return ids
   }, [])
+
+  // Calculate statistics
+  const stats = useMemo(() => {
+    const total = allEndpointIds.length
+    const completed = allEndpointIds.filter(id => hasNoteContent(id)).length
+    const incomplete = total - completed
+    const percentage = total > 0 ? Math.round((completed / total) * 100) : 0
+    return { total, completed, incomplete, percentage }
+  }, [allEndpointIds, hasNoteContent])
+
+  // Filter sections based on filter mode and search
+  const filteredData = useMemo(() => {
+    let data = syllabusData
+
+    // First apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      data = data.map(chapter => ({
+        ...chapter,
+        sections: chapter.sections.filter(section => {
+          const titleMatch = section.title.toLowerCase().includes(query)
+          const endpointMatch = section.knowledgeEndpoints?.some(endpoint => 
+            endpoint.text.toLowerCase().includes(query)
+          )
+          return titleMatch || endpointMatch
+        })
+      })).filter(chapter => chapter.sections.length > 0)
+    }
+
+    // Then apply completion filter
+    if (filterMode !== 'all') {
+      data = data.map(chapter => ({
+        ...chapter,
+        sections: chapter.sections.map(section => ({
+          ...section,
+          knowledgeEndpoints: section.knowledgeEndpoints?.filter(endpoint => {
+            const hasContent = hasNoteContent(endpoint.id)
+            return filterMode === 'completed' ? hasContent : !hasContent
+          })
+        })).filter(section => section.knowledgeEndpoints && section.knowledgeEndpoints.length > 0)
+      })).filter(chapter => chapter.sections.length > 0)
+    }
+
+    return data
+  }, [searchQuery, filterMode, hasNoteContent])
+
+  // Filter endpoints in selected section
+  const filteredEndpoints = useMemo(() => {
+    if (!selectedSection?.knowledgeEndpoints) return []
+    
+    if (filterMode === 'all') {
+      return selectedSection.knowledgeEndpoints
+    }
+    
+    return selectedSection.knowledgeEndpoints.filter(endpoint => {
+      const hasContent = hasNoteContent(endpoint.id)
+      return filterMode === 'completed' ? hasContent : !hasContent
+    })
+  }, [selectedSection, filterMode, hasNoteContent])
+
+  // Count completed in current section
+  const sectionStats = useMemo(() => {
+    if (!selectedSection?.knowledgeEndpoints) return { total: 0, completed: 0 }
+    const total = selectedSection.knowledgeEndpoints.length
+    const completed = selectedSection.knowledgeEndpoints.filter(ep => hasNoteContent(ep.id)).length
+    return { total, completed }
+  }, [selectedSection, hasNoteContent])
 
   return (
     <div className="max-w-6xl mx-auto pb-20 lg:pb-6">
@@ -516,8 +570,129 @@ export default function SyllabusGuide() {
           EBIR Syllabus Study Guide
         </h1>
         <p className="text-gray-600 mt-1">
-          European Curriculum and Syllabus for Interventional Radiology (2023) • {totalEndpoints} knowledge endpoints
+          European Curriculum and Syllabus for Interventional Radiology (2023)
         </p>
+      </div>
+
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <FileText className="w-5 h-5 text-purple-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+              <p className="text-xs text-gray-500">Total Topics</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-900">{stats.completed}</p>
+              <p className="text-xs text-gray-500">Completed</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-orange-100 rounded-lg">
+              <PenLine className="w-5 h-5 text-orange-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-900">{stats.incomplete}</p>
+              <p className="text-xs text-gray-500">Remaining</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <BarChart3 className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-900">{stats.percentage}%</p>
+              <p className="text-xs text-gray-500">Progress</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Progress Bar */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-medium text-gray-700">Overall Progress</span>
+          <span className="text-sm text-gray-500">{stats.completed} / {stats.total} topics</span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-3">
+          <div 
+            className="bg-gradient-to-r from-purple-500 to-purple-600 h-3 rounded-full transition-all duration-500"
+            style={{ width: `${stats.percentage}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Filter and Search */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+        <div className="flex flex-col sm:flex-row gap-4">
+          {/* Search */}
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search topics..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            />
+          </div>
+          
+          {/* Filter Buttons */}
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-gray-500" />
+            <div className="flex rounded-lg border border-gray-300 overflow-hidden">
+              <button
+                onClick={() => setFilterMode('all')}
+                className={`px-3 py-2 text-sm font-medium transition-colors ${
+                  filterMode === 'all' 
+                    ? 'bg-purple-600 text-white' 
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                All
+              </button>
+              <button
+                onClick={() => setFilterMode('completed')}
+                className={`px-3 py-2 text-sm font-medium transition-colors border-l border-gray-300 ${
+                  filterMode === 'completed' 
+                    ? 'bg-green-600 text-white' 
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <span className="hidden sm:inline">Completed</span>
+                <span className="sm:hidden">Done</span>
+              </button>
+              <button
+                onClick={() => setFilterMode('incomplete')}
+                className={`px-3 py-2 text-sm font-medium transition-colors border-l border-gray-300 ${
+                  filterMode === 'incomplete' 
+                    ? 'bg-orange-600 text-white' 
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <span className="hidden sm:inline">Incomplete</span>
+                <span className="sm:hidden">Todo</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Reference Notice */}
@@ -527,8 +702,8 @@ export default function SyllabusGuide() {
           <div className="text-sm text-blue-800">
             <p className="font-medium">Official CIRSE Knowledge Endpoints</p>
             <p className="mt-1">
-              These knowledge endpoints are taken directly from the European Curriculum and Syllabus for Interventional Radiology, Third Edition (2023). 
-              Use the rich text editor below each endpoint to write your own notes with formatting, images, and more.
+              Knowledge endpoints from the European Curriculum and Syllabus for IR (2023). 
+              Write your own notes with formatting, images, and more.
             </p>
             <a 
               href="https://www.cirse.org/wp-content/uploads/2023/04/cirse_IRcurriculum_syllabus_2023_web.pdf"
@@ -554,20 +729,6 @@ export default function SyllabusGuide() {
         </div>
       </div>
 
-      {/* Search */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search topics (e.g., PAE, TIPS, biopsy, embolization, ABI...)"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-          />
-        </div>
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Navigation */}
         <div className="lg:col-span-1 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -575,57 +736,81 @@ export default function SyllabusGuide() {
             <h2 className="font-semibold text-gray-900">Contents</h2>
           </div>
           <div className="max-h-[600px] overflow-y-auto divide-y divide-gray-100">
-            {filteredData.map(chapter => (
-              <div key={chapter.id}>
-                <button
-                  onClick={() => toggleChapter(chapter.id)}
-                  className="w-full px-4 py-3 flex items-center gap-2 hover:bg-gray-50 text-left"
-                >
-                  {expandedChapters.has(chapter.id) ? (
-                    <ChevronDown className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                  ) : (
-                    <ChevronRight className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                  )}
-                  <span className="font-medium text-purple-600">Section {chapter.letter}</span>
-                  <span className="text-gray-700 text-sm truncate">{chapter.title}</span>
-                </button>
-
-                {expandedChapters.has(chapter.id) && (
-                  <div className="bg-gray-50 border-t border-gray-100">
-                    {chapter.sections.map(section => (
-                      <button
-                        key={section.id}
-                        onClick={() => setSelectedSection(section)}
-                        className={`w-full px-6 py-2 flex items-center gap-2 hover:bg-gray-100 text-left ${
-                          selectedSection?.id === section.id ? 'bg-purple-50' : ''
-                        }`}
-                      >
-                        <span className="text-xs text-gray-500 font-mono">{section.number}</span>
-                        <span className={`text-sm flex-1 truncate ${
-                          selectedSection?.id === section.id ? 'text-purple-700 font-medium' : 'text-gray-800'
-                        }`}>{section.title}</span>
-                        {section.frequency && (
-                          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                            section.frequency === 'green' ? 'bg-green-500' :
-                            section.frequency === 'yellow' ? 'bg-yellow-500' :
-                            section.frequency === 'red' ? 'bg-red-500' : 'bg-purple-500'
-                          }`} />
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                )}
+            {filteredData.length === 0 ? (
+              <div className="p-4 text-center text-gray-500">
+                <p>No topics match your filter</p>
               </div>
-            ))}
+            ) : (
+              filteredData.map(chapter => (
+                <div key={chapter.id}>
+                  <button
+                    onClick={() => toggleChapter(chapter.id)}
+                    className="w-full px-4 py-3 flex items-center gap-2 hover:bg-gray-50 text-left"
+                  >
+                    {expandedChapters.has(chapter.id) ? (
+                      <ChevronDown className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                    )}
+                    <span className="font-medium text-purple-600">Section {chapter.letter}</span>
+                    <span className="text-gray-700 text-sm truncate">{chapter.title}</span>
+                  </button>
+
+                  {expandedChapters.has(chapter.id) && (
+                    <div className="bg-gray-50 border-t border-gray-100">
+                      {chapter.sections.map(section => {
+                        const sectionCompleted = section.knowledgeEndpoints?.filter(ep => hasNoteContent(ep.id)).length || 0
+                        const sectionTotal = section.knowledgeEndpoints?.length || 0
+                        
+                        return (
+                          <button
+                            key={section.id}
+                            onClick={() => setSelectedSection(section)}
+                            className={`w-full px-6 py-2 flex items-center gap-2 hover:bg-gray-100 text-left ${
+                              selectedSection?.id === section.id ? 'bg-purple-50' : ''
+                            }`}
+                          >
+                            {sectionCompleted === sectionTotal && sectionTotal > 0 ? (
+                              <CheckCircle className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
+                            ) : (
+                              <Circle className="w-3.5 h-3.5 text-gray-300 flex-shrink-0" />
+                            )}
+                            <span className="text-xs text-gray-500 font-mono">{section.number}</span>
+                            <span className={`text-sm flex-1 truncate ${
+                              selectedSection?.id === section.id ? 'text-purple-700 font-medium' : 'text-gray-800'
+                            }`}>{section.title}</span>
+                            <span className="text-xs text-gray-400">{sectionCompleted}/{sectionTotal}</span>
+                            {section.frequency && (
+                              <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                                section.frequency === 'green' ? 'bg-green-500' :
+                                section.frequency === 'yellow' ? 'bg-yellow-500' :
+                                section.frequency === 'red' ? 'bg-red-500' : 'bg-purple-500'
+                              }`} />
+                            )}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
           </div>
         </div>
 
         {/* Content */}
         <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
-            <h2 className="font-semibold text-gray-900">
-              {selectedSection ? selectedSection.title : 'Select a Topic'}
-            </h2>
+            <div>
+              <h2 className="font-semibold text-gray-900">
+                {selectedSection ? selectedSection.title : 'Select a Topic'}
+              </h2>
+              {selectedSection && (
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {sectionStats.completed}/{sectionStats.total} completed
+                </p>
+              )}
+            </div>
             {selectedSection?.frequency && (
               <span className={`px-3 py-1 rounded-full text-xs font-medium border ${frequencyColors[selectedSection.frequency]}`}>
                 {frequencyLabels[selectedSection.frequency]}
@@ -635,49 +820,61 @@ export default function SyllabusGuide() {
           
           {selectedSection ? (
             <div className="p-6 max-h-[calc(100vh-300px)] overflow-y-auto">
-              <p className="text-sm text-gray-600 mb-6">
-                Section {selectedSection.number} • {selectedSection.knowledgeEndpoints?.length || 0} knowledge endpoints
-              </p>
-              
-              <div className="space-y-8">
-                {selectedSection.knowledgeEndpoints?.map((endpoint, index) => (
-                  <div key={endpoint.id} className="border border-gray-200 rounded-lg overflow-hidden">
-                    {/* Knowledge Endpoint Header */}
-                    <div className="bg-purple-50 px-4 py-3 border-b border-gray-200">
-                      <div className="flex items-start gap-3">
-                        <span className="flex-shrink-0 w-6 h-6 bg-purple-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
-                          {index + 1}
-                        </span>
-                        <p className="text-gray-900 font-medium leading-relaxed">
-                          {endpoint.text}
-                        </p>
+              {filteredEndpoints.length === 0 ? (
+                <div className="text-center text-gray-500 py-8">
+                  <p>No topics match your filter in this section</p>
+                  <button
+                    onClick={() => setFilterMode('all')}
+                    className="mt-2 text-purple-600 hover:text-purple-700 text-sm font-medium"
+                  >
+                    Show all topics
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-8">
+                  {filteredEndpoints.map((endpoint, index) => (
+                    <div key={endpoint.id} className="border border-gray-200 rounded-lg overflow-hidden">
+                      {/* Knowledge Endpoint Header */}
+                      <div className={`px-4 py-3 border-b border-gray-200 ${hasNoteContent(endpoint.id) ? 'bg-green-50' : 'bg-purple-50'}`}>
+                        <div className="flex items-start gap-3">
+                          <span className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                            hasNoteContent(endpoint.id) 
+                              ? 'bg-green-600 text-white' 
+                              : 'bg-purple-600 text-white'
+                          }`}>
+                            {hasNoteContent(endpoint.id) ? <CheckCircle className="w-4 h-4" /> : index + 1}
+                          </span>
+                          <p className="text-gray-900 font-medium leading-relaxed">
+                            {endpoint.text}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {/* Rich Text Editor */}
+                      <div className="p-4 bg-white">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Your Notes
+                        </label>
+                        <RichTextEditor
+                          content={userNotes[endpoint.id] || ''}
+                          onChange={(content) => handleNoteChange(endpoint.id, content)}
+                          onSave={() => saveNote(endpoint.id, userNotes[endpoint.id] || '')}
+                          isSaving={savingNotes.has(endpoint.id)}
+                          isSaved={savedNotes.has(endpoint.id)}
+                          endpointId={endpoint.id}
+                        />
                       </div>
                     </div>
-                    
-                    {/* Rich Text Editor */}
-                    <div className="p-4 bg-white">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Your Notes
-                      </label>
-                      <RichTextEditor
-                        content={userNotes[endpoint.id] || ''}
-                        onChange={(content) => handleNoteChange(endpoint.id, content)}
-                        onSave={() => saveNote(endpoint.id, userNotes[endpoint.id] || '')}
-                        isSaving={savingNotes.has(endpoint.id)}
-                        isSaved={savedNotes.has(endpoint.id)}
-                        endpointId={endpoint.id}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           ) : (
             <div className="p-8 text-center text-gray-500">
               <GraduationCap className="w-12 h-12 text-gray-300 mx-auto mb-3" />
               <p>Select a topic from the contents to view knowledge endpoints</p>
               <p className="text-sm mt-2">
-                {totalEndpoints} official CIRSE knowledge endpoints across {syllabusData.length} sections
+                {stats.total} official CIRSE knowledge endpoints across {syllabusData.length} sections
               </p>
             </div>
           )}

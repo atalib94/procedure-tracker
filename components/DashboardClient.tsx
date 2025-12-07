@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Plus, Search, ArrowUpDown, ArrowUp, ArrowDown, Calendar, Filter, Download, FileSpreadsheet, X, Loader2, RefreshCw, Archive, ArchiveRestore, FolderOpen } from 'lucide-react'
+import { Plus, Search, ArrowUp, ArrowDown, Filter, Download, FileSpreadsheet, X, Loader2, RefreshCw, Archive, ArchiveRestore, FolderOpen, CheckSquare, Square, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import ProcedureCard from '@/components/ProcedureCard'
@@ -43,15 +43,18 @@ export default function DashboardClient({
   const [exportDateTo, setExportDateTo] = useState('')
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [viewMode, setViewMode] = useState<ViewMode>('active')
+  
+  // Multi-select state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [isSelectionMode, setIsSelectionMode] = useState(false)
+  const [bulkActionLoading, setBulkActionLoading] = useState(false)
 
-  // Refresh function
   const handleRefresh = async () => {
     setIsRefreshing(true)
     router.refresh()
     setTimeout(() => setIsRefreshing(false), 500)
   }
 
-  // Archive toggle function
   const handleArchiveToggle = async (id: string, archived: boolean) => {
     const { error } = await supabase
       .from('procedures')
@@ -59,14 +62,83 @@ export default function DashboardClient({
       .eq('id', id)
 
     if (!error) {
-      // Update local state
       setProcedures(prev => 
         prev.map(p => p.id === id ? { ...p, archived } : p)
       )
     }
   }
 
-  // Get unique categories from procedures
+  const handleBulkArchive = async (archive: boolean) => {
+    if (selectedIds.size === 0) return
+    
+    setBulkActionLoading(true)
+    
+    const { error } = await supabase
+      .from('procedures')
+      .update({ archived: archive })
+      .in('id', Array.from(selectedIds))
+
+    if (!error) {
+      setProcedures(prev => 
+        prev.map(p => selectedIds.has(p.id) ? { ...p, archived: archive } : p)
+      )
+      setSelectedIds(new Set())
+      setIsSelectionMode(false)
+    }
+    
+    setBulkActionLoading(false)
+  }
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return
+    
+    const confirmMessage = `Are you sure you want to delete ${selectedIds.size} procedure${selectedIds.size > 1 ? 's' : ''}? This action cannot be undone.`
+    if (!confirm(confirmMessage)) return
+    
+    setBulkActionLoading(true)
+    
+    const { error } = await supabase
+      .from('procedures')
+      .delete()
+      .in('id', Array.from(selectedIds))
+
+    if (!error) {
+      setProcedures(prev => prev.filter(p => !selectedIds.has(p.id)))
+      setSelectedIds(new Set())
+      setIsSelectionMode(false)
+    }
+    
+    setBulkActionLoading(false)
+  }
+
+  const toggleSelection = (id: string) => {
+    setSelectedIds(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(id)) {
+        newSet.delete(id)
+      } else {
+        newSet.add(id)
+      }
+      return newSet
+    })
+  }
+
+  const selectAll = () => {
+    const allVisibleIds = filteredAndSortedProcedures.map(p => p.id)
+    setSelectedIds(new Set(allVisibleIds))
+  }
+
+  const unselectAll = () => {
+    setSelectedIds(new Set())
+  }
+
+  const toggleSelectionMode = () => {
+    if (isSelectionMode) {
+      setSelectedIds(new Set())
+    }
+    setIsSelectionMode(!isSelectionMode)
+  }
+
   const categories = useMemo(() => {
     const cats = new Set<string>()
     procedures.forEach(p => {
@@ -77,20 +149,16 @@ export default function DashboardClient({
     return Array.from(cats).sort()
   }, [procedures])
 
-  // Count archived and active procedures
   const archiveCounts = useMemo(() => {
     const archived = procedures.filter(p => p.archived).length
     const active = procedures.filter(p => !p.archived).length
     return { archived, active }
   }, [procedures])
 
-  // Filter and sort procedures
   const filteredAndSortedProcedures = useMemo(() => {
     let filtered = procedures.filter(p => {
-      // View mode filter (archived vs active)
       const matchesViewMode = viewMode === 'archived' ? p.archived : !p.archived
       
-      // Search filter
       const searchLower = searchQuery.toLowerCase()
       const matchesSearch = !searchQuery || 
         p.procedure_name?.toLowerCase().includes(searchLower) ||
@@ -99,13 +167,11 @@ export default function DashboardClient({
         p.ebir_categories?.name?.toLowerCase().includes(searchLower) ||
         p.medical_centres?.name?.toLowerCase().includes(searchLower)
       
-      // Category filter
       const matchesCategory = !categoryFilter || p.ebir_categories?.name === categoryFilter
       
       return matchesViewMode && matchesSearch && matchesCategory
     })
 
-    // Sort
     filtered.sort((a, b) => {
       let comparison = 0
       
@@ -127,6 +193,9 @@ export default function DashboardClient({
     return filtered
   }, [procedures, searchQuery, sortField, sortDirection, categoryFilter, viewMode])
 
+  const allSelected = filteredAndSortedProcedures.length > 0 && 
+    filteredAndSortedProcedures.every(p => selectedIds.has(p.id))
+
   const handleSort = (field: SortField) => {
     if (sortField === field) {
       setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')
@@ -142,12 +211,10 @@ export default function DashboardClient({
     { value: 'created_at', label: 'Added' },
   ]
 
-  // Export to CSV (EBIR format)
   const handleExport = (format: 'csv' | 'ebir') => {
     setExportLoading(true)
     
     try {
-      // Filter by date range if specified, exclude archived
       let dataToExport = procedures.filter(p => !p.archived)
       
       if (exportDateFrom) {
@@ -157,25 +224,13 @@ export default function DashboardClient({
         dataToExport = dataToExport.filter(p => p.procedure_date <= exportDateTo)
       }
 
-      // Sort by date
       dataToExport.sort((a, b) => new Date(a.procedure_date).getTime() - new Date(b.procedure_date).getTime())
 
       let csvContent = ''
       let filename = ''
 
       if (format === 'ebir') {
-        // EBIR Format: specific columns for European Board of Interventional Radiology
-        const headers = [
-          'Date',
-          'EBIR Category Code',
-          'EBIR Category',
-          'Procedure Name',
-          'Role',
-          'Medical Centre',
-          'Case ID',
-          'Notes'
-        ]
-        
+        const headers = ['Date', 'EBIR Category Code', 'EBIR Category', 'Procedure Name', 'Role', 'Medical Centre', 'Case ID', 'Notes']
         csvContent = headers.join(';') + '\n'
         
         dataToExport.forEach(p => {
@@ -194,19 +249,7 @@ export default function DashboardClient({
         
         filename = `EBIR_Logbook_${new Date().toISOString().split('T')[0]}.csv`
       } else {
-        // Standard CSV format
-        const headers = [
-          'Date',
-          'Procedure Name',
-          'Category',
-          'Category Code',
-          'Operator Role',
-          'Medical Centre',
-          'Case ID',
-          'Notes',
-          'Created At'
-        ]
-        
+        const headers = ['Date', 'Procedure Name', 'Category', 'Category Code', 'Operator Role', 'Medical Centre', 'Case ID', 'Notes', 'Created At']
         csvContent = headers.join(',') + '\n'
         
         dataToExport.forEach(p => {
@@ -227,7 +270,6 @@ export default function DashboardClient({
         filename = `Procedures_Export_${new Date().toISOString().split('T')[0]}.csv`
       }
 
-      // Create and download file
       const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' })
       const link = document.createElement('a')
       link.href = URL.createObjectURL(blob)
@@ -245,10 +287,8 @@ export default function DashboardClient({
 
   return (
     <div className="space-y-6">
-      {/* HIPAA Notice */}
       <HIPAANotice />
 
-      {/* Stats Cards */}
       <StatsCards
         totalProcedures={totalProcedures}
         asFirstOperator={asFirstOperator}
@@ -256,11 +296,8 @@ export default function DashboardClient({
         categoriesUsed={categoriesUsed}
       />
 
-      {/* Procedures List */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        {/* Header */}
         <div className="p-4 border-b border-gray-200">
-          {/* View Mode Toggle */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <div className="flex rounded-lg border border-gray-300 overflow-hidden">
@@ -300,7 +337,18 @@ export default function DashboardClient({
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Refresh button */}
+              <button
+                onClick={toggleSelectionMode}
+                className={`p-2 rounded-lg transition-colors ${
+                  isSelectionMode 
+                    ? 'bg-purple-100 text-purple-600' 
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                }`}
+                title={isSelectionMode ? "Exit selection mode" : "Select multiple"}
+              >
+                <CheckSquare className="w-5 h-5" />
+              </button>
+
               <button
                 onClick={handleRefresh}
                 disabled={isRefreshing}
@@ -310,7 +358,6 @@ export default function DashboardClient({
                 <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
               </button>
 
-              {/* Export button */}
               <button
                 onClick={() => setShowExportModal(true)}
                 className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
@@ -319,7 +366,6 @@ export default function DashboardClient({
                 <Download className="w-5 h-5" />
               </button>
 
-              {/* Add new procedure */}
               <Link
                 href="/dashboard/procedures/new"
                 className="inline-flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-purple-700 transition-colors"
@@ -330,7 +376,82 @@ export default function DashboardClient({
             </div>
           </div>
 
-          {/* Search and Filters */}
+          {isSelectionMode && (
+            <div className="mb-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={allSelected ? unselectAll : selectAll}
+                    className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-purple-700 hover:bg-purple-100 rounded-lg transition-colors"
+                  >
+                    {allSelected ? (
+                      <>
+                        <Square className="w-4 h-4" />
+                        Unselect All
+                      </>
+                    ) : (
+                      <>
+                        <CheckSquare className="w-4 h-4" />
+                        Select All ({filteredAndSortedProcedures.length})
+                      </>
+                    )}
+                  </button>
+                  
+                  {selectedIds.size > 0 && (
+                    <span className="text-sm text-purple-600 font-medium">
+                      {selectedIds.size} selected
+                    </span>
+                  )}
+                </div>
+
+                {selectedIds.size > 0 && (
+                  <div className="flex items-center gap-2">
+                    {viewMode === 'active' ? (
+                      <button
+                        onClick={() => handleBulkArchive(true)}
+                        disabled={bulkActionLoading}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50"
+                      >
+                        {bulkActionLoading ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Archive className="w-4 h-4" />
+                        )}
+                        Archive Selected
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleBulkArchive(false)}
+                        disabled={bulkActionLoading}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                      >
+                        {bulkActionLoading ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <ArchiveRestore className="w-4 h-4" />
+                        )}
+                        Restore Selected
+                      </button>
+                    )}
+                    
+                    <button
+                      onClick={handleBulkDelete}
+                      disabled={bulkActionLoading}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                    >
+                      {bulkActionLoading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
+                      Delete Selected
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -343,7 +464,6 @@ export default function DashboardClient({
               />
             </div>
             <div className="flex items-center gap-2">
-              {/* Filter toggle */}
               <button
                 onClick={() => setShowFilters(!showFilters)}
                 className={`p-2 rounded-lg transition-colors ${showFilters ? 'bg-purple-100 text-purple-600' : 'text-gray-500 hover:bg-gray-100'}`}
@@ -351,7 +471,6 @@ export default function DashboardClient({
                 <Filter className="w-5 h-5" />
               </button>
 
-              {/* Sort dropdown */}
               <div className="flex items-center gap-1">
                 <select
                   value={sortField}
@@ -376,7 +495,6 @@ export default function DashboardClient({
             </div>
           </div>
 
-          {/* Filter Panel */}
           {showFilters && (
             <div className="mt-3 pt-3 border-t border-gray-200">
               <div className="flex flex-wrap items-center gap-3">
@@ -404,7 +522,6 @@ export default function DashboardClient({
           )}
         </div>
 
-        {/* Results count */}
         {(searchQuery || categoryFilter) && (
           <div className="px-4 py-2 bg-gray-50 border-b border-gray-200 text-sm text-gray-600">
             {filteredAndSortedProcedures.length} procedure{filteredAndSortedProcedures.length !== 1 ? 's' : ''} found
@@ -413,8 +530,7 @@ export default function DashboardClient({
           </div>
         )}
 
-        {/* Archive info banner */}
-        {viewMode === 'archived' && archiveCounts.archived > 0 && (
+        {viewMode === 'archived' && archiveCounts.archived > 0 && !isSelectionMode && (
           <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center gap-2 text-sm text-gray-600">
             <Archive className="w-4 h-4" />
             <span>Showing archived procedures. Click <ArchiveRestore className="w-4 h-4 inline" /> to restore.</span>
@@ -428,7 +544,10 @@ export default function DashboardClient({
                 key={procedure.id} 
                 procedure={procedure}
                 onArchiveToggle={handleArchiveToggle}
-                showArchiveButton={true}
+                showArchiveButton={!isSelectionMode}
+                isSelectionMode={isSelectionMode}
+                isSelected={selectedIds.has(procedure.id)}
+                onToggleSelect={() => toggleSelection(procedure.id)}
               />
             ))
           ) : viewMode === 'archived' && archiveCounts.archived === 0 ? (
@@ -481,7 +600,6 @@ export default function DashboardClient({
         </div>
       </div>
 
-      {/* Export Modal */}
       {showExportModal && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
@@ -504,7 +622,6 @@ export default function DashboardClient({
                 </button>
               </div>
 
-              {/* Info about archived */}
               {archiveCounts.archived > 0 && (
                 <div className="mb-4 p-3 bg-gray-50 rounded-lg text-sm text-gray-600 flex items-center gap-2">
                   <Archive className="w-4 h-4 flex-shrink-0" />
@@ -512,7 +629,6 @@ export default function DashboardClient({
                 </div>
               )}
 
-              {/* Date Range Filter */}
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Date Range <span className="text-gray-400">(optional)</span>
@@ -542,7 +658,6 @@ export default function DashboardClient({
                 </p>
               </div>
 
-              {/* Export Format Options */}
               <div className="space-y-3">
                 <button
                   onClick={() => handleExport('ebir')}
@@ -556,7 +671,7 @@ export default function DashboardClient({
                         European Board of Interventional Radiology logbook format
                       </div>
                       <div className="text-xs text-purple-600 mt-1">
-                        Semicolon-separated (.csv) • Ready for EBIR submission
+                        Semicolon-separated (.csv) - Ready for EBIR submission
                       </div>
                     </div>
                     {exportLoading ? (
@@ -579,7 +694,7 @@ export default function DashboardClient({
                         Compatible with Excel, Google Sheets, etc.
                       </div>
                       <div className="text-xs text-gray-500 mt-1">
-                        Comma-separated (.csv) • All fields included
+                        Comma-separated (.csv) - All fields included
                       </div>
                     </div>
                     {exportLoading ? (

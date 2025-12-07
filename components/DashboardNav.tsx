@@ -1,3 +1,12 @@
+Here's the complete replacement file:
+
+---
+
+## REPLACE: `components/DashboardNav.tsx`
+
+Replace the entire file with:
+
+```tsx
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
@@ -5,7 +14,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { 
   ClipboardList, FileText, Wrench, Settings, Pill, GraduationCap, Brain,
-  Plus, X, Menu, ClipboardPlus, PackagePlus
+  Plus, X, Menu, FilePlus, Package
 } from 'lucide-react'
 
 const navItems = [
@@ -53,7 +62,6 @@ export default function DashboardNav() {
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const addMenuRef = useRef<HTMLDivElement>(null)
 
-  // Close menus when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
@@ -68,7 +76,6 @@ export default function DashboardNav() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // Close menus on route change
   useEffect(() => {
     setIsMobileMenuOpen(false)
     setIsAddMenuOpen(false)
@@ -76,7 +83,7 @@ export default function DashboardNav() {
 
   return (
     <>
-      {/* DESKTOP: Sidebar (unchanged) */}
+      {/* DESKTOP: Sidebar */}
       <nav className="hidden lg:block p-4 space-y-1">
         {navItems.map((item) => {
           const isActive = pathname === item.href
@@ -99,7 +106,7 @@ export default function DashboardNav() {
         })}
       </nav>
 
-      {/* MOBILE: Top Menu Button (hamburger) */}
+      {/* MOBILE: Top Menu Button */}
       <div className="lg:hidden fixed top-3 right-14 z-50" ref={mobileMenuRef}>
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -109,7 +116,6 @@ export default function DashboardNav() {
           {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
 
-        {/* Dropdown Menu */}
         {isMobileMenuOpen && (
           <div className="absolute right-0 top-12 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
             {navItems.map((item) => {
@@ -142,32 +148,28 @@ export default function DashboardNav() {
         ref={addMenuRef}
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
-        {/* Expanded Menu */}
         {isAddMenuOpen && (
           <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex flex-col gap-3 items-center mb-2">
-            {/* Add Procedure Button */}
             <Link
               href="/dashboard/procedures/new"
               onClick={() => setIsAddMenuOpen(false)}
               className="flex items-center gap-2 px-4 py-3 bg-white rounded-full shadow-lg border border-gray-200 text-gray-700 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-200 transition-all whitespace-nowrap"
             >
-              <ClipboardPlus className="w-5 h-5" />
+              <FilePlus className="w-5 h-5" />
               <span className="font-medium">Add Procedure</span>
             </Link>
             
-            {/* Add Tool Button */}
             <Link
               href="/dashboard/toolbox?add=true"
               onClick={() => setIsAddMenuOpen(false)}
               className="flex items-center gap-2 px-4 py-3 bg-white rounded-full shadow-lg border border-gray-200 text-gray-700 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-200 transition-all whitespace-nowrap"
             >
-              <PackagePlus className="w-5 h-5" />
+              <Package className="w-5 h-5" />
               <span className="font-medium">Add Tool</span>
             </Link>
           </div>
         )}
 
-        {/* Main FAB Button */}
         <button
           onClick={() => setIsAddMenuOpen(!isAddMenuOpen)}
           className={`w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 ${
@@ -181,7 +183,6 @@ export default function DashboardNav() {
         </button>
       </div>
 
-      {/* Backdrop when add menu is open */}
       {isAddMenuOpen && (
         <div 
           className="lg:hidden fixed inset-0 bg-black/20 z-40"
@@ -191,3 +192,4 @@ export default function DashboardNav() {
     </>
   )
 }
+```

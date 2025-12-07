@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase-client'
-import { X, Loader2 } from 'lucide-react'
+import { X, Loader2, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react'
 
 interface Procedure {
   id: string
@@ -14,6 +14,14 @@ interface Procedure {
   operator_role: string | null
   notes: string | null
   image_url: string | null
+  is_complicated?: boolean
+  complication_type?: string | null
+  complication_severity?: string | null
+  complication_timing?: string | null
+  complication_description?: string | null
+  complication_management?: string | null
+  complication_outcome?: string | null
+  lessons_learned?: string | null
   ebir_categories: { name: string; code: string } | null
   medical_centres: { name: string; city: string | null; country: string } | null
 }
@@ -26,6 +34,37 @@ interface EditProcedureModalProps {
   onSuccess: (updatedProcedure: Procedure) => void
 }
 
+const COMPLICATION_TYPES = [
+  'Bleeding / Hemorrhage',
+  'Infection',
+  'Access site complication',
+  'Vessel injury / Dissection',
+  'Thrombosis / Embolism',
+  'Organ injury',
+  'Contrast reaction',
+  'Radiation injury',
+  'Device malfunction',
+  'Non-target embolization',
+  'Pneumothorax',
+  'Nerve injury',
+  'Pain / Discomfort',
+  'Other'
+]
+
+const COMPLICATION_SEVERITY = [
+  { value: 'minor', label: 'Minor', description: 'No therapy required, no consequence' },
+  { value: 'moderate', label: 'Moderate', description: 'Requires therapy, minor hospitalization (<48h)' },
+  { value: 'major', label: 'Major', description: 'Requires major therapy, extended hospitalization, permanent sequelae' },
+  { value: 'life-threatening', label: 'Life-threatening', description: 'Life-threatening, required ICU admission' },
+  { value: 'death', label: 'Death', description: 'Procedure-related death' }
+]
+
+const COMPLICATION_TIMING = [
+  { value: 'intraprocedural', label: 'Intraprocedural', description: 'During the procedure' },
+  { value: 'early', label: 'Early post-procedure', description: 'Within 24-48 hours' },
+  { value: 'delayed', label: 'Delayed', description: 'After 48 hours' }
+]
+
 export default function EditProcedureModal({
   procedure,
   categories,
@@ -36,6 +75,7 @@ export default function EditProcedureModal({
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showComplicationDetails, setShowComplicationDetails] = useState(procedure.is_complicated || false)
   
   const [formData, setFormData] = useState({
     procedure_name: procedure.procedure_name,
@@ -45,7 +85,35 @@ export default function EditProcedureModal({
     accession_number: procedure.accession_number || '',
     operator_role: procedure.operator_role || '1st Operator',
     notes: procedure.notes || '',
+    // Complication fields
+    is_complicated: procedure.is_complicated || false,
+    complication_type: procedure.complication_type || '',
+    complication_severity: procedure.complication_severity || '',
+    complication_timing: procedure.complication_timing || '',
+    complication_description: procedure.complication_description || '',
+    complication_management: procedure.complication_management || '',
+    complication_outcome: procedure.complication_outcome || '',
+    lessons_learned: procedure.lessons_learned || '',
   })
+
+  const handleComplicationToggle = (checked: boolean) => {
+    setFormData(prev => ({ 
+      ...prev, 
+      is_complicated: checked,
+      ...(checked ? {} : {
+        complication_type: '',
+        complication_severity: '',
+        complication_timing: '',
+        complication_description: '',
+        complication_management: '',
+        complication_outcome: '',
+        lessons_learned: '',
+      })
+    }))
+    if (checked) {
+      setShowComplicationDetails(true)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -70,6 +138,15 @@ export default function EditProcedureModal({
           accession_number: formData.accession_number || null,
           operator_role: formData.operator_role,
           notes: formData.notes || null,
+          // Complication fields
+          is_complicated: formData.is_complicated,
+          complication_type: formData.is_complicated ? formData.complication_type || null : null,
+          complication_severity: formData.is_complicated ? formData.complication_severity || null : null,
+          complication_timing: formData.is_complicated ? formData.complication_timing || null : null,
+          complication_description: formData.is_complicated ? formData.complication_description || null : null,
+          complication_management: formData.is_complicated ? formData.complication_management || null : null,
+          complication_outcome: formData.is_complicated ? formData.complication_outcome || null : null,
+          lessons_learned: formData.is_complicated ? formData.lessons_learned || null : null,
         })
         .eq('id', procedure.id)
         .eq('user_id', session.user.id)
@@ -215,9 +292,6 @@ export default function EditProcedureModal({
               onChange={(e) => setFormData({ ...formData, accession_number: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
-            <p className="mt-1 text-xs text-gray-500">
-              Your own reference code (not PACS accession number)
-            </p>
           </div>
 
           {/* Notes */}
@@ -232,6 +306,133 @@ export default function EditProcedureModal({
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             />
+          </div>
+
+          {/* Complication Section */}
+          <div className="border border-gray-200 rounded-xl overflow-hidden">
+            <div 
+              className={`p-3 flex items-center justify-between cursor-pointer transition-colors ${
+                formData.is_complicated ? 'bg-amber-50 border-b border-amber-200' : 'bg-gray-50 hover:bg-gray-100'
+              }`}
+              onClick={() => formData.is_complicated && setShowComplicationDetails(!showComplicationDetails)}
+            >
+              <label className="flex items-center gap-3 cursor-pointer" onClick={(e) => e.stopPropagation()}>
+                <input
+                  type="checkbox"
+                  checked={formData.is_complicated}
+                  onChange={(e) => handleComplicationToggle(e.target.checked)}
+                  className="w-5 h-5 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+                />
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className={`w-5 h-5 ${formData.is_complicated ? 'text-amber-600' : 'text-gray-400'}`} />
+                  <span className={`font-medium ${formData.is_complicated ? 'text-amber-800' : 'text-gray-700'}`}>
+                    Complicated Case
+                  </span>
+                </div>
+              </label>
+              {formData.is_complicated && (
+                <button
+                  type="button"
+                  onClick={() => setShowComplicationDetails(!showComplicationDetails)}
+                  className="p-1 text-amber-600 hover:bg-amber-100 rounded"
+                >
+                  {showComplicationDetails ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                </button>
+              )}
+            </div>
+
+            {formData.is_complicated && showComplicationDetails && (
+              <div className="p-4 bg-amber-50/50 space-y-3">
+                {/* Type */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                  <select
+                    value={formData.complication_type}
+                    onChange={(e) => setFormData({ ...formData, complication_type: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500"
+                  >
+                    <option value="">Select type...</option>
+                    {COMPLICATION_TYPES.map(type => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Severity & Timing */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Severity</label>
+                    <select
+                      value={formData.complication_severity}
+                      onChange={(e) => setFormData({ ...formData, complication_severity: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500"
+                    >
+                      <option value="">Select...</option>
+                      {COMPLICATION_SEVERITY.map(sev => (
+                        <option key={sev.value} value={sev.value}>{sev.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Timing</label>
+                    <select
+                      value={formData.complication_timing}
+                      onChange={(e) => setFormData({ ...formData, complication_timing: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500"
+                    >
+                      <option value="">Select...</option>
+                      {COMPLICATION_TIMING.map(t => (
+                        <option key={t.value} value={t.value}>{t.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">What Happened?</label>
+                  <textarea
+                    rows={2}
+                    value={formData.complication_description}
+                    onChange={(e) => setFormData({ ...formData, complication_description: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+
+                {/* Management */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Management</label>
+                  <textarea
+                    rows={2}
+                    value={formData.complication_management}
+                    onChange={(e) => setFormData({ ...formData, complication_management: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+
+                {/* Outcome */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Outcome</label>
+                  <textarea
+                    rows={2}
+                    value={formData.complication_outcome}
+                    onChange={(e) => setFormData({ ...formData, complication_outcome: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+
+                {/* Lessons Learned */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Lessons Learned</label>
+                  <textarea
+                    rows={2}
+                    value={formData.lessons_learned}
+                    onChange={(e) => setFormData({ ...formData, lessons_learned: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Buttons */}

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-client'
 import { format } from 'date-fns'
-import { Calendar, Building2, Hash, User, ArrowLeft, Edit3, Trash2, Loader2, ImageIcon } from 'lucide-react'
+import { Calendar, Building2, Hash, User, ArrowLeft, Edit3, Trash2, Loader2, ImageIcon, AlertTriangle, CheckCircle, Clock, Activity } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import ProcedureDocuments from './ProcedureDocuments'
@@ -56,6 +56,14 @@ interface ProcedureDetailClientProps {
     operator_role: string | null
     notes: string | null
     image_url: string | null
+    is_complicated?: boolean
+    complication_type?: string | null
+    complication_severity?: string | null
+    complication_timing?: string | null
+    complication_description?: string | null
+    complication_management?: string | null
+    complication_outcome?: string | null
+    lessons_learned?: string | null
     ebir_categories: { name: string; code: string } | null
     medical_centres: { name: string; city: string | null; country: string } | null
   }
@@ -64,6 +72,28 @@ interface ProcedureDetailClientProps {
   linkedTools: LinkedTool[]
   categories: { id: string; name: string }[]
   medicalCentres: { id: string; name: string }[]
+}
+
+const SEVERITY_COLORS: Record<string, string> = {
+  'minor': 'bg-yellow-100 text-yellow-800 border-yellow-300',
+  'moderate': 'bg-orange-100 text-orange-800 border-orange-300',
+  'major': 'bg-red-100 text-red-800 border-red-300',
+  'life-threatening': 'bg-red-200 text-red-900 border-red-400',
+  'death': 'bg-gray-800 text-white border-gray-900',
+}
+
+const SEVERITY_LABELS: Record<string, string> = {
+  'minor': 'Minor',
+  'moderate': 'Moderate',
+  'major': 'Major',
+  'life-threatening': 'Life-threatening',
+  'death': 'Death',
+}
+
+const TIMING_LABELS: Record<string, string> = {
+  'intraprocedural': 'Intraprocedural',
+  'early': 'Early post-procedure',
+  'delayed': 'Delayed',
 }
 
 export default function ProcedureDetailClient({ 
@@ -116,7 +146,6 @@ export default function ProcedureDetailClient({
     setDeleting(true)
     
     try {
-      // Delete procedure image if exists
       if (procedure.image_url) {
         const path = procedure.image_url.split('/procedure-images/')[1]
         if (path) {
@@ -124,7 +153,6 @@ export default function ProcedureDetailClient({
         }
       }
 
-      // Delete procedure
       const { error } = await supabase
         .from('procedures')
         .delete()
@@ -159,7 +187,15 @@ export default function ProcedureDetailClient({
         
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{procedure.procedure_name}</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{procedure.procedure_name}</h1>
+              {procedure.is_complicated && (
+                <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-800 rounded-full text-sm font-medium">
+                  <AlertTriangle className="w-4 h-4" />
+                  Complicated
+                </span>
+              )}
+            </div>
             <p className="text-gray-600 mt-1">
               {format(new Date(procedure.procedure_date), 'EEEE, MMMM d, yyyy')}
             </p>
@@ -187,6 +223,88 @@ export default function ProcedureDetailClient({
           </div>
         </div>
       </div>
+
+      {/* Complication Alert Card */}
+      {procedure.is_complicated && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl overflow-hidden">
+          <div className="px-6 py-4 border-b border-amber-200 bg-amber-100/50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <AlertTriangle className="w-6 h-6 text-amber-600" />
+                <h2 className="text-lg font-semibold text-amber-900">Complication Details</h2>
+              </div>
+              <div className="flex items-center gap-2">
+                {procedure.complication_severity && (
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium border ${SEVERITY_COLORS[procedure.complication_severity] || 'bg-gray-100 text-gray-800'}`}>
+                    {SEVERITY_LABELS[procedure.complication_severity] || procedure.complication_severity}
+                  </span>
+                )}
+                {procedure.complication_timing && (
+                  <span className="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700 border border-gray-300">
+                    {TIMING_LABELS[procedure.complication_timing] || procedure.complication_timing}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          <div className="p-6 space-y-4">
+            {/* Complication Type */}
+            {procedure.complication_type && (
+              <div>
+                <div className="flex items-center gap-2 text-sm font-medium text-amber-800 mb-1">
+                  <Activity className="w-4 h-4" />
+                  Complication Type
+                </div>
+                <p className="text-gray-800 font-medium">{procedure.complication_type}</p>
+              </div>
+            )}
+
+            {/* What Happened */}
+            {procedure.complication_description && (
+              <div>
+                <div className="flex items-center gap-2 text-sm font-medium text-amber-800 mb-1">
+                  What Happened
+                </div>
+                <p className="text-gray-700 whitespace-pre-wrap">{procedure.complication_description}</p>
+              </div>
+            )}
+
+            {/* Management */}
+            {procedure.complication_management && (
+              <div>
+                <div className="flex items-center gap-2 text-sm font-medium text-amber-800 mb-1">
+                  Management
+                </div>
+                <p className="text-gray-700 whitespace-pre-wrap">{procedure.complication_management}</p>
+              </div>
+            )}
+
+            {/* Outcome */}
+            {procedure.complication_outcome && (
+              <div>
+                <div className="flex items-center gap-2 text-sm font-medium text-amber-800 mb-1">
+                  <CheckCircle className="w-4 h-4" />
+                  Outcome
+                </div>
+                <p className="text-gray-700 whitespace-pre-wrap">{procedure.complication_outcome}</p>
+              </div>
+            )}
+
+            {/* Lessons Learned */}
+            {procedure.lessons_learned && (
+              <div className="pt-4 border-t border-amber-200">
+                <div className="flex items-center gap-2 text-sm font-medium text-amber-800 mb-2">
+                  💡 Lessons Learned
+                </div>
+                <div className="bg-white/60 rounded-lg p-4 border border-amber-200">
+                  <p className="text-gray-800 whitespace-pre-wrap">{procedure.lessons_learned}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Procedure Info Card */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -276,7 +394,7 @@ export default function ProcedureDetailClient({
               <div className="flex items-center gap-3 text-gray-600">
                 <Hash className="w-5 h-5 text-gray-400" />
                 <div>
-                  <div className="text-sm text-gray-500">Accession Number</div>
+                  <div className="text-sm text-gray-500">Case ID</div>
                   <div className="font-medium">{procedure.accession_number}</div>
                 </div>
               </div>
@@ -305,10 +423,7 @@ export default function ProcedureDetailClient({
 
       {/* Linked Documents & Tools */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Linked PDFs */}
         <ProcedureDocuments procedureId={procedure.id} initialDocuments={linkedDocuments} />
-        
-        {/* Linked Tools */}
         <ProcedureTools procedureId={procedure.id} />
       </div>
 

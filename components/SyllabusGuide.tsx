@@ -6,10 +6,13 @@ import {
   Save, Loader2, CheckCircle2, Expand, Shrink, Bold, Italic, Underline,
   Type, Palette, Image as ImageIcon, X, AlignLeft, AlignCenter, AlignRight,
   List, ListOrdered, Undo, Redo, Trash2, Filter, CheckCircle, Circle,
-  BarChart3, FileText, PenLine
+  BarChart3, FileText, PenLine, ChevronLeft, BookOpenCheck, Edit3
 } from 'lucide-react'
 import { syllabusData, ExamFrequency, Section } from '@/lib/syllabusData'
 import { createClient } from '@/lib/supabase-client'
+
+type ViewMode = 'editor' | 'reader'
+type ReaderFilter = 'all' | 'filled'
 
 const frequencyLabels = {
   green: 'Frequently Tested',
@@ -382,6 +385,11 @@ export default function SyllabusGuide() {
   const [userId, setUserId] = useState<string | null>(null)
   const [filterMode, setFilterMode] = useState<FilterMode>('all')
   const [isLoading, setIsLoading] = useState(true)
+  
+  // Reader mode state
+  const [viewMode, setViewMode] = useState<ViewMode>('editor')
+  const [readerFilter, setReaderFilter] = useState<ReaderFilter>('filled')
+  const [currentEndpointIndex, setCurrentEndpointIndex] = useState(0)
 
   const supabase = createClient()
 
@@ -561,6 +569,60 @@ export default function SyllabusGuide() {
     return { total, completed }
   }, [selectedSection, hasNoteContent])
 
+  // Build flat list of all endpoints for reader navigation
+  const readerEndpoints = useMemo(() => {
+    const endpoints: { id: string; text: string; sectionTitle: string; chapterTitle: string; note: string }[] = []
+    syllabusData.forEach(chapter => {
+      chapter.sections.forEach(section => {
+        section.knowledgeEndpoints?.forEach(endpoint => {
+          const note = userNotes[endpoint.id] || ''
+          const hasContent = note.replace(/<[^>]*>/g, '').trim().length > 0
+          if (readerFilter === 'all' || hasContent) {
+            endpoints.push({
+              id: endpoint.id,
+              text: endpoint.text,
+              sectionTitle: section.title,
+              chapterTitle: chapter.title,
+              note
+            })
+          }
+        })
+      })
+    })
+    return endpoints
+  }, [userNotes, readerFilter])
+
+  // Navigate reader
+  const goToNextEndpoint = () => {
+    if (currentEndpointIndex < readerEndpoints.length - 1) {
+      setCurrentEndpointIndex(currentEndpointIndex + 1)
+    }
+  }
+
+  const goToPrevEndpoint = () => {
+    if (currentEndpointIndex > 0) {
+      setCurrentEndpointIndex(currentEndpointIndex - 1)
+    }
+  }
+
+  // Switch to editor for current endpoint
+  const editCurrentEndpoint = () => {
+    const currentEndpoint = readerEndpoints[currentEndpointIndex]
+    if (!currentEndpoint) return
+    
+    // Find the section containing this endpoint
+    for (const chapter of syllabusData) {
+      for (const section of chapter.sections) {
+        if (section.knowledgeEndpoints?.some(ep => ep.id === currentEndpoint.id)) {
+          setSelectedSection(section)
+          setExpandedChapters(prev => new Set(prev).add(chapter.id))
+          setViewMode('editor')
+          return
+        }
+      }
+    }
+  }
+
   return (
     <div className="max-w-6xl mx-auto pb-20 lg:pb-6">
       {/* Header */}
@@ -692,60 +754,187 @@ export default function SyllabusGuide() {
               </button>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Reference Notice */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
-        <div className="flex gap-3">
-          <BookOpen className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-blue-800">
-            <p className="font-medium">Official CIRSE Knowledge Endpoints</p>
-            <p className="mt-1">
-              Knowledge endpoints from the European Curriculum and Syllabus for IR (2023). 
-              Write your own notes with formatting, images, and more.
-            </p>
-            <a 
-              href="https://www.cirse.org/wp-content/uploads/2023/04/cirse_IRcurriculum_syllabus_2023_web.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 mt-2 font-medium"
-            >
-              View Original Document <ExternalLink className="w-3 h-3" />
-            </a>
+          {/* View Mode Toggle */}
+          <div className="flex items-center gap-2">
+            <div className="flex rounded-lg border border-gray-300 overflow-hidden">
+              <button
+                onClick={() => setViewMode('editor')}
+                className={`px-3 py-2 text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                  viewMode === 'editor' 
+                    ? 'bg-purple-600 text-white' 
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <PenLine className="w-4 h-4" />
+                <span className="hidden sm:inline">Editor</span>
+              </button>
+              <button
+                onClick={() => { setViewMode('reader'); setCurrentEndpointIndex(0); }}
+                className={`px-3 py-2 text-sm font-medium transition-colors border-l border-gray-300 flex items-center gap-1.5 ${
+                  viewMode === 'reader' 
+                    ? 'bg-purple-600 text-white' 
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <BookOpenCheck className="w-4 h-4" />
+                <span className="hidden sm:inline">Reader</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Frequency Legend */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
-        <h3 className="font-medium text-gray-900 mb-3">Examination Frequency Guide</h3>
-        <div className="flex flex-wrap gap-3">
-          {Object.entries(frequencyLabels).map(([key, label]) => (
-            <span key={key} className={`px-3 py-1 rounded-full text-xs font-medium border ${frequencyColors[key as ExamFrequency]}`}>
-              {label}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Navigation */}
-        <div className="lg:col-span-1 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      {/* Reader Mode */}
+      {viewMode === 'reader' ? (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          {/* Reader Header */}
           <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-            <h2 className="font-semibold text-gray-900">Contents</h2>
-          </div>
-          <div className="max-h-[600px] overflow-y-auto divide-y divide-gray-100">
-            {filteredData.length === 0 ? (
-              <div className="p-4 text-center text-gray-500">
-                <p>No topics match your filter</p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <BookOpenCheck className="w-5 h-5 text-purple-600" />
+                <h2 className="font-semibold text-gray-900">Reader Mode</h2>
               </div>
-            ) : (
-              filteredData.map(chapter => (
-                <div key={chapter.id}>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500">Show:</span>
+                <select
+                  value={readerFilter}
+                  onChange={(e) => { setReaderFilter(e.target.value as ReaderFilter); setCurrentEndpointIndex(0); }}
+                  className="text-sm border border-gray-300 rounded-lg px-2 py-1 focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="filled">With notes only</option>
+                  <option value="all">All topics</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {readerEndpoints.length === 0 ? (
+            <div className="p-12 text-center text-gray-500">
+              <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+              <p className="font-medium">No notes yet</p>
+              <p className="text-sm mt-1">Switch to Editor mode to add notes, or show all topics.</p>
+            </div>
+          ) : (
+            <>
+              {/* Reader Content */}
+              <div className="p-6 sm:p-8 min-h-[60vh]">
+                {/* Breadcrumb */}
+                <div className="text-sm text-gray-500 mb-4">
+                  {readerEndpoints[currentEndpointIndex]?.chapterTitle} › {readerEndpoints[currentEndpointIndex]?.sectionTitle}
+                </div>
+
+                {/* Question */}
+                <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 sm:p-6 mb-6">
+                  <p className="text-gray-900 font-medium text-lg leading-relaxed">
+                    {readerEndpoints[currentEndpointIndex]?.text}
+                  </p>
+                </div>
+
+                {/* Notes Content */}
+                <div className="prose prose-gray max-w-none">
+                  {readerEndpoints[currentEndpointIndex]?.note ? (
+                    <div 
+                      dangerouslySetInnerHTML={{ __html: readerEndpoints[currentEndpointIndex].note }}
+                      className="text-gray-700 leading-relaxed"
+                    />
+                  ) : (
+                    <p className="text-gray-400 italic">No notes for this topic yet.</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Reader Navigation Footer */}
+              <div className="px-4 py-4 bg-gray-50 border-t border-gray-200">
+                <div className="flex items-center justify-between">
                   <button
-                    onClick={() => toggleChapter(chapter.id)}
-                    className="w-full px-4 py-3 flex items-center gap-2 hover:bg-gray-50 text-left"
+                    onClick={goToPrevEndpoint}
+                    disabled={currentEndpointIndex === 0}
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    Previous
+                  </button>
+
+                  <div className="text-sm text-gray-500">
+                    {currentEndpointIndex + 1} / {readerEndpoints.length}
+                  </div>
+
+                  <button
+                    onClick={goToNextEndpoint}
+                    disabled={currentEndpointIndex === readerEndpoints.length - 1}
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Next
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Floating Edit Button */}
+              <button
+                onClick={editCurrentEndpoint}
+                className="fixed bottom-24 right-4 sm:bottom-8 sm:right-8 p-4 bg-purple-600 text-white rounded-full shadow-lg hover:bg-purple-700 transition-colors z-30"
+                title="Edit this topic"
+              >
+                <Edit3 className="w-5 h-5" />
+              </button>
+            </>
+          )}
+        </div>
+      ) : (
+        <>
+          {/* Reference Notice */}
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+            <div className="flex gap-3">
+              <BookOpen className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-blue-800">
+                <p className="font-medium">Official CIRSE Knowledge Endpoints</p>
+                <p className="mt-1">
+                  Knowledge endpoints from the European Curriculum and Syllabus for IR (2023). 
+                  Write your own notes with formatting, images, and more.
+                </p>
+                <a 
+                  href="https://www.cirse.org/wp-content/uploads/2023/04/cirse_IRcurriculum_syllabus_2023_web.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 mt-2 font-medium"
+                >
+                  View Original Document <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Frequency Legend */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+            <h3 className="font-medium text-gray-900 mb-3">Examination Frequency Guide</h3>
+            <div className="flex flex-wrap gap-3">
+              {Object.entries(frequencyLabels).map(([key, label]) => (
+                <span key={key} className={`px-3 py-1 rounded-full text-xs font-medium border ${frequencyColors[key as ExamFrequency]}`}>
+                  {label}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Navigation */}
+            <div className="lg:col-span-1 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
+                <h2 className="font-semibold text-gray-900">Contents</h2>
+              </div>
+              <div className="max-h-[600px] overflow-y-auto divide-y divide-gray-100">
+                {filteredData.length === 0 ? (
+                  <div className="p-4 text-center text-gray-500">
+                    <p>No topics match your filter</p>
+                  </div>
+                ) : (
+                  filteredData.map(chapter => (
+                    <div key={chapter.id}>
+                      <button
+                        onClick={() => toggleChapter(chapter.id)}
+                        className="w-full px-4 py-3 flex items-center gap-2 hover:bg-gray-50 text-left"
                   >
                     {expandedChapters.has(chapter.id) ? (
                       <ChevronDown className="w-4 h-4 text-gray-500 flex-shrink-0" />
@@ -880,6 +1069,8 @@ export default function SyllabusGuide() {
           )}
         </div>
       </div>
+        </>
+      )}
     </div>
   )
 }

@@ -150,6 +150,15 @@ export interface Database {
           operator_role: string | null
           notes: string | null
           image_url: string | null
+          archived: boolean
+          is_complicated: boolean
+          complication_type: string | null
+          complication_severity: string | null
+          complication_timing: string | null
+          complication_description: string | null
+          complication_management: string | null
+          complication_outcome: string | null
+          lessons_learned: string | null
           created_at: string
           updated_at: string
         }
@@ -165,6 +174,15 @@ export interface Database {
           operator_role?: string | null
           notes?: string | null
           image_url?: string | null
+          archived?: boolean
+          is_complicated?: boolean
+          complication_type?: string | null
+          complication_severity?: string | null
+          complication_timing?: string | null
+          complication_description?: string | null
+          complication_management?: string | null
+          complication_outcome?: string | null
+          lessons_learned?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -180,6 +198,15 @@ export interface Database {
           operator_role?: string | null
           notes?: string | null
           image_url?: string | null
+          archived?: boolean
+          is_complicated?: boolean
+          complication_type?: string | null
+          complication_severity?: string | null
+          complication_timing?: string | null
+          complication_description?: string | null
+          complication_management?: string | null
+          complication_outcome?: string | null
+          lessons_learned?: string | null
           created_at?: string
           updated_at?: string
         }

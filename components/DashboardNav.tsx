@@ -46,18 +46,18 @@ const navItems = [
   },
 ]
 
-export default function DashboardNav() {
+interface DashboardNavProps {
+  isMobileMenuOpen?: boolean
+  setIsMobileMenuOpen?: (open: boolean) => void
+}
+
+export default function DashboardNav({ isMobileMenuOpen = false, setIsMobileMenuOpen }: DashboardNavProps) {
   const pathname = usePathname()
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const mobileMenuRef = useRef<HTMLDivElement>(null)
   const addMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
-        setIsMobileMenuOpen(false)
-      }
       if (addMenuRef.current && !addMenuRef.current.contains(event.target as Node)) {
         setIsAddMenuOpen(false)
       }
@@ -68,9 +68,11 @@ export default function DashboardNav() {
   }, [])
 
   useEffect(() => {
-    setIsMobileMenuOpen(false)
+    if (setIsMobileMenuOpen) {
+      setIsMobileMenuOpen(false)
+    }
     setIsAddMenuOpen(false)
-  }, [pathname])
+  }, [pathname, setIsMobileMenuOpen])
 
   return (
     <>
@@ -97,18 +99,14 @@ export default function DashboardNav() {
         })}
       </nav>
 
-      {/* MOBILE: Top Menu Button */}
-      <div className="lg:hidden fixed top-3 right-14 z-50" ref={mobileMenuRef}>
-        <button
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="p-2 rounded-lg bg-white border border-gray-200 shadow-sm text-gray-600 hover:bg-gray-50 transition-colors"
-          aria-label="Open menu"
-        >
-          {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
-
-        {isMobileMenuOpen && (
-          <div className="absolute right-0 top-12 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
+      {/* MOBILE: Dropdown Menu */}
+      {isMobileMenuOpen && (
+        <>
+          <div 
+            className="lg:hidden fixed inset-0 z-40"
+            onClick={() => setIsMobileMenuOpen?.(false)}
+          />
+          <div className="lg:hidden fixed top-16 right-4 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
             {navItems.map((item) => {
               const isActive = pathname === item.href
               const Icon = item.icon
@@ -117,7 +115,7 @@ export default function DashboardNav() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={() => setIsMobileMenuOpen?.(false)}
                   className={`flex items-center gap-3 px-4 py-3 transition-colors ${
                     isActive
                       ? 'bg-purple-50 text-purple-700 font-medium'
@@ -130,8 +128,8 @@ export default function DashboardNav() {
               )
             })}
           </div>
-        )}
-      </div>
+        </>
+      )}
 
       {/* MOBILE: Floating Add Button */}
       <div 
@@ -174,6 +172,7 @@ export default function DashboardNav() {
         </button>
       </div>
 
+      {/* Backdrop when add menu is open */}
       {isAddMenuOpen && (
         <div 
           className="lg:hidden fixed inset-0 bg-black/20 z-40"

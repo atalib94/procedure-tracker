@@ -390,6 +390,11 @@ export default function SyllabusGuide() {
   const [viewMode, setViewMode] = useState<ViewMode>('editor')
   const [readerFilter, setReaderFilter] = useState<ReaderFilter>('filled')
   const [currentEndpointIndex, setCurrentEndpointIndex] = useState(0)
+  
+  // Swipe handling
+  const [touchStart, setTouchStart] = useState<number | null>(null)
+  const [touchEnd, setTouchEnd] = useState<number | null>(null)
+  const minSwipeDistance = 50
 
   const supabase = createClient()
 
@@ -623,6 +628,31 @@ export default function SyllabusGuide() {
     }
   }
 
+  // Swipe handlers
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null)
+    setTouchStart(e.targetTouches[0].clientX)
+  }
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX)
+  }
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return
+    
+    const distance = touchStart - touchEnd
+    const isLeftSwipe = distance > minSwipeDistance
+    const isRightSwipe = distance < -minSwipeDistance
+    
+    if (isLeftSwipe && currentEndpointIndex < readerEndpoints.length - 1) {
+      goToNextEndpoint()
+    }
+    if (isRightSwipe && currentEndpointIndex > 0) {
+      goToPrevEndpoint()
+    }
+  }
+
   return (
     <div className="max-w-6xl mx-auto pb-20 lg:pb-6">
       {/* Header */}
@@ -818,7 +848,12 @@ export default function SyllabusGuide() {
           ) : (
             <>
               {/* Reader Content */}
-              <div className="p-6 sm:p-8 min-h-[60vh]">
+              <div 
+                className="p-6 sm:p-8 min-h-[60vh] select-none"
+                onTouchStart={onTouchStart}
+                onTouchMove={onTouchMove}
+                onTouchEnd={onTouchEnd}
+              >
                 {/* Breadcrumb */}
                 <div className="text-sm text-gray-500 mb-4">
                   {readerEndpoints[currentEndpointIndex]?.chapterTitle} › {readerEndpoints[currentEndpointIndex]?.sectionTitle}
@@ -841,6 +876,11 @@ export default function SyllabusGuide() {
                   ) : (
                     <p className="text-gray-400 italic">No notes for this topic yet.</p>
                   )}
+                </div>
+
+                {/* Swipe hint */}
+                <div className="mt-8 text-center text-xs text-gray-400 sm:hidden">
+                  ← Swipe to navigate →
                 </div>
               </div>
 

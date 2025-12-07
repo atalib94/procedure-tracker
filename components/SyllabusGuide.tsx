@@ -6,7 +6,8 @@ import {
   Save, Loader2, CheckCircle2, Expand, Shrink, Bold, Italic, Underline,
   Type, Palette, Image as ImageIcon, X, AlignLeft, AlignCenter, AlignRight,
   List, ListOrdered, Undo, Redo, Trash2, Filter, CheckCircle, Circle,
-  BarChart3, FileText, PenLine, ChevronLeft, BookOpenCheck, Edit3, Menu, ChevronUp
+  BarChart3, FileText, PenLine, ChevronLeft, BookOpenCheck, Edit3, Menu, ChevronUp,
+  Volume2, VolumeX, Pause, Play, Settings, SkipForward, FastForward
 } from 'lucide-react'
 import { syllabusData, ExamFrequency, Section } from '@/lib/syllabusData'
 import { createClient } from '@/lib/supabase-client'
@@ -404,6 +405,17 @@ export default function SyllabusGuide() {
   const [isHorizontalSwipe, setIsHorizontalSwipe] = useState<boolean | null>(null)
   const minSwipeDistance = 80
   const swipeThreshold = 0.3 // 30% of screen width triggers swipe
+
+  // Text-to-Speech state
+  const [isSpeaking, setIsSpeaking] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
+  const [speechRate, setSpeechRate] = useState(1)
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([])
+  const [selectedVoiceIndex, setSelectedVoiceIndex] = useState(0)
+  const [autoAdvance, setAutoAdvance] = useState(true)
+  const [showTTSSettings, setShowTTSSettings] = useState(false)
+  const [currentReadingPart, setCurrentReadingPart] = useState<'question' | 'answer' | null>(null)
+  const speechSynthRef = useRef<SpeechSynthesisUtterance | null>(null)
 
   const supabase = createClient()
 
@@ -828,6 +840,146 @@ export default function SyllabusGuide() {
     setSwipeDirection(null)
     setIsHorizontalSwipe(null)
   }
+
+  // Text-to-Speech functions
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      const loadVoices = () => {
+        const voices = window.speechSynthesis.getVoices()
+        // Prefer English voices, put them first
+        const sortedVoices = voices.sort((a, b) => {
+          const aEn = a.lang.startsWith('en')
+          const bEn = b.lang.startsWith('en')
+          if (aEn && !bEn) return -1
+          if (!aEn && bEn) return 1
+          return 0
+        })
+        setAvailableVoices(sortedVoices)
+      }
+      
+      loadVoices()
+      window.speechSynthesis.onvoiceschanged = loadVoices
+    }
+  }, [])
+
+  // Stop speech when leaving reader mode or changing endpoint
+  useEffect(() => {
+    return () => {
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel()
+      }
+    }
+  }, [viewMode])
+
+  // Stop speech when endpoint changes (unless auto-advancing)
+  useEffect(() => {
+    if (!autoAdvance && isSpeaking) {
+      stopSpeaking()
+    }
+  }, [currentEndpointIndex])
+
+  const stripHtml = (html: string): string => {
+    const tmp = document.createElement('div')
+    tmp.innerHTML = html
+    return tmp.textContent || tmp.innerText || ''
+  }
+
+  const speakText = (text: string, part: 'question' | 'answer', onEnd?: () => void) => {
+    if (!window.speechSynthesis) return
+
+    const utterance = new SpeechSynthesisUtterance(text)
+    utterance.rate = speechRate
+    
+    if (availableVoices.length > 0 && availableVoices[selectedVoiceIndex]) {
+      utterance.voice = availableVoices[selectedVoiceIndex]
+    }
+
+    utterance.onstart = () => {
+      setCurrentReadingPart(part)
+    }
+
+    utterance.onend = () => {
+      setCurrentReadingPart(null)
+      if (onEnd) onEnd()
+    }
+
+    utterance.onerror = () => {
+      setCurrentReadingPart(null)
+      setIsSpeaking(false)
+      setIsPaused(false)
+    }
+
+    speechSynthRef.current = utterance
+    window.speechSynthesis.speak(utterance)
+  }
+
+  const startReading = () => {
+    if (!window.speechSynthesis) return
+
+    const endpoint = readerEndpoints[currentEndpointIndex]
+    if (!endpoint) return
+
+    window.speechSynthesis.cancel()
+    setIsSpeaking(true)
+    setIsPaused(false)
+
+    const questionText = endpoint.text
+    const answerText = stripHtml(endpoint.note) || 'No notes for this topic yet.'
+
+    // Read question first, then answer
+    speakText(questionText, 'question', () => {
+      // Small pause between question and answer
+      setTimeout(() => {
+        speakText(answerText, 'answer', () => {
+          // Finished reading this card
+          if (autoAdvance && currentEndpointIndex < readerEndpoints.length - 1) {
+            // Auto-advance to next card
+            setTimeout(() => {
+              setCurrentEndpointIndex(prev => prev + 1)
+              // Continue reading next card after a brief pause
+              setTimeout(() => {
+                if (isSpeaking) startReading()
+              }, 500)
+            }, 300)
+          } else {
+            setIsSpeaking(false)
+          }
+        })
+      }, 400)
+    })
+  }
+
+  const toggleSpeaking = () => {
+    if (!window.speechSynthesis) return
+
+    if (isSpeaking && !isPaused) {
+      window.speechSynthesis.pause()
+      setIsPaused(true)
+    } else if (isSpeaking && isPaused) {
+      window.speechSynthesis.resume()
+      setIsPaused(false)
+    } else {
+      startReading()
+    }
+  }
+
+  const stopSpeaking = () => {
+    if (!window.speechSynthesis) return
+    window.speechSynthesis.cancel()
+    setIsSpeaking(false)
+    setIsPaused(false)
+    setCurrentReadingPart(null)
+  }
+
+  const skipToNext = () => {
+    if (currentEndpointIndex < readerEndpoints.length - 1) {
+      stopSpeaking()
+      setCurrentEndpointIndex(prev => prev + 1)
+      setTimeout(startReading, 300)
+      setIsSpeaking(true)
+    }
+  }
+
   return (
     <div className="max-w-6xl mx-auto pb-20 lg:pb-6">
       {/* Header */}
@@ -1018,8 +1170,8 @@ export default function SyllabusGuide() {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden relative">
           {/* Reader Header */}
           <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
                 <button
                   onClick={() => setShowReaderNav(!showReaderNav)}
                   className="p-1.5 rounded-lg hover:bg-gray-200 transition-colors"
@@ -1027,20 +1179,126 @@ export default function SyllabusGuide() {
                 >
                   <Menu className="w-5 h-5 text-gray-600" />
                 </button>
-                <h2 className="font-semibold text-gray-900">Reader Mode</h2>
+                <h2 className="font-semibold text-gray-900 hidden sm:block">Reader</h2>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 hidden sm:inline">Show:</span>
+
+              {/* TTS Controls */}
+              <div className="flex items-center gap-1">
+                {isSpeaking && (
+                  <button
+                    onClick={skipToNext}
+                    disabled={currentEndpointIndex >= readerEndpoints.length - 1}
+                    className="p-2 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+                    title="Skip to next"
+                  >
+                    <SkipForward className="w-4 h-4 text-gray-600" />
+                  </button>
+                )}
+                
+                <button
+                  onClick={toggleSpeaking}
+                  className={`p-2 rounded-lg transition-colors ${
+                    isSpeaking 
+                      ? 'bg-purple-100 text-purple-600 hover:bg-purple-200' 
+                      : 'hover:bg-gray-200 text-gray-600'
+                  }`}
+                  title={isSpeaking ? (isPaused ? 'Resume' : 'Pause') : 'Read aloud'}
+                >
+                  {isSpeaking && !isPaused ? (
+                    <Pause className="w-4 h-4" />
+                  ) : isSpeaking && isPaused ? (
+                    <Play className="w-4 h-4" />
+                  ) : (
+                    <Volume2 className="w-4 h-4" />
+                  )}
+                </button>
+
+                {isSpeaking && (
+                  <button
+                    onClick={stopSpeaking}
+                    className="p-2 rounded-lg hover:bg-gray-200 transition-colors"
+                    title="Stop"
+                  >
+                    <VolumeX className="w-4 h-4 text-gray-600" />
+                  </button>
+                )}
+
+                <button
+                  onClick={() => setShowTTSSettings(!showTTSSettings)}
+                  className={`p-2 rounded-lg transition-colors ${
+                    showTTSSettings ? 'bg-gray-200' : 'hover:bg-gray-200'
+                  }`}
+                  title="Voice settings"
+                >
+                  <Settings className="w-4 h-4 text-gray-600" />
+                </button>
+
+                <div className="w-px h-6 bg-gray-300 mx-1" />
+
                 <select
                   value={readerFilter}
-                  onChange={(e) => { setReaderFilter(e.target.value as ReaderFilter); setCurrentEndpointIndex(0); }}
+                  onChange={(e) => { setReaderFilter(e.target.value as ReaderFilter); setCurrentEndpointIndex(0); stopSpeaking(); }}
                   className="text-sm border border-gray-300 rounded-lg px-2 py-1 focus:ring-2 focus:ring-purple-500"
                 >
-                  <option value="filled">With notes only</option>
+                  <option value="filled">With notes</option>
                   <option value="all">All topics</option>
                 </select>
               </div>
             </div>
+
+            {/* TTS Settings Panel */}
+            {showTTSSettings && (
+              <div className="mt-3 pt-3 border-t border-gray-200 space-y-3">
+                {/* Speed Control */}
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-gray-600 w-16">Speed:</span>
+                  <div className="flex items-center gap-2 flex-1">
+                    <input
+                      type="range"
+                      min="0.5"
+                      max="2"
+                      step="0.25"
+                      value={speechRate}
+                      onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
+                      className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
+                    />
+                    <span className="text-sm text-gray-700 w-12 text-right">{speechRate}x</span>
+                  </div>
+                </div>
+
+                {/* Voice Selection */}
+                {availableVoices.length > 0 && (
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-gray-600 w-16">Voice:</span>
+                    <select
+                      value={selectedVoiceIndex}
+                      onChange={(e) => setSelectedVoiceIndex(parseInt(e.target.value))}
+                      className="flex-1 text-sm border border-gray-300 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-purple-500"
+                    >
+                      {availableVoices.map((voice, index) => (
+                        <option key={index} value={index}>
+                          {voice.name} ({voice.lang})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {/* Auto-advance Toggle */}
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-gray-600 w-16">Auto:</span>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={autoAdvance}
+                      onChange={(e) => setAutoAdvance(e.target.checked)}
+                      className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-gray-700">Continue to next card automatically</span>
+                  </label>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Navigator Sidebar */}
@@ -1169,14 +1427,34 @@ export default function SyllabusGuide() {
                   </div>
 
                   {/* Question */}
-                  <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 sm:p-6 mb-6">
+                  <div className={`rounded-xl p-4 sm:p-6 mb-6 transition-all duration-300 ${
+                    currentReadingPart === 'question'
+                      ? 'bg-purple-100 border-2 border-purple-400 shadow-md'
+                      : 'bg-purple-50 border border-purple-200'
+                  }`}>
+                    {currentReadingPart === 'question' && (
+                      <div className="flex items-center gap-2 text-purple-600 text-sm font-medium mb-2">
+                        <Volume2 className="w-4 h-4 animate-pulse" />
+                        Reading question...
+                      </div>
+                    )}
                     <p className="text-gray-900 font-medium text-lg leading-relaxed">
                       {readerEndpoints[currentEndpointIndex]?.text}
                     </p>
                   </div>
 
                   {/* Notes Content */}
-                  <div className="prose prose-gray max-w-none">
+                  <div className={`prose prose-gray max-w-none rounded-xl p-4 sm:p-0 transition-all duration-300 ${
+                    currentReadingPart === 'answer'
+                      ? 'bg-green-50 border-2 border-green-300 shadow-md sm:p-4'
+                      : ''
+                  }`}>
+                    {currentReadingPart === 'answer' && (
+                      <div className="flex items-center gap-2 text-green-600 text-sm font-medium mb-2">
+                        <Volume2 className="w-4 h-4 animate-pulse" />
+                        Reading notes...
+                      </div>
+                    )}
                     {readerEndpoints[currentEndpointIndex]?.note ? (
                       <div 
                         dangerouslySetInnerHTML={{ __html: readerEndpoints[currentEndpointIndex].note }}

@@ -392,6 +392,8 @@ export default function SyllabusGuide() {
   const [currentEndpointIndex, setCurrentEndpointIndex] = useState(0)
   const [showReaderNav, setShowReaderNav] = useState(false)
   const [statsCollapsed, setStatsCollapsed] = useState(false)
+  const [expandedReaderChapters, setExpandedReaderChapters] = useState<Set<string>>(new Set())
+  const [expandedReaderSections, setExpandedReaderSections] = useState<Set<string>>(new Set())
   
   // Swipe handling with animation
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null)
@@ -583,7 +585,7 @@ export default function SyllabusGuide() {
 
   // Build flat list of all endpoints for reader navigation
   const readerEndpoints = useMemo(() => {
-    const endpoints: { id: string; text: string; sectionTitle: string; chapterTitle: string; note: string }[] = []
+    const endpoints: { id: string; text: string; sectionTitle: string; sectionId: string; chapterTitle: string; chapterId: string; note: string }[] = []
     syllabusData.forEach(chapter => {
       chapter.sections.forEach(section => {
         section.knowledgeEndpoints?.forEach(endpoint => {
@@ -594,7 +596,9 @@ export default function SyllabusGuide() {
               id: endpoint.id,
               text: endpoint.text,
               sectionTitle: section.title,
+              sectionId: section.id,
               chapterTitle: chapter.title,
+              chapterId: chapter.id,
               note
             })
           }
@@ -603,6 +607,81 @@ export default function SyllabusGuide() {
     })
     return endpoints
   }, [userNotes, readerFilter])
+
+  // Build hierarchical structure for reader navigation
+  const readerNavHierarchy = useMemo(() => {
+    const hierarchy: { 
+      chapter: { id: string; title: string; letter: string }; 
+      sections: { 
+        section: { id: string; title: string; number: string }; 
+        endpoints: { id: string; text: string; globalIndex: number }[] 
+      }[] 
+    }[] = []
+    
+    let globalIndex = 0
+    syllabusData.forEach(chapter => {
+      const chapterSections: { section: { id: string; title: string; number: string }; endpoints: { id: string; text: string; globalIndex: number }[] }[] = []
+      
+      chapter.sections.forEach(section => {
+        const sectionEndpoints: { id: string; text: string; globalIndex: number }[] = []
+        
+        section.knowledgeEndpoints?.forEach(endpoint => {
+          const note = userNotes[endpoint.id] || ''
+          const hasContent = note.replace(/<[^>]*>/g, '').trim().length > 0
+          if (readerFilter === 'all' || hasContent) {
+            sectionEndpoints.push({
+              id: endpoint.id,
+              text: endpoint.text,
+              globalIndex
+            })
+            globalIndex++
+          }
+        })
+        
+        if (sectionEndpoints.length > 0) {
+          chapterSections.push({
+            section: { id: section.id, title: section.title, number: section.number },
+            endpoints: sectionEndpoints
+          })
+        }
+      })
+      
+      if (chapterSections.length > 0) {
+        hierarchy.push({
+          chapter: { id: chapter.id, title: chapter.title, letter: chapter.letter },
+          sections: chapterSections
+        })
+      }
+    })
+    
+    return hierarchy
+  }, [userNotes, readerFilter])
+
+  // Toggle reader nav chapter
+  const toggleReaderChapter = (chapterId: string) => {
+    setExpandedReaderChapters(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(chapterId)) {
+        newSet.delete(chapterId)
+      } else {
+        newSet.add(chapterId)
+      }
+      return newSet
+    })
+  }
+
+  // Toggle reader nav section
+  const toggleReaderSection = (sectionId: string) => {
+    setExpandedReaderSections(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(sectionId)) {
+        newSet.delete(sectionId)
+      } else {
+        newSet.add(sectionId)
+      }
+      return newSet
+    })
+  }
 
   // Navigate reader
   const goToNextEndpoint = () => {
@@ -848,47 +927,47 @@ export default function SyllabusGuide() {
             />
           </div>
           
-          {/* Filter Buttons */}
-          <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-gray-500" />
-            <div className="flex rounded-lg border border-gray-300 overflow-hidden">
-              <button
-                onClick={() => setFilterMode('all')}
-                className={`px-3 py-2 text-sm font-medium transition-colors ${
-                  filterMode === 'all' 
-                    ? 'bg-purple-600 text-white' 
-                    : 'bg-white text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                All
-              </button>
-              <button
-                onClick={() => setFilterMode('completed')}
-                className={`px-3 py-2 text-sm font-medium transition-colors border-l border-gray-300 ${
-                  filterMode === 'completed' 
-                    ? 'bg-green-600 text-white' 
-                    : 'bg-white text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <span className="hidden sm:inline">Completed</span>
-                <span className="sm:hidden">Done</span>
-              </button>
-              <button
-                onClick={() => setFilterMode('incomplete')}
-                className={`px-3 py-2 text-sm font-medium transition-colors border-l border-gray-300 ${
-                  filterMode === 'incomplete' 
-                    ? 'bg-orange-600 text-white' 
-                    : 'bg-white text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <span className="hidden sm:inline">Incomplete</span>
-                <span className="sm:hidden">Todo</span>
-              </button>
+          {/* Filter Buttons and View Mode Toggle */}
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-gray-500" />
+              <div className="flex rounded-lg border border-gray-300 overflow-hidden">
+                <button
+                  onClick={() => setFilterMode('all')}
+                  className={`px-3 py-2 text-sm font-medium transition-colors ${
+                    filterMode === 'all' 
+                      ? 'bg-purple-600 text-white' 
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  All
+                </button>
+                <button
+                  onClick={() => setFilterMode('completed')}
+                  className={`px-3 py-2 text-sm font-medium transition-colors border-l border-gray-300 ${
+                    filterMode === 'completed' 
+                      ? 'bg-green-600 text-white' 
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <span className="hidden sm:inline">Completed</span>
+                  <span className="sm:hidden">Done</span>
+                </button>
+                <button
+                  onClick={() => setFilterMode('incomplete')}
+                  className={`px-3 py-2 text-sm font-medium transition-colors border-l border-gray-300 ${
+                    filterMode === 'incomplete' 
+                      ? 'bg-orange-600 text-white' 
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <span className="hidden sm:inline">Incomplete</span>
+                  <span className="sm:hidden">Todo</span>
+                </button>
+              </div>
             </div>
-          </div>
 
-          {/* View Mode Toggle */}
-          <div className="flex items-center gap-2">
+            {/* View Mode Toggle */}
             <div className="flex rounded-lg border border-gray-300 overflow-hidden">
               <button
                 onClick={() => setViewMode('editor')}
@@ -951,10 +1030,10 @@ export default function SyllabusGuide() {
           {showReaderNav && (
             <>
               <div 
-                className="fixed inset-0 bg-black/30 z-40 lg:hidden"
+                className="fixed inset-0 bg-black/30 z-40"
                 onClick={() => setShowReaderNav(false)}
               />
-              <div className="fixed left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-white shadow-xl z-50 flex flex-col lg:absolute lg:top-auto lg:bottom-auto lg:h-[70vh] lg:rounded-r-xl">
+              <div className="fixed left-0 top-0 bottom-0 w-80 max-w-[85vw] bg-white shadow-xl z-50 flex flex-col">
                 <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
                   <h3 className="font-semibold text-gray-900">Navigator</h3>
                   <button
@@ -964,33 +1043,78 @@ export default function SyllabusGuide() {
                     <X className="w-5 h-5 text-gray-500" />
                   </button>
                 </div>
-                <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
-                  {readerEndpoints.map((endpoint, index) => (
-                    <button
-                      key={endpoint.id}
-                      onClick={() => { setCurrentEndpointIndex(index); setShowReaderNav(false); }}
-                      className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors ${
-                        index === currentEndpointIndex ? 'bg-purple-50 border-l-4 border-purple-600' : ''
-                      }`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <span className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                          index === currentEndpointIndex 
-                            ? 'bg-purple-600 text-white' 
-                            : 'bg-gray-200 text-gray-600'
-                        }`}>
-                          {index + 1}
+                <div className="flex-1 overflow-y-auto">
+                  {readerNavHierarchy.map(({ chapter, sections }) => (
+                    <div key={chapter.id} className="border-b border-gray-100">
+                      {/* Chapter Header */}
+                      <button
+                        onClick={() => toggleReaderChapter(chapter.id)}
+                        className="w-full px-4 py-3 flex items-center gap-2 hover:bg-gray-50 text-left"
+                      >
+                        {expandedReaderChapters.has(chapter.id) ? (
+                          <ChevronDown className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                        )}
+                        <span className="font-medium text-purple-600">Section {chapter.letter}</span>
+                        <span className="text-gray-700 text-sm truncate flex-1">{chapter.title}</span>
+                        <span className="text-xs text-gray-400">
+                          {sections.reduce((acc, s) => acc + s.endpoints.length, 0)}
                         </span>
-                        <div className="min-w-0">
-                          <p className="text-xs text-gray-500 truncate">{endpoint.sectionTitle}</p>
-                          <p className={`text-sm line-clamp-2 ${
-                            index === currentEndpointIndex ? 'text-purple-700 font-medium' : 'text-gray-700'
-                          }`}>
-                            {endpoint.text}
-                          </p>
+                      </button>
+
+                      {/* Sections */}
+                      {expandedReaderChapters.has(chapter.id) && (
+                        <div className="bg-gray-50">
+                          {sections.map(({ section, endpoints }) => (
+                            <div key={section.id}>
+                              {/* Section Header */}
+                              <button
+                                onClick={() => toggleReaderSection(section.id)}
+                                className="w-full pl-8 pr-4 py-2 flex items-center gap-2 hover:bg-gray-100 text-left"
+                              >
+                                {expandedReaderSections.has(section.id) ? (
+                                  <ChevronDown className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                                ) : (
+                                  <ChevronRight className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                                )}
+                                <span className="text-xs text-gray-500 font-mono">{section.number}</span>
+                                <span className="text-sm text-gray-700 truncate flex-1">{section.title}</span>
+                                <span className="text-xs text-gray-400">{endpoints.length}</span>
+                              </button>
+
+                              {/* Endpoints */}
+                              {expandedReaderSections.has(section.id) && (
+                                <div className="bg-white">
+                                  {endpoints.map((endpoint) => (
+                                    <button
+                                      key={endpoint.id}
+                                      onClick={() => { 
+                                        setCurrentEndpointIndex(endpoint.globalIndex); 
+                                        setShowReaderNav(false); 
+                                      }}
+                                      className={`w-full pl-12 pr-4 py-2 text-left hover:bg-purple-50 transition-colors ${
+                                        endpoint.globalIndex === currentEndpointIndex 
+                                          ? 'bg-purple-100 border-l-4 border-purple-600' 
+                                          : ''
+                                      }`}
+                                    >
+                                      <p className={`text-sm line-clamp-2 ${
+                                        endpoint.globalIndex === currentEndpointIndex 
+                                          ? 'text-purple-700 font-medium' 
+                                          : 'text-gray-600'
+                                      }`}>
+                                        {endpoint.text}
+                                      </p>
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
                         </div>
-                      </div>
-                    </button>
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>

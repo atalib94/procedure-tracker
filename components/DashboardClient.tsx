@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Plus, Search, ArrowUpDown, ArrowUp, ArrowDown, Calendar, Filter, Download, FileSpreadsheet, X, Loader2, RefreshCw } from 'lucide-react'
+import { Plus, Search, ArrowUpDown, ArrowUp, ArrowDown, Calendar, Filter, Download, FileSpreadsheet, X, Loader2, RefreshCw, Archive, ArchiveRestore, FolderOpen } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import ProcedureCard from '@/components/ProcedureCard'
 import StatsCards from '@/components/StatsCards'
 import HIPAANotice from '@/components/HIPAANotice'
+import { createClient } from '@/lib/supabase-client'
 
 interface DashboardClientProps {
   procedures: any[]
@@ -18,15 +19,19 @@ interface DashboardClientProps {
 
 type SortField = 'procedure_date' | 'procedure_name' | 'created_at'
 type SortDirection = 'asc' | 'desc'
+type ViewMode = 'active' | 'archived'
 
 export default function DashboardClient({
-  procedures,
+  procedures: initialProcedures,
   totalProcedures,
   asFirstOperator,
   medicalCentres,
   categoriesUsed,
 }: DashboardClientProps) {
   const router = useRouter()
+  const supabase = createClient()
+  
+  const [procedures, setProcedures] = useState(initialProcedures)
   const [searchQuery, setSearchQuery] = useState('')
   const [sortField, setSortField] = useState<SortField>('procedure_date')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
@@ -37,13 +42,28 @@ export default function DashboardClient({
   const [exportDateFrom, setExportDateFrom] = useState('')
   const [exportDateTo, setExportDateTo] = useState('')
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [viewMode, setViewMode] = useState<ViewMode>('active')
 
   // Refresh function
   const handleRefresh = async () => {
     setIsRefreshing(true)
     router.refresh()
-    // Give visual feedback for at least 500ms
     setTimeout(() => setIsRefreshing(false), 500)
+  }
+
+  // Archive toggle function
+  const handleArchiveToggle = async (id: string, archived: boolean) => {
+    const { error } = await supabase
+      .from('procedures')
+      .update({ archived })
+      .eq('id', id)
+
+    if (!error) {
+      // Update local state
+      setProcedures(prev => 
+        prev.map(p => p.id === id ? { ...p, archived } : p)
+      )
+    }
   }
 
   // Get unique categories from procedures
@@ -57,9 +77,19 @@ export default function DashboardClient({
     return Array.from(cats).sort()
   }, [procedures])
 
+  // Count archived and active procedures
+  const archiveCounts = useMemo(() => {
+    const archived = procedures.filter(p => p.archived).length
+    const active = procedures.filter(p => !p.archived).length
+    return { archived, active }
+  }, [procedures])
+
   // Filter and sort procedures
   const filteredAndSortedProcedures = useMemo(() => {
     let filtered = procedures.filter(p => {
+      // View mode filter (archived vs active)
+      const matchesViewMode = viewMode === 'archived' ? p.archived : !p.archived
+      
       // Search filter
       const searchLower = searchQuery.toLowerCase()
       const matchesSearch = !searchQuery || 
@@ -72,7 +102,7 @@ export default function DashboardClient({
       // Category filter
       const matchesCategory = !categoryFilter || p.ebir_categories?.name === categoryFilter
       
-      return matchesSearch && matchesCategory
+      return matchesViewMode && matchesSearch && matchesCategory
     })
 
     // Sort
@@ -95,7 +125,7 @@ export default function DashboardClient({
     })
 
     return filtered
-  }, [procedures, searchQuery, sortField, sortDirection, categoryFilter])
+  }, [procedures, searchQuery, sortField, sortDirection, categoryFilter, viewMode])
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -117,8 +147,8 @@ export default function DashboardClient({
     setExportLoading(true)
     
     try {
-      // Filter by date range if specified
-      let dataToExport = [...procedures]
+      // Filter by date range if specified, exclude archived
+      let dataToExport = procedures.filter(p => !p.archived)
       
       if (exportDateFrom) {
         dataToExport = dataToExport.filter(p => p.procedure_date >= exportDateFrom)
@@ -202,60 +232,23 @@ export default function DashboardClient({
       const link = document.createElement('a')
       link.href = URL.createObjectURL(blob)
       link.download = filename
-      document.body.appendChild(link)
       link.click()
-      document.body.removeChild(link)
       URL.revokeObjectURL(link.href)
-
+      
       setShowExportModal(false)
-      setExportDateFrom('')
-      setExportDateTo('')
     } catch (error) {
-      console.error('Export error:', error)
-      alert('Failed to export data')
+      console.error('Export failed:', error)
     } finally {
       setExportLoading(false)
     }
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-6">
       {/* HIPAA Notice */}
       <HIPAANotice />
 
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div className="hidden sm:block">
-          <h1 className="text-3xl font-bold text-gray-900">Procedure Log</h1>
-          <p className="text-gray-600 mt-1">Track your interventional radiology procedures</p>
-        </div>
-        <div className="flex gap-2 w-full sm:w-auto">
-          <button
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            className="flex items-center justify-center p-2.5 sm:p-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
-            title="Refresh"
-          >
-            <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
-          </button>
-          <button
-            onClick={() => setShowExportModal(true)}
-            className="flex items-center justify-center gap-2 border border-gray-300 text-gray-700 px-4 py-2.5 sm:py-2 rounded-lg font-medium hover:bg-gray-50 transition-colors flex-1 sm:flex-none"
-          >
-            <Download className="w-5 h-5" />
-            <span className="sm:inline">Export</span>
-          </button>
-          <Link
-            href="/dashboard/procedures/new"
-            className="flex items-center justify-center gap-2 bg-purple-600 text-white px-4 py-2.5 sm:py-2 rounded-lg font-medium hover:bg-purple-700 transition-colors flex-1 sm:flex-none"
-          >
-            <Plus className="w-5 h-5" />
-            Log Procedure
-          </Link>
-        </div>
-      </div>
-
-      {/* Stats */}
+      {/* Stats Cards */}
       <StatsCards
         totalProcedures={totalProcedures}
         asFirstOperator={asFirstOperator}
@@ -264,57 +257,114 @@ export default function DashboardClient({
       />
 
       {/* Procedures List */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        {/* Header */}
         <div className="p-4 border-b border-gray-200">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <h2 className="text-lg font-semibold text-gray-900">Recent Procedures</h2>
-            
-            <div className="flex-1 flex flex-col sm:flex-row gap-2 sm:justify-end">
-              {/* Search */}
-              <div className="relative">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="search"
-                  placeholder="Search procedures..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
+          {/* View Mode Toggle */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="flex rounded-lg border border-gray-300 overflow-hidden">
+                <button
+                  onClick={() => setViewMode('active')}
+                  className={`px-4 py-2 text-sm font-medium flex items-center gap-2 transition-colors ${
+                    viewMode === 'active'
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <FolderOpen className="w-4 h-4" />
+                  Active
+                  <span className={`px-1.5 py-0.5 rounded text-xs ${
+                    viewMode === 'active' ? 'bg-purple-500' : 'bg-gray-200'
+                  }`}>
+                    {archiveCounts.active}
+                  </span>
+                </button>
+                <button
+                  onClick={() => setViewMode('archived')}
+                  className={`px-4 py-2 text-sm font-medium flex items-center gap-2 transition-colors border-l border-gray-300 ${
+                    viewMode === 'archived'
+                      ? 'bg-gray-700 text-white'
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <Archive className="w-4 h-4" />
+                  Archived
+                  <span className={`px-1.5 py-0.5 rounded text-xs ${
+                    viewMode === 'archived' ? 'bg-gray-600' : 'bg-gray-200'
+                  }`}>
+                    {archiveCounts.archived}
+                  </span>
+                </button>
               </div>
+            </div>
 
-              {/* Filter Button */}
+            <div className="flex items-center gap-2">
+              {/* Refresh button */}
               <button
-                onClick={() => setShowFilters(!showFilters)}
-                className={`flex items-center justify-center gap-2 px-3 py-2 border rounded-lg text-sm font-medium transition-colors ${
-                  showFilters || categoryFilter
-                    ? 'border-purple-500 bg-purple-50 text-purple-700'
-                    : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                }`}
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+                title="Refresh"
               >
-                <Filter className="w-4 h-4" />
-                Filter
-                {categoryFilter && (
-                  <span className="bg-purple-600 text-white text-xs px-1.5 py-0.5 rounded-full">1</span>
-                )}
+                <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
               </button>
 
-              {/* Sort Dropdown */}
+              {/* Export button */}
+              <button
+                onClick={() => setShowExportModal(true)}
+                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                title="Export"
+              >
+                <Download className="w-5 h-5" />
+              </button>
+
+              {/* Add new procedure */}
+              <Link
+                href="/dashboard/procedures/new"
+                className="inline-flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-purple-700 transition-colors"
+              >
+                <Plus className="w-5 h-5" />
+                <span className="hidden sm:inline">Add Procedure</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Search and Filters */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search procedures..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              {/* Filter toggle */}
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`p-2 rounded-lg transition-colors ${showFilters ? 'bg-purple-100 text-purple-600' : 'text-gray-500 hover:bg-gray-100'}`}
+              >
+                <Filter className="w-5 h-5" />
+              </button>
+
+              {/* Sort dropdown */}
               <div className="flex items-center gap-1">
                 <select
                   value={sortField}
-                  onChange={(e) => setSortField(e.target.value as SortField)}
+                  onChange={(e) => handleSort(e.target.value as SortField)}
                   className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 >
                   {sortOptions.map(opt => (
-                    <option key={opt.value} value={opt.value}>
-                      Sort: {opt.label}
-                    </option>
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
                   ))}
                 </select>
                 <button
                   onClick={() => setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')}
-                  className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                  title={sortDirection === 'asc' ? 'Ascending' : 'Descending'}
+                  className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg"
                 >
                   {sortDirection === 'asc' ? (
                     <ArrowUp className="w-4 h-4 text-gray-600" />
@@ -363,11 +413,38 @@ export default function DashboardClient({
           </div>
         )}
 
+        {/* Archive info banner */}
+        {viewMode === 'archived' && archiveCounts.archived > 0 && (
+          <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center gap-2 text-sm text-gray-600">
+            <Archive className="w-4 h-4" />
+            <span>Showing archived procedures. Click <ArchiveRestore className="w-4 h-4 inline" /> to restore.</span>
+          </div>
+        )}
+
         <div className="divide-y divide-gray-200">
           {filteredAndSortedProcedures.length > 0 ? (
             filteredAndSortedProcedures.map((procedure) => (
-              <ProcedureCard key={procedure.id} procedure={procedure} />
+              <ProcedureCard 
+                key={procedure.id} 
+                procedure={procedure}
+                onArchiveToggle={handleArchiveToggle}
+                showArchiveButton={true}
+              />
             ))
+          ) : viewMode === 'archived' && archiveCounts.archived === 0 ? (
+            <div className="p-12 text-center">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Archive className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No archived procedures</h3>
+              <p className="text-gray-600 mb-4">Procedures you archive will appear here</p>
+              <button
+                onClick={() => setViewMode('active')}
+                className="text-purple-600 hover:text-purple-700 font-medium"
+              >
+                View active procedures
+              </button>
+            </div>
           ) : procedures.length > 0 ? (
             <div className="p-12 text-center">
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -427,6 +504,14 @@ export default function DashboardClient({
                 </button>
               </div>
 
+              {/* Info about archived */}
+              {archiveCounts.archived > 0 && (
+                <div className="mb-4 p-3 bg-gray-50 rounded-lg text-sm text-gray-600 flex items-center gap-2">
+                  <Archive className="w-4 h-4 flex-shrink-0" />
+                  <span>Archived procedures ({archiveCounts.archived}) will not be included in exports.</span>
+                </div>
+              )}
+
               {/* Date Range Filter */}
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -453,7 +538,7 @@ export default function DashboardClient({
                   </div>
                 </div>
                 <p className="text-xs text-gray-500 mt-2">
-                  Leave empty to export all {procedures.length} procedures
+                  Leave empty to export all {archiveCounts.active} active procedures
                 </p>
               </div>
 
@@ -471,7 +556,7 @@ export default function DashboardClient({
                         European Board of Interventional Radiology logbook format
                       </div>
                       <div className="text-xs text-purple-600 mt-1">
-                        Semicolon-separated (.csv) â€¢ Ready for EBIR submission
+                        Semicolon-separated (.csv) • Ready for EBIR submission
                       </div>
                     </div>
                     {exportLoading ? (
@@ -494,7 +579,7 @@ export default function DashboardClient({
                         Compatible with Excel, Google Sheets, etc.
                       </div>
                       <div className="text-xs text-gray-500 mt-1">
-                        Comma-separated (.csv) â€¢ All fields included
+                        Comma-separated (.csv) • All fields included
                       </div>
                     </div>
                     {exportLoading ? (

@@ -525,7 +525,7 @@ export default function DashboardClient({
         {(searchQuery || categoryFilter) && (
           <div className="px-4 py-2 bg-gray-50 border-b border-gray-200 text-sm text-gray-600">
             {filteredAndSortedProcedures.length} procedure{filteredAndSortedProcedures.length !== 1 ? 's' : ''} found
-            {searchQuery && <span> for "{searchQuery}"</span>}
+            {searchQuery && <span> for &quot;{searchQuery}&quot;</span>}
             {categoryFilter && <span> in {categoryFilter}</span>}
           </div>
         )}

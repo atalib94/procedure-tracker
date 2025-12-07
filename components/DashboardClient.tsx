@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Plus, Search, ArrowUp, ArrowDown, Filter, Download, FileSpreadsheet, X, Loader2, RefreshCw, Archive, ArchiveRestore, FolderOpen, CheckSquare, Square, Trash2 } from 'lucide-react'
+import { Plus, Search, ArrowUp, ArrowDown, Filter, Download, FileSpreadsheet, X, Loader2, RefreshCw, Archive, ArchiveRestore, FolderOpen, CheckSquare, Square, Trash2, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import ProcedureCard from '@/components/ProcedureCard'
@@ -19,7 +19,7 @@ interface DashboardClientProps {
 
 type SortField = 'procedure_date' | 'procedure_name' | 'created_at'
 type SortDirection = 'asc' | 'desc'
-type ViewMode = 'active' | 'archived'
+type ViewMode = 'active' | 'archived' | 'complicated'
 
 export default function DashboardClient({
   procedures: initialProcedures,
@@ -152,12 +152,54 @@ export default function DashboardClient({
   const archiveCounts = useMemo(() => {
     const archived = procedures.filter(p => p.archived).length
     const active = procedures.filter(p => !p.archived).length
-    return { archived, active }
+    const complicated = procedures.filter(p => p.is_complicated && !p.archived).length
+    return { archived, active, complicated }
+  }, [procedures])
+
+  const complicationStats = useMemo(() => {
+    const complicatedCases = procedures.filter(p => p.is_complicated && !p.archived)
+    
+    // Count by type
+    const byType: { [key: string]: number } = {}
+    complicatedCases.forEach(p => {
+      if (p.complication_type) {
+        byType[p.complication_type] = (byType[p.complication_type] || 0) + 1
+      }
+    })
+    
+    // Count by severity
+    const bySeverity: { [key: string]: number } = {}
+    complicatedCases.forEach(p => {
+      if (p.complication_severity) {
+        bySeverity[p.complication_severity] = (bySeverity[p.complication_severity] || 0) + 1
+      }
+    })
+    
+    // Count by timing
+    const byTiming: { [key: string]: number } = {}
+    complicatedCases.forEach(p => {
+      if (p.complication_timing) {
+        byTiming[p.complication_timing] = (byTiming[p.complication_timing] || 0) + 1
+      }
+    })
+    
+    // Complication rate
+    const totalActive = procedures.filter(p => !p.archived).length
+    const rate = totalActive > 0 ? ((complicatedCases.length / totalActive) * 100).toFixed(1) : '0'
+    
+    return { byType, bySeverity, byTiming, rate, total: complicatedCases.length }
   }, [procedures])
 
   const filteredAndSortedProcedures = useMemo(() => {
     let filtered = procedures.filter(p => {
-      const matchesViewMode = viewMode === 'archived' ? p.archived : !p.archived
+      let matchesViewMode = false
+      if (viewMode === 'archived') {
+        matchesViewMode = p.archived
+      } else if (viewMode === 'complicated') {
+        matchesViewMode = p.is_complicated && !p.archived
+      } else {
+        matchesViewMode = !p.archived
+      }
       
       const searchLower = searchQuery.toLowerCase()
       const matchesSearch = !searchQuery || 
@@ -165,7 +207,9 @@ export default function DashboardClient({
         p.notes?.toLowerCase().includes(searchLower) ||
         p.accession_number?.toLowerCase().includes(searchLower) ||
         p.ebir_categories?.name?.toLowerCase().includes(searchLower) ||
-        p.medical_centres?.name?.toLowerCase().includes(searchLower)
+        p.medical_centres?.name?.toLowerCase().includes(searchLower) ||
+        p.complication_type?.toLowerCase().includes(searchLower) ||
+        p.complication_description?.toLowerCase().includes(searchLower)
       
       const matchesCategory = !categoryFilter || p.ebir_categories?.name === categoryFilter
       
@@ -315,6 +359,22 @@ export default function DashboardClient({
                     viewMode === 'active' ? 'bg-purple-500' : 'bg-gray-200'
                   }`}>
                     {archiveCounts.active}
+                  </span>
+                </button>
+                <button
+                  onClick={() => setViewMode('complicated')}
+                  className={`px-4 py-2 text-sm font-medium flex items-center gap-2 transition-colors border-l border-gray-300 ${
+                    viewMode === 'complicated'
+                      ? 'bg-amber-500 text-white'
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  <AlertTriangle className="w-4 h-4" />
+                  Complicated
+                  <span className={`px-1.5 py-0.5 rounded text-xs ${
+                    viewMode === 'complicated' ? 'bg-amber-400' : 'bg-gray-200'
+                  }`}>
+                    {archiveCounts.complicated}
                   </span>
                 </button>
                 <button
@@ -537,6 +597,84 @@ export default function DashboardClient({
           </div>
         )}
 
+        {/* Complications Statistics Panel */}
+        {viewMode === 'complicated' && (
+          <div className="px-4 py-4 bg-amber-50 border-b border-amber-200">
+            <div className="flex items-center gap-2 mb-4">
+              <AlertTriangle className="w-5 h-5 text-amber-600" />
+              <h3 className="font-semibold text-amber-900">Complication Overview</h3>
+              <span className="ml-auto text-sm text-amber-700">
+                Rate: {complicationStats.rate}% ({complicationStats.total} of {archiveCounts.active + archiveCounts.complicated} procedures)
+              </span>
+            </div>
+            
+            {complicationStats.total > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* By Severity */}
+                <div className="bg-white rounded-lg p-3 border border-amber-200">
+                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">By Severity</h4>
+                  <div className="space-y-1.5">
+                    {Object.entries(complicationStats.bySeverity).sort(([,a], [,b]) => b - a).map(([severity, count]) => (
+                      <div key={severity} className="flex items-center justify-between text-sm">
+                        <span className={`capitalize ${
+                          severity === 'minor' ? 'text-green-700' :
+                          severity === 'moderate' ? 'text-yellow-700' :
+                          severity === 'major' ? 'text-orange-700' :
+                          severity === 'life-threatening' ? 'text-red-700' :
+                          severity === 'death' ? 'text-gray-900 font-semibold' : 'text-gray-700'
+                        }`}>
+                          {severity.replace('-', ' ')}
+                        </span>
+                        <span className="font-medium text-gray-900">{count}</span>
+                      </div>
+                    ))}
+                    {Object.keys(complicationStats.bySeverity).length === 0 && (
+                      <p className="text-xs text-gray-500 italic">No severity data</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* By Type */}
+                <div className="bg-white rounded-lg p-3 border border-amber-200">
+                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">By Type</h4>
+                  <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                    {Object.entries(complicationStats.byType).sort(([,a], [,b]) => b - a).slice(0, 5).map(([type, count]) => (
+                      <div key={type} className="flex items-center justify-between text-sm">
+                        <span className="text-gray-700 truncate mr-2">{type}</span>
+                        <span className="font-medium text-gray-900 flex-shrink-0">{count}</span>
+                      </div>
+                    ))}
+                    {Object.keys(complicationStats.byType).length > 5 && (
+                      <p className="text-xs text-gray-500">+{Object.keys(complicationStats.byType).length - 5} more types</p>
+                    )}
+                    {Object.keys(complicationStats.byType).length === 0 && (
+                      <p className="text-xs text-gray-500 italic">No type data</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* By Timing */}
+                <div className="bg-white rounded-lg p-3 border border-amber-200">
+                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">By Timing</h4>
+                  <div className="space-y-1.5">
+                    {Object.entries(complicationStats.byTiming).sort(([,a], [,b]) => b - a).map(([timing, count]) => (
+                      <div key={timing} className="flex items-center justify-between text-sm">
+                        <span className="text-gray-700 capitalize">{timing.replace('-', ' ')}</span>
+                        <span className="font-medium text-gray-900">{count}</span>
+                      </div>
+                    ))}
+                    {Object.keys(complicationStats.byTiming).length === 0 && (
+                      <p className="text-xs text-gray-500 italic">No timing data</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-amber-700">No complications recorded yet. Complications you track will appear here with detailed statistics.</p>
+            )}
+          </div>
+        )}
+
         <div className="divide-y divide-gray-200">
           {filteredAndSortedProcedures.length > 0 ? (
             filteredAndSortedProcedures.map((procedure) => (
@@ -557,6 +695,24 @@ export default function DashboardClient({
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No archived procedures</h3>
               <p className="text-gray-600 mb-4">Procedures you archive will appear here</p>
+              <button
+                onClick={() => setViewMode('active')}
+                className="text-purple-600 hover:text-purple-700 font-medium"
+              >
+                View active procedures
+              </button>
+            </div>
+          ) : viewMode === 'complicated' && archiveCounts.complicated === 0 ? (
+            <div className="p-12 text-center">
+              <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle className="w-8 h-8 text-amber-500" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No complicated cases</h3>
+              <p className="text-gray-600 mb-4">
+                Cases marked as complicated will appear here with statistics.
+                <br />
+                <span className="text-sm">Track complications when logging or editing procedures.</span>
+              </p>
               <button
                 onClick={() => setViewMode('active')}
                 className="text-purple-600 hover:text-purple-700 font-medium"

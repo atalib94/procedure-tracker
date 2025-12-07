@@ -1,11 +1,3 @@
-Here's the complete replacement file:
-
----
-
-## REPLACE: `components/DashboardNav.tsx`
-
-Replace the entire file with:
-
 ```tsx
 'use client'
 

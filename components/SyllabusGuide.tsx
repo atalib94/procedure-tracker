@@ -393,10 +393,15 @@ export default function SyllabusGuide() {
   const [showReaderNav, setShowReaderNav] = useState(false)
   const [statsCollapsed, setStatsCollapsed] = useState(false)
   
-  // Swipe handling
-  const [touchStart, setTouchStart] = useState<number | null>(null)
-  const [touchEnd, setTouchEnd] = useState<number | null>(null)
-  const minSwipeDistance = 50
+  // Swipe handling with animation
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null)
+  const [touchCurrent, setTouchCurrent] = useState<{ x: number; y: number } | null>(null)
+  const [swipeOffset, setSwipeOffset] = useState(0)
+  const [isAnimating, setIsAnimating] = useState(false)
+  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null)
+  const [isHorizontalSwipe, setIsHorizontalSwipe] = useState<boolean | null>(null)
+  const minSwipeDistance = 80
+  const swipeThreshold = 0.3 // 30% of screen width triggers swipe
 
   const supabase = createClient()
 
@@ -630,29 +635,101 @@ export default function SyllabusGuide() {
     }
   }
 
-  // Swipe handlers
+  // Swipe handlers with Tinder-like animation
   const onTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null)
-    setTouchStart(e.targetTouches[0].clientX)
+    if (isAnimating) return
+    setTouchStart({ x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY })
+    setTouchCurrent({ x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY })
+    setIsHorizontalSwipe(null)
   }
 
   const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX)
+    if (!touchStart || isAnimating) return
+    
+    const currentX = e.targetTouches[0].clientX
+    const currentY = e.targetTouches[0].clientY
+    const deltaX = currentX - touchStart.x
+    const deltaY = currentY - touchStart.y
+    
+    // Determine swipe direction on first significant movement
+    if (isHorizontalSwipe === null && (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10)) {
+      const isHorizontal = Math.abs(deltaX) > Math.abs(deltaY)
+      setIsHorizontalSwipe(isHorizontal)
+      
+      // If vertical swipe, don't interfere
+      if (!isHorizontal) {
+        return
+      }
+    }
+    
+    // Only track horizontal swipes
+    if (isHorizontalSwipe) {
+      e.preventDefault() // Prevent vertical scroll during horizontal swipe
+      setTouchCurrent({ x: currentX, y: currentY })
+      
+      // Limit swipe at boundaries
+      const canSwipeLeft = currentEndpointIndex < readerEndpoints.length - 1
+      const canSwipeRight = currentEndpointIndex > 0
+      
+      if ((deltaX < 0 && canSwipeLeft) || (deltaX > 0 && canSwipeRight)) {
+        setSwipeOffset(deltaX)
+      } else {
+        // Rubber band effect at boundaries
+        setSwipeOffset(deltaX * 0.2)
+      }
+    }
   }
 
   const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return
-    
-    const distance = touchStart - touchEnd
-    const isLeftSwipe = distance > minSwipeDistance
-    const isRightSwipe = distance < -minSwipeDistance
-    
-    if (isLeftSwipe && currentEndpointIndex < readerEndpoints.length - 1) {
-      goToNextEndpoint()
+    if (!touchStart || !touchCurrent || isAnimating || !isHorizontalSwipe) {
+      setTouchStart(null)
+      setTouchCurrent(null)
+      setSwipeOffset(0)
+      setIsHorizontalSwipe(null)
+      return
     }
-    if (isRightSwipe && currentEndpointIndex > 0) {
-      goToPrevEndpoint()
+    
+    const deltaX = touchCurrent.x - touchStart.x
+    const screenWidth = window.innerWidth
+    const swipePercentage = Math.abs(deltaX) / screenWidth
+    
+    const shouldSwipe = swipePercentage > swipeThreshold || Math.abs(deltaX) > minSwipeDistance
+    
+    if (shouldSwipe) {
+      if (deltaX < 0 && currentEndpointIndex < readerEndpoints.length - 1) {
+        // Swipe left - go next
+        setSwipeDirection('left')
+        setIsAnimating(true)
+        setSwipeOffset(-screenWidth)
+        setTimeout(() => {
+          setCurrentEndpointIndex(prev => prev + 1)
+          setSwipeOffset(0)
+          setIsAnimating(false)
+          setSwipeDirection(null)
+        }, 300)
+      } else if (deltaX > 0 && currentEndpointIndex > 0) {
+        // Swipe right - go previous
+        setSwipeDirection('right')
+        setIsAnimating(true)
+        setSwipeOffset(screenWidth)
+        setTimeout(() => {
+          setCurrentEndpointIndex(prev => prev - 1)
+          setSwipeOffset(0)
+          setIsAnimating(false)
+          setSwipeDirection(null)
+        }, 300)
+      } else {
+        // Snap back
+        setSwipeOffset(0)
+      }
+    } else {
+      // Snap back
+      setSwipeOffset(0)
     }
+    
+    setTouchStart(null)
+    setTouchCurrent(null)
+    setIsHorizontalSwipe(null)
   }
 
   return (
@@ -928,40 +1005,49 @@ export default function SyllabusGuide() {
             </div>
           ) : (
             <>
-              {/* Reader Content */}
+              {/* Reader Content with Swipe Animation */}
               <div 
-                className="p-6 sm:p-8 min-h-[60vh] select-none"
+                className="overflow-hidden"
                 onTouchStart={onTouchStart}
                 onTouchMove={onTouchMove}
                 onTouchEnd={onTouchEnd}
               >
-                {/* Breadcrumb */}
-                <div className="text-sm text-gray-500 mb-4">
-                  {readerEndpoints[currentEndpointIndex]?.chapterTitle} › {readerEndpoints[currentEndpointIndex]?.sectionTitle}
-                </div>
+                <div 
+                  className="p-6 sm:p-8 min-h-[60vh] select-none"
+                  style={{
+                    transform: `translateX(${swipeOffset}px) rotate(${swipeOffset * 0.02}deg)`,
+                    transition: isAnimating ? 'transform 0.3s ease-out' : 'none',
+                    opacity: isAnimating ? 0.8 : 1 - Math.abs(swipeOffset) * 0.001,
+                  }}
+                >
+                  {/* Breadcrumb */}
+                  <div className="text-sm text-gray-500 mb-4">
+                    {readerEndpoints[currentEndpointIndex]?.chapterTitle} › {readerEndpoints[currentEndpointIndex]?.sectionTitle}
+                  </div>
 
-                {/* Question */}
-                <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 sm:p-6 mb-6">
-                  <p className="text-gray-900 font-medium text-lg leading-relaxed">
-                    {readerEndpoints[currentEndpointIndex]?.text}
-                  </p>
-                </div>
+                  {/* Question */}
+                  <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 sm:p-6 mb-6">
+                    <p className="text-gray-900 font-medium text-lg leading-relaxed">
+                      {readerEndpoints[currentEndpointIndex]?.text}
+                    </p>
+                  </div>
 
-                {/* Notes Content */}
-                <div className="prose prose-gray max-w-none">
-                  {readerEndpoints[currentEndpointIndex]?.note ? (
-                    <div 
-                      dangerouslySetInnerHTML={{ __html: readerEndpoints[currentEndpointIndex].note }}
-                      className="text-gray-700 leading-relaxed"
-                    />
-                  ) : (
-                    <p className="text-gray-400 italic">No notes for this topic yet.</p>
-                  )}
-                </div>
+                  {/* Notes Content */}
+                  <div className="prose prose-gray max-w-none">
+                    {readerEndpoints[currentEndpointIndex]?.note ? (
+                      <div 
+                        dangerouslySetInnerHTML={{ __html: readerEndpoints[currentEndpointIndex].note }}
+                        className="text-gray-700 leading-relaxed"
+                      />
+                    ) : (
+                      <p className="text-gray-400 italic">No notes for this topic yet.</p>
+                    )}
+                  </div>
 
-                {/* Swipe hint */}
-                <div className="mt-8 text-center text-xs text-gray-400 sm:hidden">
-                  ← Swipe to navigate →
+                  {/* Swipe hint */}
+                  <div className="mt-8 text-center text-xs text-gray-400 sm:hidden">
+                    ← Swipe to navigate →
+                  </div>
                 </div>
               </div>
 

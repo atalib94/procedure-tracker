@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ClipboardList, FileText, Wrench, Settings, Pill, GraduationCap } from 'lucide-react'
+import { ClipboardList, FileText, Wrench, Settings, Pill, GraduationCap, Brain } from 'lucide-react'
 
 const navItems = [
   {
@@ -29,6 +29,11 @@ const navItems = [
     name: 'Syllabus',
     href: '/dashboard/syllabus',
     icon: GraduationCap,
+  },
+  {
+    name: 'MCQ',
+    href: '/dashboard/mcq',
+    icon: Brain,
   },
   {
     name: 'Settings',
@@ -70,7 +75,7 @@ export default function DashboardNav() {
         className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 pb-safe"
       >
         <div 
-          className="grid grid-cols-6 py-2"
+          className="grid grid-cols-7 py-2"
           style={{ 
             paddingLeft: 'max(env(safe-area-inset-left), 8px)', 
             paddingRight: 'max(env(safe-area-inset-right), 8px)' 

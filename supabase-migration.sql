@@ -229,3 +229,66 @@ USING (bucket_id = 'avatars');
 --    - Upload a profile picture
 --    - Check if it appears in the top-right user menu
 -- ============================================
+
+
+-- ============================================
+-- MIGRATION: Complication Tracking Support
+-- ============================================
+-- Added: Complication tracking fields for procedures
+-- ============================================
+
+-- 1. Add archived column to procedures table (for archive functionality)
+ALTER TABLE procedures ADD COLUMN IF NOT EXISTS archived BOOLEAN DEFAULT FALSE;
+
+-- 2. Add complication tracking columns to procedures table
+ALTER TABLE procedures ADD COLUMN IF NOT EXISTS is_complicated BOOLEAN DEFAULT FALSE;
+ALTER TABLE procedures ADD COLUMN IF NOT EXISTS complication_type TEXT;
+ALTER TABLE procedures ADD COLUMN IF NOT EXISTS complication_severity TEXT;
+ALTER TABLE procedures ADD COLUMN IF NOT EXISTS complication_timing TEXT;
+ALTER TABLE procedures ADD COLUMN IF NOT EXISTS complication_description TEXT;
+ALTER TABLE procedures ADD COLUMN IF NOT EXISTS complication_management TEXT;
+ALTER TABLE procedures ADD COLUMN IF NOT EXISTS complication_outcome TEXT;
+ALTER TABLE procedures ADD COLUMN IF NOT EXISTS lessons_learned TEXT;
+
+-- 3. Create indexes for complication queries
+CREATE INDEX IF NOT EXISTS idx_procedures_is_complicated 
+ON procedures(is_complicated) WHERE is_complicated = TRUE;
+
+CREATE INDEX IF NOT EXISTS idx_procedures_complication_severity 
+ON procedures(complication_severity) WHERE complication_severity IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_procedures_archived 
+ON procedures(archived);
+
+-- ============================================
+-- IMPORTANT NOTES FOR COMPLICATION TRACKING:
+-- ============================================
+-- 
+-- Complication Types supported:
+--   - Bleeding / Hemorrhage
+--   - Infection
+--   - Access site complication
+--   - Vessel injury / Dissection
+--   - Thrombosis / Embolism
+--   - Organ injury
+--   - Contrast reaction
+--   - Radiation injury
+--   - Device malfunction
+--   - Non-target embolization
+--   - Pneumothorax
+--   - Nerve injury
+--   - Pain / Discomfort
+--   - Other
+--
+-- Severity Levels:
+--   - minor: No therapy required, no consequence
+--   - moderate: Requires therapy, minor hospitalization (<48h)
+--   - major: Requires major therapy, extended hospitalization, permanent sequelae
+--   - life-threatening: Required ICU admission
+--   - death: Procedure-related death
+--
+-- Timing:
+--   - intraprocedural: During the procedure
+--   - early: Within 24-48 hours
+--   - delayed: After 48 hours
+-- ============================================

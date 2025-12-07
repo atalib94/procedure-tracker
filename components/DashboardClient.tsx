@@ -606,106 +606,106 @@ export default function DashboardClient({
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="p-4 border-b border-gray-200">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <div className="flex rounded-lg border border-gray-300 overflow-hidden">
-                <button
-                  onClick={() => setViewMode('active')}
-                  className={`px-2.5 sm:px-4 py-2 text-sm font-medium flex items-center gap-1.5 sm:gap-2 transition-colors ${
-                    viewMode === 'active'
-                      ? 'bg-purple-600 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  <FolderOpen className="w-4 h-4" />
-                  <span className="hidden sm:inline">Active</span>
-                  <span className={`px-1.5 py-0.5 rounded text-xs ${
-                    viewMode === 'active' ? 'bg-purple-500' : 'bg-gray-200'
-                  }`}>
-                    {archiveCounts.active}
-                  </span>
-                </button>
-                <button
-                  onClick={() => setViewMode('complicated')}
-                  className={`px-2.5 sm:px-4 py-2 text-sm font-medium flex items-center gap-1.5 sm:gap-2 transition-colors border-l border-gray-300 ${
-                    viewMode === 'complicated'
-                      ? 'bg-amber-500 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  <AlertTriangle className="w-4 h-4" />
-                  <span className="hidden sm:inline">Complicated</span>
-                  <span className={`px-1.5 py-0.5 rounded text-xs ${
-                    viewMode === 'complicated' ? 'bg-amber-400' : 'bg-gray-200'
-                  }`}>
-                    {archiveCounts.complicated}
-                  </span>
-                </button>
-                <button
-                  onClick={() => setViewMode('archived')}
-                  className={`px-2.5 sm:px-4 py-2 text-sm font-medium flex items-center gap-1.5 sm:gap-2 transition-colors border-l border-gray-300 ${
-                    viewMode === 'archived'
-                      ? 'bg-gray-700 text-white'
-                      : 'bg-white text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  <Archive className="w-4 h-4" />
-                  <span className="hidden sm:inline">Archived</span>
-                  <span className={`px-1.5 py-0.5 rounded text-xs ${
-                    viewMode === 'archived' ? 'bg-gray-600' : 'bg-gray-200'
-                  }`}>
-                    {archiveCounts.archived}
-                  </span>
-                </button>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
+          {/* First row: Tabs and Add button */}
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <div className="flex rounded-lg border border-gray-300 overflow-hidden">
               <button
-                onClick={toggleSelectionMode}
-                className={`p-2 rounded-lg transition-colors ${
-                  isSelectionMode 
-                    ? 'bg-purple-100 text-purple-600' 
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                onClick={() => setViewMode('active')}
+                className={`px-2.5 sm:px-4 py-2 text-sm font-medium flex items-center gap-1.5 sm:gap-2 transition-colors ${
+                  viewMode === 'active'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
                 }`}
-                title={isSelectionMode ? "Exit selection mode" : "Select multiple"}
               >
-                <CheckSquare className="w-5 h-5" />
+                <FolderOpen className="w-4 h-4" />
+                <span className="hidden sm:inline">Active</span>
+                <span className={`px-1.5 py-0.5 rounded text-xs ${
+                  viewMode === 'active' ? 'bg-purple-500' : 'bg-gray-200'
+                }`}>
+                  {archiveCounts.active}
+                </span>
               </button>
-
               <button
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
-                title="Refresh"
+                onClick={() => setViewMode('complicated')}
+                className={`px-2.5 sm:px-4 py-2 text-sm font-medium flex items-center gap-1.5 sm:gap-2 transition-colors border-l border-gray-300 ${
+                  viewMode === 'complicated'
+                    ? 'bg-amber-500 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
               >
-                <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <AlertTriangle className="w-4 h-4" />
+                <span className="hidden sm:inline">Complicated</span>
+                <span className={`px-1.5 py-0.5 rounded text-xs ${
+                  viewMode === 'complicated' ? 'bg-amber-400' : 'bg-gray-200'
+                }`}>
+                  {archiveCounts.complicated}
+                </span>
               </button>
-
               <button
-                onClick={() => setShowExportModal(true)}
-                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                title="Export"
+                onClick={() => setViewMode('archived')}
+                className={`px-2.5 sm:px-4 py-2 text-sm font-medium flex items-center gap-1.5 sm:gap-2 transition-colors border-l border-gray-300 ${
+                  viewMode === 'archived'
+                    ? 'bg-gray-700 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
               >
-                <Download className="w-5 h-5" />
+                <Archive className="w-4 h-4" />
+                <span className="hidden sm:inline">Archived</span>
+                <span className={`px-1.5 py-0.5 rounded text-xs ${
+                  viewMode === 'archived' ? 'bg-gray-600' : 'bg-gray-200'
+                }`}>
+                  {archiveCounts.archived}
+                </span>
               </button>
-
-              <button
-                onClick={() => setShowImportModal(true)}
-                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                title="Import"
-              >
-                <Upload className="w-5 h-5" />
-              </button>
-
-              <Link
-                href="/dashboard/procedures/new"
-                className="inline-flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-purple-700 transition-colors"
-              >
-                <Plus className="w-5 h-5" />
-                <span className="hidden sm:inline">Add Procedure</span>
-              </Link>
             </div>
+
+            <Link
+              href="/dashboard/procedures/new"
+              className="inline-flex items-center gap-2 bg-purple-600 text-white px-3 sm:px-4 py-2 rounded-lg font-medium hover:bg-purple-700 transition-colors"
+            >
+              <Plus className="w-5 h-5" />
+              <span className="hidden sm:inline">Add Procedure</span>
+            </Link>
+          </div>
+
+          {/* Second row: Action buttons */}
+          <div className="flex items-center gap-2 mb-4">
+            <button
+              onClick={toggleSelectionMode}
+              className={`p-2 rounded-lg transition-colors ${
+                isSelectionMode 
+                  ? 'bg-purple-100 text-purple-600' 
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+              }`}
+              title={isSelectionMode ? "Exit selection mode" : "Select multiple"}
+            >
+              <CheckSquare className="w-5 h-5" />
+            </button>
+
+            <button
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+              title="Refresh"
+            >
+              <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+            </button>
+
+            <button
+              onClick={() => setShowExportModal(true)}
+              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Export"
+            >
+              <Download className="w-5 h-5" />
+            </button>
+
+            <button
+              onClick={() => setShowImportModal(true)}
+              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Import"
+            >
+              <Upload className="w-5 h-5" />
+            </button>
           </div>
 
           {isSelectionMode && (

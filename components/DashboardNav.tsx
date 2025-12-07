@@ -69,7 +69,13 @@ export default function DashboardNav() {
       <nav 
         className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 pb-safe"
       >
-        <div className="grid grid-cols-6 py-2">
+        <div 
+          className="grid grid-cols-6 py-2"
+          style={{ 
+            paddingLeft: 'max(env(safe-area-inset-left), 8px)', 
+            paddingRight: 'max(env(safe-area-inset-right), 8px)' 
+          }}
+        >
           {navItems.map((item) => {
             const isActive = pathname === item.href
             const Icon = item.icon

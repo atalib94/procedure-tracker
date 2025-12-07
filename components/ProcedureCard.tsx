@@ -121,10 +121,10 @@ export default function ProcedureCard({
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-4 mb-2">
+          <div className="flex items-start justify-between gap-2 mb-2">
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-gray-900 mb-1 truncate">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-semibold text-gray-900 truncate">
                   {procedure.procedure_name}
                 </h3>
                 {procedure.is_complicated && (
@@ -132,26 +132,23 @@ export default function ProcedureCard({
                     <AlertTriangle className="w-3.5 h-3.5" />
                   </span>
                 )}
-                {procedure.archived && (
-                  <span className="flex-shrink-0 px-2 py-0.5 rounded text-xs font-medium bg-gray-200 text-gray-600">
-                    Archived
+              </div>
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                {procedure.ebir_categories && (
+                  <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${getCategoryColor(procedure.ebir_categories.code)}`}>
+                    {procedure.ebir_categories.name}
+                  </span>
+                )}
+                {procedure.operator_role && (
+                  <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${getRoleBadge(procedure.operator_role)}`}>
+                    {procedure.operator_role}
                   </span>
                 )}
               </div>
-              {procedure.ebir_categories && (
-                <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(procedure.ebir_categories.code)} truncate max-w-full`}>
-                  {procedure.ebir_categories.name}
-                </span>
-              )}
             </div>
-            {procedure.operator_role && (
-              <span className={`flex-shrink-0 px-2 py-1 rounded-full text-xs font-medium ${getRoleBadge(procedure.operator_role)}`}>
-                {procedure.operator_role}
-              </span>
-            )}
           </div>
 
-          <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600">
             <div className="flex items-center gap-1">
               <Calendar className="w-4 h-4 flex-shrink-0" />
               <span className="truncate">{format(new Date(procedure.procedure_date), 'MMM dd, yyyy')}</span>

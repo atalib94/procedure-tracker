@@ -38,7 +38,12 @@ export default async function DashboardLayout({
               <p className="text-xs text-gray-500">Reflect, improve, and thrive. </p>
             </div>
           </div>
-          <UserMenu user={session.user} profile={profile} />
+          {/* Right side - leave space for mobile menu button */}
+          <div className="flex items-center gap-2">
+            {/* Spacer for mobile menu button */}
+            <div className="w-10 lg:hidden" />
+            <UserMenu user={session.user} profile={profile} />
+          </div>
         </div>
       </div>
 
@@ -54,7 +59,7 @@ export default async function DashboardLayout({
         </div>
 
         {/* Main content */}
-        <main className="lg:ml-64 p-4 sm:p-6 pb-28 lg:pb-6">
+        <main className="lg:ml-64 p-4 sm:p-6 pb-24 lg:pb-6">
           {children}
         </main>
       </div>

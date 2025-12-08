@@ -1247,6 +1247,11 @@ export default function EBIRMCQClient() {
                   <span className={`font-semibold ${isCorrect ? 'text-green-700' : 'text-red-700'}`}>
                     {isCorrect ? 'Correct!' : 'Incorrect'}
                   </span>
+                  {/* Progress recorded indicator */}
+                  <span className="text-xs text-gray-400 flex items-center gap-1 ml-2">
+                    <TrendingUp className="w-3 h-3" />
+                    Progress saved
+                  </span>
                 </div>
                 {/* Confidence indicator */}
                 {confidence && (
@@ -1318,9 +1323,114 @@ export default function EBIRMCQClient() {
                 </div>
               )}
               
-              {/* Show spaced repetition info */}
-              <div className="mt-3 pt-3 border-t border-gray-200 text-xs text-gray-500">
-                <p>Next review: {new Date(sr.getProgress(currentQuestion.id).nextReviewDate).toLocaleDateString()}</p>
+              {/* Progress Tracking Section */}
+              <div className="mt-3 pt-3 border-t border-gray-200">
+                {(() => {
+                  const updatedProgress = sr.getProgress(currentQuestion.id)
+                  const masteryRequirements = {
+                    correctAnswers: 3,
+                    streakNeeded: 2,
+                    easeFactorNeeded: 2.3
+                  }
+                  
+                  // Calculate progress towards mastery
+                  const correctProgress = Math.min(updatedProgress.timesCorrect, masteryRequirements.correctAnswers)
+                  const streakProgress = Math.min(updatedProgress.streak, masteryRequirements.streakNeeded)
+                  const easeProgress = updatedProgress.easeFactor >= masteryRequirements.easeFactorNeeded
+                  
+                  const isMastered = updatedProgress.isMastered
+                  
+                  return (
+                    <div className="space-y-2">
+                      {/* Mastery Status */}
+                      {isMastered ? (
+                        <div className="flex items-center gap-2 text-yellow-600">
+                          <Star className="w-4 h-4 fill-yellow-400" />
+                          <span className="text-sm font-medium">Mastered!</span>
+                          <span className="text-xs text-gray-500">
+                            — Review on {new Date(updatedProgress.nextReviewDate).toLocaleDateString()}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          {/* Progress towards mastery */}
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-medium text-gray-600">Progress to Mastery</span>
+                            <span className="text-xs text-gray-500">
+                              Next review: {new Date(updatedProgress.nextReviewDate).toLocaleDateString()}
+                            </span>
+                          </div>
+                          
+                          {/* Visual progress indicators */}
+                          <div className="flex items-center gap-4">
+                            {/* Correct answers progress */}
+                            <div className="flex items-center gap-1.5">
+                              <div className="flex gap-0.5">
+                                {[...Array(masteryRequirements.correctAnswers)].map((_, i) => (
+                                  <div
+                                    key={i}
+                                    className={`w-2.5 h-2.5 rounded-full transition-colors ${
+                                      i < correctProgress 
+                                        ? 'bg-green-500' 
+                                        : 'bg-gray-200'
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                              <span className="text-xs text-gray-500">
+                                {correctProgress}/{masteryRequirements.correctAnswers} correct
+                              </span>
+                            </div>
+                            
+                            {/* Streak progress */}
+                            <div className="flex items-center gap-1.5">
+                              <div className="flex gap-0.5">
+                                {[...Array(masteryRequirements.streakNeeded)].map((_, i) => (
+                                  <div
+                                    key={i}
+                                    className={`w-2.5 h-2.5 rounded-full transition-colors ${
+                                      i < streakProgress 
+                                        ? 'bg-orange-500' 
+                                        : 'bg-gray-200'
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                              <span className="text-xs text-gray-500">
+                                {streakProgress}/{masteryRequirements.streakNeeded} streak
+                              </span>
+                            </div>
+                          </div>
+                          
+                          {/* Helpful hint based on state */}
+                          <p className="text-xs text-gray-400 italic">
+                            {updatedProgress.streak === 0 && updatedProgress.timesIncorrect > 0 ? (
+                              "Streak reset — keep practicing to rebuild it!"
+                            ) : correctProgress < masteryRequirements.correctAnswers ? (
+                              `${masteryRequirements.correctAnswers - correctProgress} more correct answer${masteryRequirements.correctAnswers - correctProgress > 1 ? 's' : ''} needed`
+                            ) : streakProgress < masteryRequirements.streakNeeded ? (
+                              `${masteryRequirements.streakNeeded - streakProgress} more in a row needed`
+                            ) : !easeProgress ? (
+                              "Almost there — answer correctly a few more times"
+                            ) : (
+                              "Keep going!"
+                            )}
+                          </p>
+                        </div>
+                      )}
+                      
+                      {/* Stats summary */}
+                      <div className="flex gap-3 text-xs text-gray-400 pt-1">
+                        <span>Answered: {updatedProgress.timesAnswered}×</span>
+                        <span className="text-green-600">✓ {updatedProgress.timesCorrect}</span>
+                        <span className="text-red-500">✗ {updatedProgress.timesIncorrect}</span>
+                        {updatedProgress.streak > 0 && (
+                          <span className="text-orange-500">🔥 {updatedProgress.streak} streak</span>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })()}
               </div>
             </div>
           )}

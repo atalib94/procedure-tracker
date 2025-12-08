@@ -6,7 +6,8 @@ import {
   RotateCcw, Flag, FlagOff, Filter, Brain, Target, Clock,
   Zap, TrendingUp, AlertCircle, Star, Shuffle, List,
   BarChart3, Calendar, Flame, Award, Image, MessageSquare, X,
-  Timer, Keyboard, CircleDot, HelpCircle, ThumbsUp, Settings, Sparkles
+  Timer, Keyboard, CircleDot, HelpCircle, ThumbsUp, Settings, Sparkles,
+  StickyNote, Pencil, Trash2
 } from 'lucide-react'
 import { mcqQuestions, sectionInfo, MCQQuestion, getQuestionsBySection } from '@/lib/mcqData'
 import { useSpacedRepetition, QuestionProgress } from '@/lib/useSpacedRepetition'
@@ -81,6 +82,11 @@ export default function EBIRMCQClient() {
   // Error note state
   const [showErrorNoteInput, setShowErrorNoteInput] = useState(false)
   const [errorNoteText, setErrorNoteText] = useState('')
+  
+  // Personal note state
+  const [showPersonalNoteEditor, setShowPersonalNoteEditor] = useState(false)
+  const [personalNoteText, setPersonalNoteText] = useState('')
+  const [personalNoteImage, setPersonalNoteImage] = useState<string | null>(null)
   
   // Track missed questions for session summary
   const [missedQuestions, setMissedQuestions] = useState<string[]>([])
@@ -507,6 +513,9 @@ export default function EBIRMCQClient() {
       setShowConfidencePrompt(false)
       setShowErrorNoteInput(false)
       setErrorNoteText('')
+      setShowPersonalNoteEditor(false)
+      setPersonalNoteText('')
+      setPersonalNoteImage(null)
       resetTimerForNewQuestion()
     } else {
       // Quiz complete - show results
@@ -525,6 +534,9 @@ export default function EBIRMCQClient() {
       setShowConfidencePrompt(false)
       setShowErrorNoteInput(false)
       setErrorNoteText('')
+      setShowPersonalNoteEditor(false)
+      setPersonalNoteText('')
+      setPersonalNoteImage(null)
       resetTimerForNewQuestion()
     }
   }
@@ -539,6 +551,9 @@ export default function EBIRMCQClient() {
       setShowConfidencePrompt(false)
       setShowErrorNoteInput(false)
       setErrorNoteText('')
+      setShowPersonalNoteEditor(false)
+      setPersonalNoteText('')
+      setPersonalNoteImage(null)
       resetTimerForNewQuestion()
     }
   }
@@ -581,6 +596,56 @@ export default function EBIRMCQClient() {
         setFlagNoteImage(event.target?.result as string)
       }
       reader.readAsDataURL(file)
+    }
+  }
+
+  // Handle image upload for personal note
+  const handlePersonalNoteImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image must be less than 5MB')
+        return
+      }
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        setPersonalNoteImage(event.target?.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  // Open personal note editor with existing content
+  const openPersonalNoteEditor = () => {
+    if (currentQuestion) {
+      const progress = sr.getProgress(currentQuestion.id)
+      setPersonalNoteText(progress.personalNote || '')
+      setPersonalNoteImage(progress.personalNoteImage || null)
+      setShowPersonalNoteEditor(true)
+    }
+  }
+
+  // Save personal note
+  const savePersonalNote = () => {
+    if (currentQuestion) {
+      sr.setPersonalNote(
+        currentQuestion.id, 
+        personalNoteText.trim() || null, 
+        personalNoteImage
+      )
+    }
+    setShowPersonalNoteEditor(false)
+    setPersonalNoteText('')
+    setPersonalNoteImage(null)
+  }
+
+  // Delete personal note
+  const deletePersonalNote = () => {
+    if (currentQuestion && confirm('Delete this note?')) {
+      sr.setPersonalNote(currentQuestion.id, null, null)
+      setShowPersonalNoteEditor(false)
+      setPersonalNoteText('')
+      setPersonalNoteImage(null)
     }
   }
 
@@ -1260,6 +1325,144 @@ export default function EBIRMCQClient() {
             </div>
           )}
         </div>
+
+        {/* Personal Notes Section - Always visible */}
+        <div className="bg-yellow-50 border border-yellow-200 rounded-xl overflow-hidden">
+          <div className="p-3 flex items-center justify-between bg-yellow-100/50">
+            <div className="flex items-center gap-2">
+              <StickyNote className="w-4 h-4 text-yellow-600" />
+              <span className="text-sm font-medium text-yellow-800">My Notes</span>
+            </div>
+            <button
+              onClick={openPersonalNoteEditor}
+              className="text-yellow-700 hover:text-yellow-900 p-1 hover:bg-yellow-200 rounded transition-colors"
+            >
+              <Pencil className="w-4 h-4" />
+            </button>
+          </div>
+          
+          {/* Display existing note */}
+          {(progress.personalNote || progress.personalNoteImage) ? (
+            <div className="p-3 space-y-2">
+              {progress.personalNote && (
+                <p className="text-sm text-gray-700 whitespace-pre-wrap">{progress.personalNote}</p>
+              )}
+              {progress.personalNoteImage && (
+                <img 
+                  src={progress.personalNoteImage} 
+                  alt="Personal note attachment" 
+                  className="max-h-48 rounded-lg object-contain cursor-pointer hover:opacity-90"
+                  onClick={() => window.open(progress.personalNoteImage!, '_blank')}
+                />
+              )}
+            </div>
+          ) : (
+            <div className="p-3">
+              <button
+                onClick={openPersonalNoteEditor}
+                className="text-sm text-yellow-600 hover:text-yellow-700 flex items-center gap-1"
+              >
+                <span>+ Add a note for this question</span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Personal Note Editor Modal */}
+        {showPersonalNoteEditor && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl max-w-md w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <StickyNote className="w-5 h-5 text-yellow-600" />
+                  Personal Note
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowPersonalNoteEditor(false)
+                    setPersonalNoteText('')
+                    setPersonalNoteImage(null)
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Your notes
+                </label>
+                <textarea
+                  value={personalNoteText}
+                  onChange={(e) => setPersonalNoteText(e.target.value)}
+                  placeholder="Add your personal notes, mnemonics, or key points to remember..."
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                  rows={5}
+                  autoFocus
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Image className="w-4 h-4 inline mr-1" />
+                  Attach image (optional)
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePersonalNoteImageUpload}
+                  className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100"
+                />
+                {personalNoteImage && (
+                  <div className="mt-2 relative">
+                    <img 
+                      src={personalNoteImage} 
+                      alt="Note attachment" 
+                      className="w-full max-h-48 object-contain rounded-lg bg-gray-100"
+                    />
+                    <button
+                      onClick={() => setPersonalNoteImage(null)}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex gap-3 pt-2">
+                {(progress.personalNote || progress.personalNoteImage) && (
+                  <button
+                    onClick={deletePersonalNote}
+                    className="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg font-medium flex items-center gap-1"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete
+                  </button>
+                )}
+                <div className="flex-1" />
+                <button
+                  onClick={() => {
+                    setShowPersonalNoteEditor(false)
+                    setPersonalNoteText('')
+                    setPersonalNoteImage(null)
+                  }}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={savePersonalNote}
+                  className="px-4 py-2 bg-yellow-500 text-white rounded-lg font-medium hover:bg-yellow-600 flex items-center gap-1"
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Keyboard shortcuts hint */}
         <div className="text-center text-xs text-gray-400 flex items-center justify-center gap-1">

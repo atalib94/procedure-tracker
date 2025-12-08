@@ -197,7 +197,13 @@ export function useSpacedRepetition() {
     const nextReviewDate = new Date(now)
     nextReviewDate.setDate(nextReviewDate.getDate() + interval)
 
-    const isMastered = progress.timesCorrect >= 3 && streak >= 2 && easeFactor >= 2.3
+    // Calculate new stats
+    const newTimesCorrect = progress.timesCorrect + (wasCorrect ? 1 : 0)
+    const newTimesAnswered = progress.timesAnswered + 1
+    
+    // Mastery criteria: answered correctly at least 3 times with current streak of 2+
+    // Removed easeFactor requirement since it's too punishing with wrong answers
+    const isMastered = newTimesCorrect >= 3 && streak >= 2
 
     return {
       ...progress,
@@ -206,8 +212,8 @@ export function useSpacedRepetition() {
       repetitions,
       nextReviewDate: nextReviewDate.toISOString(),
       lastReviewDate: now.toISOString(),
-      timesAnswered: progress.timesAnswered + 1,
-      timesCorrect: progress.timesCorrect + (wasCorrect ? 1 : 0),
+      timesAnswered: newTimesAnswered,
+      timesCorrect: newTimesCorrect,
       timesIncorrect: progress.timesIncorrect + (wasCorrect ? 0 : 1),
       streak,
       isMastered
@@ -470,6 +476,39 @@ export function useSpacedRepetition() {
     })
   }, [])
 
+  // Recalculate mastery status for all questions (useful after criteria change)
+  const recalculateMastery = useCallback(() => {
+    setData(prev => {
+      const updatedProgress: Record<string, QuestionProgress> = {}
+      
+      for (const [questionId, progress] of Object.entries(prev.progress)) {
+        // New mastery criteria: 3+ correct answers with current streak of 2+
+        const isMastered = progress.timesCorrect >= 3 && progress.streak >= 2
+        updatedProgress[questionId] = {
+          ...progress,
+          isMastered
+        }
+      }
+      
+      return {
+        ...prev,
+        progress: updatedProgress
+      }
+    })
+  }, [])
+
+  // Get progress IDs that don't exist in the provided valid question IDs
+  // Useful for finding orphaned data after question database changes
+  const getOrphanedProgressIds = useCallback((validQuestionIds: string[]): string[] => {
+    const validSet = new Set(validQuestionIds)
+    return Object.keys(data.progress).filter(id => !validSet.has(id))
+  }, [data.progress])
+
+  // Get all progress data (for debugging/export)
+  const getAllProgress = useCallback(() => {
+    return data.progress
+  }, [data.progress])
+
   return {
     isLoaded,
     getProgress,
@@ -487,6 +526,9 @@ export function useSpacedRepetition() {
     getStrugglingQuestions,
     getStats,
     resetAllProgress,
-    resetQuestionProgress
+    resetQuestionProgress,
+    recalculateMastery,
+    getOrphanedProgressIds,
+    getAllProgress
   }
 }

@@ -5,7 +5,8 @@ import {
   BookOpen, CheckCircle, XCircle, ChevronRight, ChevronLeft, 
   RotateCcw, Flag, FlagOff, Filter, Brain, Target, Clock,
   Zap, TrendingUp, AlertCircle, Star, Shuffle, List,
-  BarChart3, Calendar, Flame, Award, Image, MessageSquare, X
+  BarChart3, Calendar, Flame, Award, Image, MessageSquare, X,
+  Timer, Keyboard, CircleDot, HelpCircle, ThumbsUp
 } from 'lucide-react'
 import { mcqQuestions, sectionInfo, MCQQuestion, getQuestionsBySection } from '@/lib/mcqData'
 import { useSpacedRepetition, QuestionProgress } from '@/lib/useSpacedRepetition'
@@ -22,7 +23,11 @@ interface QuizSettings {
   shuffleQuestions: boolean
   shuffleOptions: boolean
   showExplanationImmediately: boolean
+  timedMode: boolean
+  secondsPerQuestion: number
 }
+
+type ConfidenceLevel = 'guessing' | 'unsure' | 'confident'
 
 const DEFAULT_SETTINGS: QuizSettings = {
   mode: 'all',
@@ -31,7 +36,9 @@ const DEFAULT_SETTINGS: QuizSettings = {
   questionCount: 20,
   shuffleQuestions: true,
   shuffleOptions: false,
-  showExplanationImmediately: true
+  showExplanationImmediately: true,
+  timedMode: false,
+  secondsPerQuestion: 90
 }
 
 export default function EBIRMCQClient() {
@@ -48,6 +55,21 @@ export default function EBIRMCQClient() {
   const [showFlagNoteModal, setShowFlagNoteModal] = useState(false)
   const [flagNoteText, setFlagNoteText] = useState('')
   const [flagNoteImage, setFlagNoteImage] = useState<string | null>(null)
+  
+  // Confidence rating state
+  const [confidence, setConfidence] = useState<ConfidenceLevel | null>(null)
+  const [showConfidencePrompt, setShowConfidencePrompt] = useState(false)
+  
+  // Timer state
+  const [timeRemaining, setTimeRemaining] = useState(0)
+  const [timerActive, setTimerActive] = useState(false)
+  
+  // Error note state
+  const [showErrorNoteInput, setShowErrorNoteInput] = useState(false)
+  const [errorNoteText, setErrorNoteText] = useState('')
+  
+  // Track missed questions for session summary
+  const [missedQuestions, setMissedQuestions] = useState<string[]>([])
   
   // Spaced repetition
   const sr = useSpacedRepetition()
@@ -92,6 +114,99 @@ export default function EBIRMCQClient() {
     
     return stats
   }, [sr.isLoaded, masteredIds, dueIds, newIds])
+
+  // Timer effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null
+    
+    if (timerActive && timeRemaining > 0 && view === 'quiz' && !showResult) {
+      interval = setInterval(() => {
+        setTimeRemaining(prev => {
+          if (prev <= 1) {
+            // Time's up - auto submit or skip
+            setTimerActive(false)
+            if (selectedAnswers.length > 0) {
+              submitAnswer()
+            } else {
+              // Skip question if no answer selected
+              nextQuestion()
+            }
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [timerActive, timeRemaining, view, showResult, selectedAnswers])
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only active during quiz
+      if (view !== 'quiz' || !currentQuestion) return
+      
+      // Don't trigger if typing in an input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+      
+      // Number keys 1-5 for answer selection (before submitting)
+      if (!showResult && !showConfidencePrompt) {
+        const num = parseInt(e.key)
+        if (num >= 1 && num <= currentQuestion.options.length) {
+          handleAnswerSelect(num - 1)
+          return
+        }
+      }
+      
+      // Enter to submit or continue
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        if (showConfidencePrompt) {
+          // Default to 'unsure' if enter pressed during confidence prompt
+          handleConfidenceSelect('unsure')
+        } else if (!showResult && selectedAnswers.length > 0) {
+          setShowConfidencePrompt(true)
+        } else if (showResult) {
+          nextQuestion()
+        }
+        return
+      }
+      
+      // Arrow keys for navigation (when result is shown or to navigate between questions)
+      if (e.key === 'ArrowLeft' && showResult) {
+        prevQuestion()
+        return
+      }
+      if (e.key === 'ArrowRight' && showResult) {
+        nextQuestion()
+        return
+      }
+      
+      // F key to flag
+      if (e.key === 'f' || e.key === 'F') {
+        handleFlagClick()
+        return
+      }
+      
+      // Confidence shortcuts during confidence prompt
+      if (showConfidencePrompt) {
+        if (e.key === 'g' || e.key === 'G' || e.key === '1') {
+          handleConfidenceSelect('guessing')
+        } else if (e.key === 'u' || e.key === 'U' || e.key === '2') {
+          handleConfidenceSelect('unsure')
+        } else if (e.key === 'c' || e.key === 'C' || e.key === '3') {
+          handleConfidenceSelect('confident')
+        }
+        return
+      }
+    }
+    
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [view, currentQuestion, showResult, selectedAnswers, showConfidencePrompt])
 
   // Start quiz with current settings
   const startQuiz = (overrideSettings?: Partial<QuizSettings>) => {
@@ -165,12 +280,35 @@ export default function EBIRMCQClient() {
     setSelectedAnswers([])
     setShowResult(false)
     setSessionStats({ correct: 0, incorrect: 0, startTime: Date.now() })
+    setMissedQuestions([])
+    setConfidence(null)
+    setShowConfidencePrompt(false)
+    setShowErrorNoteInput(false)
+    setErrorNoteText('')
+    
+    // Initialize timer if timed mode
+    if (activeSettings.timedMode) {
+      setTimeRemaining(activeSettings.secondsPerQuestion)
+      setTimerActive(true)
+    } else {
+      setTimeRemaining(0)
+      setTimerActive(false)
+    }
+    
     setView('quiz')
+  }
+
+  // Reset timer for new question
+  const resetTimerForNewQuestion = () => {
+    if (settings.timedMode) {
+      setTimeRemaining(settings.secondsPerQuestion)
+      setTimerActive(true)
+    }
   }
 
   // Handle answer selection
   const handleAnswerSelect = (index: number) => {
-    if (showResult) return
+    if (showResult || showConfidencePrompt) return
     
     if (currentQuestion.correctAnswers.length === 1) {
       setSelectedAnswers([index])
@@ -183,16 +321,22 @@ export default function EBIRMCQClient() {
     }
   }
 
-  // Submit answer
-  const submitAnswer = () => {
-    if (selectedAnswers.length === 0) return
+  // Handle confidence selection and submit answer
+  const handleConfidenceSelect = (level: ConfidenceLevel) => {
+    setConfidence(level)
+    setShowConfidencePrompt(false)
     
     const isCorrect = 
       selectedAnswers.length === currentQuestion.correctAnswers.length &&
       selectedAnswers.every(a => currentQuestion.correctAnswers.includes(a))
     
-    // Record in spaced repetition system
-    sr.recordAnswer(currentQuestion.id, isCorrect)
+    // Record in spaced repetition system with confidence
+    sr.recordAnswer(currentQuestion.id, isCorrect, level)
+    
+    // Track missed questions for session summary
+    if (!isCorrect) {
+      setMissedQuestions(prev => [...prev, currentQuestion.id])
+    }
     
     // Update session stats
     setSessionStats(prev => ({
@@ -201,7 +345,25 @@ export default function EBIRMCQClient() {
       incorrect: prev.incorrect + (isCorrect ? 0 : 1)
     }))
     
+    // Stop timer
+    setTimerActive(false)
+    
     setShowResult(true)
+  }
+
+  // Submit answer (shows confidence prompt first)
+  const submitAnswer = () => {
+    if (selectedAnswers.length === 0) return
+    setShowConfidencePrompt(true)
+  }
+
+  // Save error note
+  const saveErrorNote = () => {
+    if (errorNoteText.trim()) {
+      sr.setErrorNote(currentQuestion.id, errorNoteText.trim())
+    }
+    setShowErrorNoteInput(false)
+    setErrorNoteText('')
   }
 
   // Navigate to next question
@@ -210,8 +372,14 @@ export default function EBIRMCQClient() {
       setCurrentIndex(prev => prev + 1)
       setSelectedAnswers([])
       setShowResult(false)
+      setConfidence(null)
+      setShowConfidencePrompt(false)
+      setShowErrorNoteInput(false)
+      setErrorNoteText('')
+      resetTimerForNewQuestion()
     } else {
       // Quiz complete - show results
+      setTimerActive(false)
       setView('stats')
     }
   }
@@ -222,6 +390,11 @@ export default function EBIRMCQClient() {
       setCurrentIndex(prev => prev - 1)
       setSelectedAnswers([])
       setShowResult(false)
+      setConfidence(null)
+      setShowConfidencePrompt(false)
+      setShowErrorNoteInput(false)
+      setErrorNoteText('')
+      resetTimerForNewQuestion()
     }
   }
 
@@ -230,6 +403,14 @@ export default function EBIRMCQClient() {
     if (index >= 0 && index < questions.length) {
       setCurrentIndex(index)
       setSelectedAnswers([])
+      setShowResult(false)
+      setConfidence(null)
+      setShowConfidencePrompt(false)
+      setShowErrorNoteInput(false)
+      setErrorNoteText('')
+      resetTimerForNewQuestion()
+    }
+  }
       setShowResult(false)
     }
   }
@@ -299,6 +480,37 @@ export default function EBIRMCQClient() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900">EBIR MCQ Practice</h1>
           <p className="text-gray-600 mt-1">Spaced repetition learning system</p>
+        </div>
+
+        {/* Daily Goal & Streak Banner */}
+        <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-4 text-white">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                <Flame className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold">{globalStats.currentStreak} day{globalStats.currentStreak !== 1 ? 's' : ''}</p>
+                <p className="text-orange-100 text-sm">Current streak {globalStats.longestStreak > 0 && `• Best: ${globalStats.longestStreak}`}</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-orange-100">Today's progress</p>
+              <p className="text-lg font-semibold">{globalStats.todayAnswered}/{globalStats.dailyGoal}</p>
+            </div>
+          </div>
+          {/* Daily goal progress bar */}
+          <div className="mt-3">
+            <div className="w-full bg-white/20 rounded-full h-2">
+              <div 
+                className="bg-white h-2 rounded-full transition-all"
+                style={{ width: `${globalStats.dailyGoalProgress}%` }}
+              />
+            </div>
+            {globalStats.dailyGoalProgress >= 100 && (
+              <p className="text-center text-sm mt-2 font-medium">🎉 Daily goal reached!</p>
+            )}
+          </div>
         </div>
 
         {/* Quick Stats */}
@@ -598,10 +810,50 @@ export default function EBIRMCQClient() {
           </div>
         )}
 
+        {/* Confidence Prompt Modal */}
+        {showConfidencePrompt && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl max-w-sm w-full p-6 space-y-4">
+              <h3 className="text-lg font-semibold text-gray-900 text-center">How confident are you?</h3>
+              <p className="text-sm text-gray-600 text-center">Rate your confidence before seeing the answer</p>
+              
+              <div className="grid grid-cols-3 gap-3">
+                <button
+                  onClick={() => handleConfidenceSelect('guessing')}
+                  className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-gray-200 hover:border-red-300 hover:bg-red-50 transition-colors"
+                >
+                  <HelpCircle className="w-8 h-8 text-red-500" />
+                  <span className="text-sm font-medium text-gray-700">Guessing</span>
+                  <span className="text-xs text-gray-400">(G)</span>
+                </button>
+                <button
+                  onClick={() => handleConfidenceSelect('unsure')}
+                  className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-gray-200 hover:border-yellow-300 hover:bg-yellow-50 transition-colors"
+                >
+                  <CircleDot className="w-8 h-8 text-yellow-500" />
+                  <span className="text-sm font-medium text-gray-700">Unsure</span>
+                  <span className="text-xs text-gray-400">(U)</span>
+                </button>
+                <button
+                  onClick={() => handleConfidenceSelect('confident')}
+                  className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-gray-200 hover:border-green-300 hover:bg-green-50 transition-colors"
+                >
+                  <ThumbsUp className="w-8 h-8 text-green-500" />
+                  <span className="text-sm font-medium text-gray-700">Confident</span>
+                  <span className="text-xs text-gray-400">(C)</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Quiz Header */}
         <div className="flex items-center justify-between">
           <button
-            onClick={() => setView('menu')}
+            onClick={() => {
+              setTimerActive(false)
+              setView('menu')
+            }}
             className="text-gray-600 hover:text-gray-900 flex items-center gap-1"
           >
             <ChevronLeft className="w-5 h-5" />
@@ -609,6 +861,13 @@ export default function EBIRMCQClient() {
           </button>
           
           <div className="flex items-center gap-4 text-sm">
+            {/* Timer display */}
+            {settings.timedMode && (
+              <span className={`flex items-center gap-1 font-mono ${timeRemaining <= 10 ? 'text-red-600 animate-pulse' : 'text-gray-600'}`}>
+                <Timer className="w-4 h-4" />
+                {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}
+              </span>
+            )}
             <span className="text-gray-600">
               {currentIndex + 1} / {questions.length}
             </span>
@@ -785,17 +1044,86 @@ export default function EBIRMCQClient() {
           {/* Explanation (shown after answering) */}
           {showResult && (
             <div className={`mx-4 mb-4 p-4 rounded-lg ${isCorrect ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200'}`}>
-              <div className="flex items-center gap-2 mb-2">
-                {isCorrect ? (
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                ) : (
-                  <XCircle className="w-5 h-5 text-red-600" />
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  {isCorrect ? (
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                  ) : (
+                    <XCircle className="w-5 h-5 text-red-600" />
+                  )}
+                  <span className={`font-semibold ${isCorrect ? 'text-green-700' : 'text-red-700'}`}>
+                    {isCorrect ? 'Correct!' : 'Incorrect'}
+                  </span>
+                </div>
+                {/* Confidence indicator */}
+                {confidence && (
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    confidence === 'confident' 
+                      ? (isCorrect ? 'bg-green-200 text-green-700' : 'bg-red-200 text-red-700') 
+                      : confidence === 'guessing' 
+                        ? 'bg-gray-200 text-gray-700'
+                        : 'bg-yellow-200 text-yellow-700'
+                  }`}>
+                    {confidence === 'confident' && !isCorrect && '⚠️ '}{confidence}
+                  </span>
                 )}
-                <span className={`font-semibold ${isCorrect ? 'text-green-700' : 'text-red-700'}`}>
-                  {isCorrect ? 'Correct!' : 'Incorrect'}
-                </span>
               </div>
               <p className="text-gray-700 text-sm">{currentQuestion.explanation}</p>
+              
+              {/* "Why I got this wrong" note feature - only show if incorrect */}
+              {!isCorrect && (
+                <div className="mt-3 pt-3 border-t border-gray-200">
+                  {showErrorNoteInput ? (
+                    <div className="space-y-2">
+                      <label className="block text-xs font-medium text-gray-700">
+                        Why did you get this wrong? (helps you remember)
+                      </label>
+                      <textarea
+                        value={errorNoteText}
+                        onChange={(e) => setErrorNoteText(e.target.value)}
+                        placeholder="e.g., Confused portal vein with hepatic vein anatomy..."
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none"
+                        rows={2}
+                        autoFocus
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={saveErrorNote}
+                          className="px-3 py-1 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700"
+                        >
+                          Save Note
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowErrorNoteInput(false)
+                            setErrorNoteText('')
+                          }}
+                          className="px-3 py-1 text-gray-600 text-sm hover:text-gray-800"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setShowErrorNoteInput(true)}
+                      className="text-sm text-purple-600 hover:text-purple-700 flex items-center gap-1"
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      Add note: Why I got this wrong
+                    </button>
+                  )}
+                  
+                  {/* Show existing error note */}
+                  {progress.errorNote && !showErrorNoteInput && (
+                    <div className="mt-2 p-2 bg-purple-50 rounded-lg">
+                      <p className="text-xs text-purple-700">
+                        <strong>Your note:</strong> {progress.errorNote}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
               
               {/* Show spaced repetition info */}
               <div className="mt-3 pt-3 border-t border-gray-200 text-xs text-gray-500">
@@ -803,6 +1131,12 @@ export default function EBIRMCQClient() {
               </div>
             </div>
           )}
+        </div>
+
+        {/* Keyboard shortcuts hint */}
+        <div className="text-center text-xs text-gray-400 flex items-center justify-center gap-1">
+          <Keyboard className="w-3 h-3" />
+          <span>1-5: Select • Enter: Submit • ←→: Navigate • F: Flag</span>
         </div>
 
         {/* Action Buttons */}
@@ -1023,6 +1357,71 @@ export default function EBIRMCQClient() {
             >
               <div className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${settings.shuffleOptions ? 'translate-x-6' : 'translate-x-0.5'}`} />
             </button>
+          </div>
+        </div>
+
+        {/* Timed Mode Settings */}
+        <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-4">
+          <h3 className="font-medium text-gray-900 flex items-center gap-2">
+            <Timer className="w-4 h-4" />
+            Timed Mode
+          </h3>
+          
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-700">Enable Timer</span>
+            <button
+              onClick={() => setSettings(prev => ({ ...prev, timedMode: !prev.timedMode }))}
+              className={`w-12 h-6 rounded-full transition-colors ${settings.timedMode ? 'bg-purple-600' : 'bg-gray-300'}`}
+            >
+              <div className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${settings.timedMode ? 'translate-x-6' : 'translate-x-0.5'}`} />
+            </button>
+          </div>
+          
+          {settings.timedMode && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Seconds per Question
+              </label>
+              <select
+                value={settings.secondsPerQuestion}
+                onChange={(e) => setSettings(prev => ({ ...prev, secondsPerQuestion: parseInt(e.target.value) }))}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+              >
+                <option value={30}>30 seconds (Hard)</option>
+                <option value={60}>60 seconds (Medium)</option>
+                <option value={90}>90 seconds (Standard)</option>
+                <option value={120}>120 seconds (Relaxed)</option>
+                <option value={180}>180 seconds (Easy)</option>
+              </select>
+            </div>
+          )}
+        </div>
+
+        {/* Daily Goal Settings */}
+        <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-4">
+          <h3 className="font-medium text-gray-900 flex items-center gap-2">
+            <Flame className="w-4 h-4" />
+            Daily Goal
+          </h3>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Questions per Day
+            </label>
+            <select
+              value={sr.getStats().dailyGoal}
+              onChange={(e) => sr.setDailyGoal(parseInt(e.target.value))}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2"
+            >
+              <option value={10}>10 questions</option>
+              <option value={20}>20 questions</option>
+              <option value={30}>30 questions</option>
+              <option value={50}>50 questions</option>
+              <option value={100}>100 questions</option>
+            </select>
+            <p className="text-xs text-gray-500 mt-1">
+              Complete your daily goal to maintain your streak!
+            </p>
           </div>
         </div>
 

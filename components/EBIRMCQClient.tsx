@@ -5,7 +5,7 @@ import {
   BookOpen, CheckCircle, XCircle, ChevronRight, ChevronLeft, 
   RotateCcw, Flag, FlagOff, Filter, Brain, Target, Clock,
   Zap, TrendingUp, AlertCircle, Star, Shuffle, List,
-  BarChart3, Calendar, Flame, Award
+  BarChart3, Calendar, Flame, Award, Image, MessageSquare, X
 } from 'lucide-react'
 import { mcqQuestions, sectionInfo, MCQQuestion, getQuestionsBySection } from '@/lib/mcqData'
 import { useSpacedRepetition, QuestionProgress } from '@/lib/useSpacedRepetition'
@@ -44,6 +44,11 @@ export default function EBIRMCQClient() {
   const [showResult, setShowResult] = useState(false)
   const [sessionStats, setSessionStats] = useState({ correct: 0, incorrect: 0, startTime: Date.now() })
   
+  // Flag note modal state
+  const [showFlagNoteModal, setShowFlagNoteModal] = useState(false)
+  const [flagNoteText, setFlagNoteText] = useState('')
+  const [flagNoteImage, setFlagNoteImage] = useState<string | null>(null)
+  
   // Spaced repetition
   const sr = useSpacedRepetition()
   
@@ -54,6 +59,11 @@ export default function EBIRMCQClient() {
   const allQuestionIds = useMemo(() => mcqQuestions.map(q => q.id), [])
   
   // Get section counts with progress
+  // Using getMasteredQuestions as dependency to ensure recalculation when mastery changes
+  const masteredIds = useMemo(() => sr.getMasteredQuestions(allQuestionIds), [sr.getMasteredQuestions, allQuestionIds])
+  const dueIds = useMemo(() => sr.getDueQuestions(allQuestionIds), [sr.getDueQuestions, allQuestionIds])
+  const newIds = useMemo(() => sr.getNewQuestions(allQuestionIds), [sr.getNewQuestions, allQuestionIds])
+  
   const sectionStats = useMemo(() => {
     const stats: Record<Section, { total: number; mastered: number; due: number; new: number }> = {
       A: { total: 0, mastered: 0, due: 0, new: 0 },
@@ -70,19 +80,18 @@ export default function EBIRMCQClient() {
       const section = q.section as Section
       stats[section].total++
       
-      const progress = sr.getProgress(q.id)
-      if (progress.isMastered) {
+      if (masteredIds.includes(q.id)) {
         stats[section].mastered++
       }
-      if (!progress.timesAnswered) {
+      if (newIds.includes(q.id)) {
         stats[section].new++
-      } else if (new Date(progress.nextReviewDate) <= new Date()) {
+      } else if (dueIds.includes(q.id)) {
         stats[section].due++
       }
     })
     
     return stats
-  }, [sr.isLoaded, sr.getProgress])
+  }, [sr.isLoaded, masteredIds, dueIds, newIds])
 
   // Start quiz with current settings
   const startQuiz = (overrideSettings?: Partial<QuizSettings>) => {
@@ -204,6 +213,65 @@ export default function EBIRMCQClient() {
     } else {
       // Quiz complete - show results
       setView('stats')
+    }
+  }
+
+  // Navigate to previous question
+  const prevQuestion = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(prev => prev - 1)
+      setSelectedAnswers([])
+      setShowResult(false)
+    }
+  }
+
+  // Go to specific question
+  const goToQuestion = (index: number) => {
+    if (index >= 0 && index < questions.length) {
+      setCurrentIndex(index)
+      setSelectedAnswers([])
+      setShowResult(false)
+    }
+  }
+
+  // Handle flagging with note modal
+  const handleFlagClick = () => {
+    const progress = sr.getProgress(currentQuestion.id)
+    if (progress.isMarkedForReview) {
+      // Unflagging - just toggle
+      sr.toggleMarkForReview(currentQuestion.id)
+    } else {
+      // Flagging - show modal for note
+      setFlagNoteText('')
+      setFlagNoteImage(null)
+      setShowFlagNoteModal(true)
+    }
+  }
+
+  // Save flag with note
+  const saveFlagNote = () => {
+    sr.toggleMarkForReview(currentQuestion.id)
+    if (flagNoteText || flagNoteImage) {
+      sr.setReviewNote(currentQuestion.id, flagNoteText || null, flagNoteImage)
+    }
+    setShowFlagNoteModal(false)
+    setFlagNoteText('')
+    setFlagNoteImage(null)
+  }
+
+  // Handle image upload for flag note
+  const handleFlagImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image must be less than 5MB')
+        return
+      }
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        setFlagNoteImage(event.target?.result as string)
+      }
+      reader.readAsDataURL(file)
     }
   }
 
@@ -455,6 +523,81 @@ export default function EBIRMCQClient() {
     
     return (
       <div className="space-y-4">
+        {/* Flag Note Modal */}
+        {showFlagNoteModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl max-w-md w-full p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">Flag for Review</h3>
+                <button
+                  onClick={() => setShowFlagNoteModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <MessageSquare className="w-4 h-4 inline mr-1" />
+                  Add a note (optional)
+                </label>
+                <textarea
+                  value={flagNoteText}
+                  onChange={(e) => setFlagNoteText(e.target.value)}
+                  placeholder="Why are you flagging this question? What do you need to review?"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none"
+                  rows={3}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Image className="w-4 h-4 inline mr-1" />
+                  Attach image (optional)
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFlagImageUpload}
+                  className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                />
+                {flagNoteImage && (
+                  <div className="mt-2 relative">
+                    <img 
+                      src={flagNoteImage} 
+                      alt="Flag note attachment" 
+                      className="w-full h-32 object-cover rounded-lg"
+                    />
+                    <button
+                      onClick={() => setFlagNoteImage(null)}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowFlagNoteModal(false)}
+                  className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-lg font-medium hover:bg-gray-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={saveFlagNote}
+                  className="flex-1 bg-orange-500 text-white py-2 rounded-lg font-medium hover:bg-orange-600 flex items-center justify-center gap-2"
+                >
+                  <Flag className="w-4 h-4" />
+                  Flag Question
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Quiz Header */}
         <div className="flex items-center justify-between">
           <button
@@ -474,12 +617,63 @@ export default function EBIRMCQClient() {
           </div>
         </div>
 
-        {/* Progress Bar */}
-        <div className="w-full bg-gray-200 rounded-full h-2">
+        {/* Progress Bar with clickable segments */}
+        <div className="w-full bg-gray-200 rounded-full h-2 relative">
           <div 
             className="bg-purple-600 h-2 rounded-full transition-all"
             style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
           />
+        </div>
+
+        {/* Question Navigation */}
+        <div className="flex items-center justify-between">
+          <button
+            onClick={prevQuestion}
+            disabled={currentIndex === 0}
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              currentIndex === 0 
+                ? 'text-gray-300 cursor-not-allowed' 
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Previous
+          </button>
+          
+          <div className="flex items-center gap-1 overflow-x-auto px-2 max-w-[200px]">
+            {questions.slice(Math.max(0, currentIndex - 2), Math.min(questions.length, currentIndex + 3)).map((q, i) => {
+              const actualIndex = Math.max(0, currentIndex - 2) + i
+              const qProgress = sr.getProgress(q.id)
+              return (
+                <button
+                  key={q.id}
+                  onClick={() => goToQuestion(actualIndex)}
+                  className={`w-6 h-6 rounded-full text-xs font-medium flex-shrink-0 transition-colors ${
+                    actualIndex === currentIndex 
+                      ? 'bg-purple-600 text-white' 
+                      : qProgress.isMarkedForReview
+                        ? 'bg-orange-100 text-orange-600 border border-orange-300'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+                >
+                  {actualIndex + 1}
+                </button>
+              )
+            })}
+          </div>
+          
+          <button
+            onClick={nextQuestion}
+            disabled={currentIndex === questions.length - 1}
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              currentIndex === questions.length - 1 
+                ? 'text-gray-300 cursor-not-allowed' 
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            Next
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
 
         {/* Question Card */}
@@ -495,7 +689,7 @@ export default function EBIRMCQClient() {
             <div className="flex items-center gap-2">
               {/* Mark for Review Button */}
               <button
-                onClick={() => sr.toggleMarkForReview(currentQuestion.id)}
+                onClick={handleFlagClick}
                 className={`p-1.5 rounded-lg transition-colors ${
                   progress.isMarkedForReview 
                     ? 'bg-orange-100 text-orange-600' 
@@ -511,6 +705,27 @@ export default function EBIRMCQClient() {
               </div>
             </div>
           </div>
+
+          {/* Show flag note if exists */}
+          {progress.isMarkedForReview && (progress.reviewNote || progress.reviewImage) && (
+            <div className="mx-4 mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+              <div className="flex items-start gap-2">
+                <Flag className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                <div className="flex-1 space-y-2">
+                  {progress.reviewNote && (
+                    <p className="text-sm text-orange-800">{progress.reviewNote}</p>
+                  )}
+                  {progress.reviewImage && (
+                    <img 
+                      src={progress.reviewImage} 
+                      alt="Review note attachment" 
+                      className="max-h-32 rounded-lg object-cover"
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Question Text */}
           <div className="p-4">

@@ -546,6 +546,44 @@ export function useSpacedRepetition() {
       }))
   }, [data.progress])
 
+  // Get all questions that have any kind of notes (review notes, error notes, or personal notes)
+  const getQuestionsWithNotes = useCallback((validQuestionIds?: string[]): Array<{
+    id: string,
+    reviewNote: string | null,
+    reviewImage: string | null,
+    errorNote: string | null,
+    personalNote: string | null,
+    personalNoteImage: string | null,
+    isMarkedForReview: boolean,
+    isOrphaned: boolean
+  }> => {
+    const validSet = validQuestionIds ? new Set(validQuestionIds) : null
+    
+    return Object.entries(data.progress)
+      .filter(([id, progress]) => 
+        progress.reviewNote || 
+        progress.reviewImage || 
+        progress.errorNote || 
+        progress.personalNote || 
+        progress.personalNoteImage
+      )
+      .map(([id, progress]) => ({
+        id,
+        reviewNote: progress.reviewNote,
+        reviewImage: progress.reviewImage,
+        errorNote: progress.errorNote,
+        personalNote: progress.personalNote,
+        personalNoteImage: progress.personalNoteImage,
+        isMarkedForReview: progress.isMarkedForReview,
+        isOrphaned: validSet ? !validSet.has(id) : false
+      }))
+      .sort((a, b) => {
+        // Sort orphaned first, then by ID
+        if (a.isOrphaned !== b.isOrphaned) return a.isOrphaned ? -1 : 1
+        return a.id.localeCompare(b.id)
+      })
+  }, [data.progress])
+
   return {
     isLoaded,
     getProgress,
@@ -568,6 +606,7 @@ export function useSpacedRepetition() {
     getOrphanedProgressIds,
     getAllProgress,
     cleanupOrphanedProgress,
-    getOrphanedFlaggedDetails
+    getOrphanedFlaggedDetails,
+    getQuestionsWithNotes
   }
 }

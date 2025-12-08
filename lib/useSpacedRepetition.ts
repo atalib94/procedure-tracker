@@ -26,6 +26,9 @@ export interface QuestionProgress {
   reviewImage: string | null  // Base64 encoded image
   // Error analysis
   errorNote: string | null    // "Why I got this wrong" note
+  // Personal notes (always visible)
+  personalNote: string | null      // User's personal notes for this question
+  personalNoteImage: string | null // Base64 encoded image for personal note
   // Confidence tracking
   lastConfidence: 'guessing' | 'unsure' | 'confident' | null
   confidentButWrong: number   // Count of times confident but wrong
@@ -71,6 +74,8 @@ const DEFAULT_PROGRESS: QuestionProgress = {
   reviewNote: null,
   reviewImage: null,
   errorNote: null,
+  personalNote: null,
+  personalNoteImage: null,
   lastConfidence: null,
   confidentButWrong: 0
 }
@@ -321,6 +326,24 @@ export function useSpacedRepetition() {
     })
   }, [])
 
+  // Set personal note for a question (always visible)
+  const setPersonalNote = useCallback((questionId: string, note: string | null, image: string | null) => {
+    setData(prev => {
+      const currentProgress = prev.progress[questionId] || { ...DEFAULT_PROGRESS, questionId }
+      return {
+        ...prev,
+        progress: {
+          ...prev.progress,
+          [questionId]: {
+            ...currentProgress,
+            personalNote: note,
+            personalNoteImage: image
+          }
+        }
+      }
+    })
+  }, [])
+
   // Get questions due for review
   const getDueQuestions = useCallback((questionIds: string[]): string[] => {
     const now = new Date()
@@ -439,6 +462,7 @@ export function useSpacedRepetition() {
     recordAnswer,
     toggleMarkForReview,
     setReviewNote,
+    setPersonalNote,
     setErrorNote,
     setDailyGoal,
     getDueQuestions,

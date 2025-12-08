@@ -664,6 +664,8 @@ export default function EBIRMCQClient() {
     const globalStats = sr.getStats()
     const dueCount = sr.getDueQuestions(allQuestionIds).length
     const markedCount = sr.getMarkedQuestions(allQuestionIds).length
+    const totalMarkedInProgress = globalStats.markedForReview // includes orphaned
+    const orphanedMarkedCount = totalMarkedInProgress - markedCount
     const newCount = sr.getNewQuestions(allQuestionIds).length
     const strugglingCount = sr.getStrugglingQuestions(allQuestionIds).length
     
@@ -705,6 +707,24 @@ export default function EBIRMCQClient() {
             )}
           </div>
         </div>
+
+        {/* Orphaned Data Warning Banner */}
+        {orphanedMarkedCount > 0 && (
+          <button
+            onClick={() => setView('settings')}
+            className="w-full bg-yellow-50 border border-yellow-200 rounded-xl p-3 text-left hover:bg-yellow-100 transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0" />
+              <div>
+                <p className="text-sm text-yellow-800 font-medium">
+                  {orphanedMarkedCount} flagged question{orphanedMarkedCount !== 1 ? 's' : ''} no longer in database
+                </p>
+                <p className="text-xs text-yellow-600">Tap to view notes and clean up in Settings</p>
+              </div>
+            </div>
+          </button>
+        )}
 
         {/* Quick Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -785,9 +805,9 @@ export default function EBIRMCQClient() {
           )}
           
           {/* Marked for Review */}
-          {markedCount > 0 && (
+          {(markedCount > 0 || orphanedMarkedCount > 0) && (
             <button
-              onClick={() => initiateQuiz({ mode: 'marked', filterMode: 'all' })}
+              onClick={() => markedCount > 0 ? initiateQuiz({ mode: 'marked', filterMode: 'all' }) : alert('All your flagged questions are orphaned (questions no longer exist). Go to Settings → Data Management to view them.')}
               className="w-full bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl p-4 text-left transition-colors"
             >
               <div className="flex items-center justify-between">
@@ -797,7 +817,12 @@ export default function EBIRMCQClient() {
                   </div>
                   <div>
                     <p className="font-semibold text-gray-900">Marked Questions</p>
-                    <p className="text-sm text-gray-600">{markedCount} flagged for later</p>
+                    <p className="text-sm text-gray-600">
+                      {markedCount} available to practice
+                      {orphanedMarkedCount > 0 && (
+                        <span className="text-orange-600"> • {orphanedMarkedCount} orphaned</span>
+                      )}
+                    </p>
                   </div>
                 </div>
                 <ChevronRight className="w-5 h-5 text-gray-400" />
@@ -1896,24 +1921,68 @@ export default function EBIRMCQClient() {
           {/* Show orphaned data warning if any */}
           {(() => {
             const orphanedIds = sr.getOrphanedProgressIds(allQuestionIds)
-            const allProgress = sr.getAllProgress()
-            const orphanedMarked = orphanedIds.filter(id => allProgress[id]?.isMarkedForReview).length
+            const orphanedFlagged = sr.getOrphanedFlaggedDetails(allQuestionIds)
             
             if (orphanedIds.length > 0) {
               return (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                  <p className="text-sm text-yellow-800 font-medium">
-                    ⚠️ Found {orphanedIds.length} orphaned progress entries
-                  </p>
-                  <p className="text-xs text-yellow-700 mt-1">
-                    These are from questions that no longer exist in the database.
-                    {orphanedMarked > 0 && ` (${orphanedMarked} are marked/flagged)`}
-                  </p>
+                <div className="space-y-3">
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                    <p className="text-sm text-yellow-800 font-medium">
+                      ⚠️ Found {orphanedIds.length} orphaned progress entries
+                    </p>
+                    <p className="text-xs text-yellow-700 mt-1">
+                      These are from questions that no longer exist in the database.
+                      {orphanedFlagged.length > 0 && ` (${orphanedFlagged.length} are marked/flagged)`}
+                    </p>
+                  </div>
+                  
+                  {/* Show orphaned flagged questions with their notes */}
+                  {orphanedFlagged.length > 0 && (
+                    <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 space-y-2">
+                      <p className="text-sm text-orange-800 font-medium">
+                        📝 Your orphaned flagged questions:
+                      </p>
+                      <div className="max-h-40 overflow-y-auto space-y-2">
+                        {orphanedFlagged.map((item, idx) => (
+                          <div key={idx} className="text-xs bg-white p-2 rounded border border-orange-100">
+                            <p className="font-mono text-orange-600">ID: {item.id}</p>
+                            {item.note && (
+                              <p className="text-gray-700 mt-1">Note: {item.note}</p>
+                            )}
+                            {item.image && (
+                              <p className="text-gray-500 mt-1 italic">Has attached image</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-xs text-orange-600">
+                        💡 Copy these notes before cleaning up if you want to keep them!
+                      </p>
+                    </div>
+                  )}
+                  
+                  <button
+                    onClick={() => {
+                      if (confirm(`This will remove ${orphanedIds.length} orphaned entries (including ${orphanedFlagged.length} flagged questions). Continue?`)) {
+                        sr.cleanupOrphanedProgress(allQuestionIds)
+                        alert('Orphaned data cleaned up!')
+                      }
+                    }}
+                    className="w-full bg-orange-100 text-orange-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-orange-200 transition-colors"
+                  >
+                    🧹 Clean Up Orphaned Data
+                  </button>
                 </div>
               )
             }
-            return null
+            return (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                <p className="text-sm text-green-700">✓ No orphaned data found</p>
+              </div>
+            )
           })()}
+          
+          <hr className="border-gray-200" />
           
           <button
             onClick={() => {

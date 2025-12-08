@@ -6,7 +6,7 @@ import {
   RotateCcw, Flag, FlagOff, Filter, Brain, Target, Clock,
   Zap, TrendingUp, AlertCircle, Star, Shuffle, List,
   BarChart3, Calendar, Flame, Award, Image, MessageSquare, X,
-  Timer, Keyboard, CircleDot, HelpCircle, ThumbsUp
+  Timer, Keyboard, CircleDot, HelpCircle, ThumbsUp, Settings, Sparkles
 } from 'lucide-react'
 import { mcqQuestions, sectionInfo, MCQQuestion, getQuestionsBySection } from '@/lib/mcqData'
 import { useSpacedRepetition, QuestionProgress } from '@/lib/useSpacedRepetition'
@@ -43,15 +43,27 @@ const DEFAULT_SETTINGS: QuizSettings = {
   secondsPerQuestion: 90
 }
 
+const SETTINGS_STORAGE_KEY = 'ebir-mcq-quiz-settings'
+const FIRST_VISIT_KEY = 'ebir-mcq-first-visit-completed'
+
 export default function EBIRMCQClient() {
   // Core state
   const [view, setView] = useState<'menu' | 'quiz' | 'stats' | 'settings'>('menu')
   const [settings, setSettings] = useState<QuizSettings>(DEFAULT_SETTINGS)
+  const [settingsLoaded, setSettingsLoaded] = useState(false)
   const [questions, setQuestions] = useState<MCQQuestion[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>([])
   const [showResult, setShowResult] = useState(false)
   const [sessionStats, setSessionStats] = useState({ correct: 0, incorrect: 0, startTime: Date.now() })
+  
+  // First visit / setup modal state
+  const [showFirstVisitModal, setShowFirstVisitModal] = useState(false)
+  
+  // Pre-quiz question count selector modal
+  const [showQuizStartModal, setShowQuizStartModal] = useState(false)
+  const [pendingQuizSettings, setPendingQuizSettings] = useState<Partial<QuizSettings> | null>(null)
+  const [selectedQuestionCount, setSelectedQuestionCount] = useState(20)
   
   // Flag note modal state
   const [showFlagNoteModal, setShowFlagNoteModal] = useState(false)
@@ -75,6 +87,38 @@ export default function EBIRMCQClient() {
   
   // Spaced repetition
   const sr = useSpacedRepetition()
+  
+  // Load settings from localStorage on mount
+  useEffect(() => {
+    try {
+      const storedSettings = localStorage.getItem(SETTINGS_STORAGE_KEY)
+      if (storedSettings) {
+        const parsed = JSON.parse(storedSettings)
+        // Merge with defaults to handle any new settings fields
+        setSettings(prev => ({ ...DEFAULT_SETTINGS, ...parsed }))
+      }
+      
+      // Check if first visit
+      const firstVisitCompleted = localStorage.getItem(FIRST_VISIT_KEY)
+      if (!firstVisitCompleted) {
+        setShowFirstVisitModal(true)
+      }
+    } catch (e) {
+      console.error('Failed to load quiz settings:', e)
+    }
+    setSettingsLoaded(true)
+  }, [])
+  
+  // Save settings to localStorage whenever they change
+  useEffect(() => {
+    if (settingsLoaded) {
+      try {
+        localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings))
+      } catch (e) {
+        console.error('Failed to save quiz settings:', e)
+      }
+    }
+  }, [settings, settingsLoaded])
   
   // Get current question
   const currentQuestion = questions[currentIndex]
@@ -209,6 +253,63 @@ export default function EBIRMCQClient() {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [view, currentQuestion, showResult, selectedAnswers, showConfidencePrompt])
+
+  // Initiate quiz - shows question count selector modal
+  const initiateQuiz = (overrideSettings?: Partial<QuizSettings>) => {
+    setPendingQuizSettings(overrideSettings || null)
+    // Calculate available questions for this quiz type
+    let pool: MCQQuestion[] = []
+    const activeSettings = { ...settings, ...overrideSettings }
+    
+    if (activeSettings.section) {
+      pool = getQuestionsBySection(activeSettings.section)
+    } else {
+      pool = [...mcqQuestions]
+    }
+    
+    // Apply filters to get available count
+    const poolIds = pool.map(q => q.id)
+    let filteredIds: string[] = poolIds
+    
+    switch (activeSettings.filterMode) {
+      case 'hideCorrect':
+        const correctIds = sr.getCorrectlyAnswered(poolIds)
+        filteredIds = poolIds.filter(id => !correctIds.includes(id))
+        break
+      case 'onlyIncorrect':
+        filteredIds = sr.getStrugglingQuestions(poolIds)
+        break
+      case 'onlyNew':
+        filteredIds = sr.getNewQuestions(poolIds)
+        break
+      case 'onlyDue':
+        filteredIds = sr.getDueQuestions(poolIds)
+        break
+      case 'onlyMarked':
+        filteredIds = sr.getMarkedQuestions(poolIds)
+        break
+    }
+    
+    switch (activeSettings.mode) {
+      case 'due':
+        filteredIds = sr.getDueQuestions(filteredIds)
+        break
+      case 'new':
+        filteredIds = sr.getNewQuestions(filteredIds)
+        break
+      case 'marked':
+        filteredIds = sr.getMarkedQuestions(filteredIds)
+        break
+      case 'struggling':
+        filteredIds = sr.getStrugglingQuestions(filteredIds)
+        break
+    }
+    
+    // Set default to match settings or cap at available
+    const available = filteredIds.length
+    setSelectedQuestionCount(Math.min(settings.questionCount, available) || Math.min(20, available))
+    setShowQuizStartModal(true)
+  }
 
   // Start quiz with current settings
   const startQuiz = (overrideSettings?: Partial<QuizSettings>) => {
@@ -579,7 +680,7 @@ export default function EBIRMCQClient() {
           {/* Due for Review */}
           {dueCount > 0 && (
             <button
-              onClick={() => startQuiz({ mode: 'due', filterMode: 'all' })}
+              onClick={() => initiateQuiz({ mode: 'due', filterMode: 'all' })}
               className="w-full bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-xl p-4 text-left transition-colors"
             >
               <div className="flex items-center justify-between">
@@ -600,7 +701,7 @@ export default function EBIRMCQClient() {
           {/* New Questions */}
           {newCount > 0 && (
             <button
-              onClick={() => startQuiz({ mode: 'new', filterMode: 'all' })}
+              onClick={() => initiateQuiz({ mode: 'new', filterMode: 'all' })}
               className="w-full bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl p-4 text-left transition-colors"
             >
               <div className="flex items-center justify-between">
@@ -621,7 +722,7 @@ export default function EBIRMCQClient() {
           {/* Marked for Review */}
           {markedCount > 0 && (
             <button
-              onClick={() => startQuiz({ mode: 'marked', filterMode: 'all' })}
+              onClick={() => initiateQuiz({ mode: 'marked', filterMode: 'all' })}
               className="w-full bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl p-4 text-left transition-colors"
             >
               <div className="flex items-center justify-between">
@@ -642,7 +743,7 @@ export default function EBIRMCQClient() {
           {/* Struggling Questions */}
           {strugglingCount > 0 && (
             <button
-              onClick={() => startQuiz({ mode: 'struggling', filterMode: 'all' })}
+              onClick={() => initiateQuiz({ mode: 'struggling', filterMode: 'all' })}
               className="w-full bg-red-50 hover:bg-red-100 border border-red-200 rounded-xl p-4 text-left transition-colors"
             >
               <div className="flex items-center justify-between">
@@ -662,7 +763,7 @@ export default function EBIRMCQClient() {
           
           {/* Random Mix */}
           <button
-            onClick={() => startQuiz({ mode: 'all', filterMode: 'all' })}
+            onClick={() => initiateQuiz({ mode: 'all', filterMode: 'all' })}
             className="w-full bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl p-4 text-left transition-colors"
           >
             <div className="flex items-center justify-between">
@@ -696,7 +797,7 @@ export default function EBIRMCQClient() {
                   key={section}
                   onClick={() => {
                     setSettings(prev => ({ ...prev, section }))
-                    startQuiz({ section, mode: 'section' })
+                    initiateQuiz({ section, mode: 'section' })
                   }}
                   className="w-full bg-white hover:bg-gray-50 border border-gray-200 rounded-xl p-4 text-left transition-colors"
                 >
@@ -1288,7 +1389,7 @@ export default function EBIRMCQClient() {
         {/* Action Buttons */}
         <div className="flex gap-3">
           <button
-            onClick={() => startQuiz()}
+            onClick={() => initiateQuiz()}
             className="flex-1 bg-purple-600 text-white py-3 rounded-xl font-medium hover:bg-purple-700 transition-colors"
           >
             Practice Again
@@ -1466,20 +1567,305 @@ export default function EBIRMCQClient() {
           </div>
         </div>
 
+        {/* Auto-save notice */}
+        <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-center gap-2">
+          <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+          <p className="text-sm text-green-700">Your settings are automatically saved</p>
+        </div>
+
         <button
           onClick={() => {
             setView('menu')
           }}
           className="w-full bg-purple-600 text-white py-3 rounded-xl font-medium hover:bg-purple-700 transition-colors"
         >
-          Save Settings
+          Back to Menu
         </button>
       </div>
     )
   }
 
+  // Render first visit / setup modal
+  const renderFirstVisitModal = () => {
+    if (!showFirstVisitModal) return null
+    
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Sparkles className="w-8 h-8 text-purple-600" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900">Welcome to EBIR MCQ Practice!</h2>
+            <p className="text-gray-600 mt-2">Let's set up your quiz preferences before you start.</p>
+          </div>
+          
+          <div className="space-y-4">
+            {/* Confidence Rating Toggle */}
+            <div className="bg-purple-50 rounded-xl p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex-1 pr-4">
+                  <div className="flex items-center gap-2">
+                    <Brain className="w-5 h-5 text-purple-600" />
+                    <span className="font-medium text-gray-900">Confidence Rating</span>
+                  </div>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Rate how confident you are before seeing the answer. Helps identify lucky guesses vs. true knowledge.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setSettings(prev => ({ ...prev, showConfidenceRating: !prev.showConfidenceRating }))}
+                  className={`w-14 h-7 rounded-full transition-colors flex-shrink-0 ${settings.showConfidenceRating ? 'bg-purple-600' : 'bg-gray-300'}`}
+                >
+                  <div className={`w-6 h-6 bg-white rounded-full shadow transform transition-transform ${settings.showConfidenceRating ? 'translate-x-7' : 'translate-x-0.5'}`} />
+                </button>
+              </div>
+            </div>
+            
+            {/* Timed Mode Toggle */}
+            <div className="bg-orange-50 rounded-xl p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex-1 pr-4">
+                  <div className="flex items-center gap-2">
+                    <Timer className="w-5 h-5 text-orange-600" />
+                    <span className="font-medium text-gray-900">Timed Mode</span>
+                  </div>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Add time pressure like the real exam. Auto-submits when time runs out.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setSettings(prev => ({ ...prev, timedMode: !prev.timedMode }))}
+                  className={`w-14 h-7 rounded-full transition-colors flex-shrink-0 ${settings.timedMode ? 'bg-orange-600' : 'bg-gray-300'}`}
+                >
+                  <div className={`w-6 h-6 bg-white rounded-full shadow transform transition-transform ${settings.timedMode ? 'translate-x-7' : 'translate-x-0.5'}`} />
+                </button>
+              </div>
+            </div>
+            
+            {/* Shuffle Options Toggle */}
+            <div className="bg-blue-50 rounded-xl p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex-1 pr-4">
+                  <div className="flex items-center gap-2">
+                    <Shuffle className="w-5 h-5 text-blue-600" />
+                    <span className="font-medium text-gray-900">Shuffle Answer Choices</span>
+                  </div>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Randomize the order of answer options to prevent pattern memorization.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setSettings(prev => ({ ...prev, shuffleOptions: !prev.shuffleOptions }))}
+                  className={`w-14 h-7 rounded-full transition-colors flex-shrink-0 ${settings.shuffleOptions ? 'bg-blue-600' : 'bg-gray-300'}`}
+                >
+                  <div className={`w-6 h-6 bg-white rounded-full shadow transform transition-transform ${settings.shuffleOptions ? 'translate-x-7' : 'translate-x-0.5'}`} />
+                </button>
+              </div>
+            </div>
+            
+            {/* Default Question Count */}
+            <div className="bg-gray-50 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <List className="w-5 h-5 text-gray-600" />
+                <span className="font-medium text-gray-900">Default Questions per Quiz</span>
+              </div>
+              <select
+                value={settings.questionCount}
+                onChange={(e) => setSettings(prev => ({ ...prev, questionCount: parseInt(e.target.value) }))}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+              >
+                <option value={10}>10 questions</option>
+                <option value={20}>20 questions</option>
+                <option value={30}>30 questions</option>
+                <option value={50}>50 questions</option>
+                <option value={100}>100 questions</option>
+              </select>
+            </div>
+          </div>
+          
+          <div className="pt-2 space-y-3">
+            <button
+              onClick={() => {
+                localStorage.setItem(FIRST_VISIT_KEY, 'true')
+                setShowFirstVisitModal(false)
+              }}
+              className="w-full bg-purple-600 text-white py-3 rounded-xl font-medium hover:bg-purple-700 transition-colors"
+            >
+              Start Practicing
+            </button>
+            <p className="text-xs text-center text-gray-500">
+              You can change these settings anytime from the Settings menu
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Render quiz start modal (question count selector)
+  const renderQuizStartModal = () => {
+    if (!showQuizStartModal) return null
+    
+    // Calculate available questions for display
+    let pool: MCQQuestion[] = []
+    const activeSettings = { ...settings, ...pendingQuizSettings }
+    
+    if (activeSettings.section) {
+      pool = getQuestionsBySection(activeSettings.section)
+    } else {
+      pool = [...mcqQuestions]
+    }
+    
+    const poolIds = pool.map(q => q.id)
+    let filteredIds: string[] = poolIds
+    
+    switch (activeSettings.filterMode) {
+      case 'hideCorrect':
+        const correctIds = sr.getCorrectlyAnswered(poolIds)
+        filteredIds = poolIds.filter(id => !correctIds.includes(id))
+        break
+      case 'onlyIncorrect':
+        filteredIds = sr.getStrugglingQuestions(poolIds)
+        break
+      case 'onlyNew':
+        filteredIds = sr.getNewQuestions(poolIds)
+        break
+      case 'onlyDue':
+        filteredIds = sr.getDueQuestions(poolIds)
+        break
+      case 'onlyMarked':
+        filteredIds = sr.getMarkedQuestions(poolIds)
+        break
+    }
+    
+    switch (activeSettings.mode) {
+      case 'due':
+        filteredIds = sr.getDueQuestions(filteredIds)
+        break
+      case 'new':
+        filteredIds = sr.getNewQuestions(filteredIds)
+        break
+      case 'marked':
+        filteredIds = sr.getMarkedQuestions(filteredIds)
+        break
+      case 'struggling':
+        filteredIds = sr.getStrugglingQuestions(filteredIds)
+        break
+    }
+    
+    const availableCount = filteredIds.length
+    
+    // Get quiz type label
+    let quizTypeLabel = 'Quiz'
+    switch (activeSettings.mode) {
+      case 'due': quizTypeLabel = 'Due for Review'; break
+      case 'new': quizTypeLabel = 'New Questions'; break
+      case 'marked': quizTypeLabel = 'Flagged Questions'; break
+      case 'struggling': quizTypeLabel = 'Weak Areas'; break
+      case 'section': quizTypeLabel = `Section ${activeSettings.section}`; break
+      case 'all': quizTypeLabel = 'Random Practice'; break
+    }
+    
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-2xl max-w-sm w-full p-6 space-y-5">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-gray-900">{quizTypeLabel}</h2>
+            <button
+              onClick={() => {
+                setShowQuizStartModal(false)
+                setPendingQuizSettings(null)
+              }}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          
+          <div className="space-y-4">
+            {/* Available Questions Info */}
+            <div className="bg-gray-50 rounded-lg p-3 text-center">
+              <p className="text-sm text-gray-600">Available questions</p>
+              <p className="text-2xl font-bold text-gray-900">{availableCount}</p>
+            </div>
+            
+            {/* Question Count Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                How many questions?
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {[10, 20, 30, 50, availableCount > 50 ? 100 : null, availableCount].filter((n, i, arr) => n !== null && arr.indexOf(n) === i && n <= availableCount).map(count => (
+                  <button
+                    key={count}
+                    onClick={() => setSelectedQuestionCount(count!)}
+                    className={`py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                      selectedQuestionCount === count
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {count === availableCount ? `All (${count})` : count}
+                  </button>
+                ))}
+              </div>
+              
+              {/* Custom number input */}
+              <div className="mt-3">
+                <label className="text-xs text-gray-500">Or enter custom amount:</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={availableCount}
+                  value={selectedQuestionCount}
+                  onChange={(e) => setSelectedQuestionCount(Math.min(Math.max(1, parseInt(e.target.value) || 1), availableCount))}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1"
+                />
+              </div>
+            </div>
+            
+            {/* Quick settings toggles */}
+            <div className="border-t pt-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-700">Confidence prompts</span>
+                <button
+                  onClick={() => setSettings(prev => ({ ...prev, showConfidenceRating: !prev.showConfidenceRating }))}
+                  className={`w-10 h-5 rounded-full transition-colors ${settings.showConfidenceRating ? 'bg-purple-600' : 'bg-gray-300'}`}
+                >
+                  <div className={`w-4 h-4 bg-white rounded-full shadow transform transition-transform ${settings.showConfidenceRating ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                </button>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-700">Timed mode</span>
+                <button
+                  onClick={() => setSettings(prev => ({ ...prev, timedMode: !prev.timedMode }))}
+                  className={`w-10 h-5 rounded-full transition-colors ${settings.timedMode ? 'bg-purple-600' : 'bg-gray-300'}`}
+                >
+                  <div className={`w-4 h-4 bg-white rounded-full shadow transform transition-transform ${settings.timedMode ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <button
+            onClick={() => {
+              setShowQuizStartModal(false)
+              startQuiz({ ...pendingQuizSettings, questionCount: selectedQuestionCount })
+              setPendingQuizSettings(null)
+            }}
+            disabled={availableCount === 0}
+            className="w-full bg-purple-600 text-white py-3 rounded-xl font-medium hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {availableCount === 0 ? 'No questions available' : `Start Quiz (${selectedQuestionCount} questions)`}
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   // Main render
-  if (!sr.isLoaded) {
+  if (!sr.isLoaded || !settingsLoaded) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600" />
@@ -1489,6 +1875,8 @@ export default function EBIRMCQClient() {
 
   return (
     <div className="max-w-2xl mx-auto p-4">
+      {renderFirstVisitModal()}
+      {renderQuizStartModal()}
       {view === 'menu' && renderMenu()}
       {view === 'quiz' && renderQuiz()}
       {view === 'stats' && renderStats()}

@@ -23,6 +23,7 @@ interface QuizSettings {
   shuffleQuestions: boolean
   shuffleOptions: boolean
   showExplanationImmediately: boolean
+  showConfidenceRating: boolean
   timedMode: boolean
   secondsPerQuestion: number
 }
@@ -37,6 +38,7 @@ const DEFAULT_SETTINGS: QuizSettings = {
   shuffleQuestions: true,
   shuffleOptions: false,
   showExplanationImmediately: true,
+  showConfidenceRating: true,
   timedMode: false,
   secondsPerQuestion: 90
 }
@@ -168,7 +170,7 @@ export default function EBIRMCQClient() {
           // Default to 'unsure' if enter pressed during confidence prompt
           handleConfidenceSelect('unsure')
         } else if (!showResult && selectedAnswers.length > 0) {
-          setShowConfidencePrompt(true)
+          submitAnswer()
         } else if (showResult) {
           nextQuestion()
         }
@@ -351,10 +353,38 @@ export default function EBIRMCQClient() {
     setShowResult(true)
   }
 
-  // Submit answer (shows confidence prompt first)
+  // Submit answer (shows confidence prompt first if enabled)
   const submitAnswer = () => {
     if (selectedAnswers.length === 0) return
-    setShowConfidencePrompt(true)
+    
+    if (settings.showConfidenceRating) {
+      setShowConfidencePrompt(true)
+    } else {
+      // Skip confidence prompt - submit directly with null confidence
+      const isCorrect = 
+        selectedAnswers.length === currentQuestion.correctAnswers.length &&
+        selectedAnswers.every(a => currentQuestion.correctAnswers.includes(a))
+      
+      // Record in spaced repetition system without confidence
+      sr.recordAnswer(currentQuestion.id, isCorrect, undefined)
+      
+      // Track missed questions for session summary
+      if (!isCorrect) {
+        setMissedQuestions(prev => [...prev, currentQuestion.id])
+      }
+      
+      // Update session stats
+      setSessionStats(prev => ({
+        ...prev,
+        correct: prev.correct + (isCorrect ? 1 : 0),
+        incorrect: prev.incorrect + (isCorrect ? 0 : 1)
+      }))
+      
+      // Stop timer
+      setTimerActive(false)
+      
+      setShowResult(true)
+    }
   }
 
   // Save error note
@@ -1353,6 +1383,20 @@ export default function EBIRMCQClient() {
               className={`w-12 h-6 rounded-full transition-colors ${settings.shuffleOptions ? 'bg-purple-600' : 'bg-gray-300'}`}
             >
               <div className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${settings.shuffleOptions ? 'translate-x-6' : 'translate-x-0.5'}`} />
+            </button>
+          </div>
+
+          {/* Confidence Rating */}
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-sm font-medium text-gray-700">Confidence Rating</span>
+              <p className="text-xs text-gray-500">Rate your confidence before seeing answers</p>
+            </div>
+            <button
+              onClick={() => setSettings(prev => ({ ...prev, showConfidenceRating: !prev.showConfidenceRating }))}
+              className={`w-12 h-6 rounded-full transition-colors ${settings.showConfidenceRating ? 'bg-purple-600' : 'bg-gray-300'}`}
+            >
+              <div className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${settings.showConfidenceRating ? 'translate-x-6' : 'translate-x-0.5'}`} />
             </button>
           </div>
         </div>

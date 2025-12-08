@@ -1,371 +1,420 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { 
-  GraduationCap, Brain, CheckCircle, XCircle, ChevronRight, 
-  RotateCcw, Trophy, Target, Clock, BookOpen, Shuffle,
-  ChevronDown, BarChart3, Lightbulb, ArrowRight, ArrowLeft,
-  Play, Pause, Settings, Check, X, AlertCircle, Sparkles
+  BookOpen, CheckCircle, XCircle, ChevronRight, ChevronLeft, 
+  RotateCcw, Flag, FlagOff, Filter, Brain, Target, Clock,
+  Zap, TrendingUp, AlertCircle, Star, Shuffle, List,
+  BarChart3, Calendar, Flame, Award
 } from 'lucide-react'
-import { 
-  mcqQuestions, 
-  MCQQuestion, 
-  sectionInfo, 
-  getQuestionsBySection, 
-  getRandomQuestions,
-  getSectionStats 
-} from '@/lib/mcqData'
+import { mcqQuestions, sectionInfo, MCQQuestion, getQuestionsBySection } from '@/lib/mcqData'
+import { useSpacedRepetition, QuestionProgress } from '@/lib/useSpacedRepetition'
 
-type QuizMode = 'menu' | 'quiz' | 'review' | 'results'
-type SectionFilter = 'all' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F'
+type Section = 'A' | 'B' | 'C' | 'D' | 'E' | 'F'
+type QuizMode = 'all' | 'section' | 'due' | 'new' | 'marked' | 'struggling' | 'custom'
+type FilterMode = 'all' | 'hideCorrect' | 'onlyIncorrect' | 'onlyNew' | 'onlyDue' | 'onlyMarked'
 
-interface QuizState {
-  questions: MCQQuestion[]
-  currentIndex: number
-  answers: Record<string, number[]>
-  showExplanation: boolean
-  isSubmitted: boolean
-  startTime: number
-  endTime?: number
+interface QuizSettings {
+  mode: QuizMode
+  section: Section | null
+  filterMode: FilterMode
+  questionCount: number
+  shuffleQuestions: boolean
+  shuffleOptions: boolean
+  showExplanationImmediately: boolean
 }
 
-interface QuizStats {
-  totalAttempted: number
-  totalCorrect: number
-  sectionStats: Record<string, { attempted: number; correct: number }>
-}
-
-const sectionColors: Record<string, string> = {
-  A: 'bg-purple-100 text-purple-800 border-purple-300',
-  B: 'bg-blue-100 text-blue-800 border-blue-300',
-  C: 'bg-green-100 text-green-800 border-green-300',
-  D: 'bg-orange-100 text-orange-800 border-orange-300',
-  E: 'bg-pink-100 text-pink-800 border-pink-300',
-  F: 'bg-red-100 text-red-800 border-red-300',
-}
-
-const sectionBgColors: Record<string, string> = {
-  A: 'border-purple-500 bg-purple-50',
-  B: 'border-blue-500 bg-blue-50',
-  C: 'border-green-500 bg-green-50',
-  D: 'border-orange-500 bg-orange-50',
-  E: 'border-pink-500 bg-pink-50',
-  F: 'border-red-500 bg-red-50',
+const DEFAULT_SETTINGS: QuizSettings = {
+  mode: 'all',
+  section: null,
+  filterMode: 'all',
+  questionCount: 20,
+  shuffleQuestions: true,
+  shuffleOptions: false,
+  showExplanationImmediately: true
 }
 
 export default function EBIRMCQClient() {
-  const [mode, setMode] = useState<QuizMode>('menu')
-  const [selectedSection, setSelectedSection] = useState<SectionFilter>('all')
-  const [questionCount, setQuestionCount] = useState(10)
-  const [quizState, setQuizState] = useState<QuizState | null>(null)
+  // Core state
+  const [view, setView] = useState<'menu' | 'quiz' | 'stats' | 'settings'>('menu')
+  const [settings, setSettings] = useState<QuizSettings>(DEFAULT_SETTINGS)
+  const [questions, setQuestions] = useState<MCQQuestion[]>([])
+  const [currentIndex, setCurrentIndex] = useState(0)
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>([])
-  const [stats, setStats] = useState<QuizStats>({
-    totalAttempted: 0,
-    totalCorrect: 0,
-    sectionStats: {}
-  })
-
-  useEffect(() => {
-    const savedStats = localStorage.getItem('ebir-mcq-stats')
-    if (savedStats) {
-      try {
-        setStats(JSON.parse(savedStats))
-      } catch (e) {
-        console.error('Failed to load stats:', e)
-      }
+  const [showResult, setShowResult] = useState(false)
+  const [sessionStats, setSessionStats] = useState({ correct: 0, incorrect: 0, startTime: Date.now() })
+  
+  // Spaced repetition
+  const sr = useSpacedRepetition()
+  
+  // Get current question
+  const currentQuestion = questions[currentIndex]
+  
+  // Calculate all question IDs for filtering
+  const allQuestionIds = useMemo(() => mcqQuestions.map(q => q.id), [])
+  
+  // Get section counts with progress
+  const sectionStats = useMemo(() => {
+    const stats: Record<Section, { total: number; mastered: number; due: number; new: number }> = {
+      A: { total: 0, mastered: 0, due: 0, new: 0 },
+      B: { total: 0, mastered: 0, due: 0, new: 0 },
+      C: { total: 0, mastered: 0, due: 0, new: 0 },
+      D: { total: 0, mastered: 0, due: 0, new: 0 },
+      E: { total: 0, mastered: 0, due: 0, new: 0 },
+      F: { total: 0, mastered: 0, due: 0, new: 0 }
     }
-  }, [])
-
-  const saveStats = useCallback((newStats: QuizStats) => {
-    localStorage.setItem('ebir-mcq-stats', JSON.stringify(newStats))
-    setStats(newStats)
-  }, [])
-
-  const sectionStatsData = useMemo(() => getSectionStats(), [])
-  const totalQuestions = mcqQuestions.length
-  const availableQuestions = selectedSection === 'all' 
-    ? totalQuestions 
-    : sectionStatsData[selectedSection] || 0
-
-  const startQuiz = useCallback(() => {
-    const questions = selectedSection === 'all'
-      ? getRandomQuestions(questionCount)
-      : getRandomQuestions(questionCount, selectedSection)
     
-    setQuizState({
-      questions,
-      currentIndex: 0,
-      answers: {},
-      showExplanation: false,
-      isSubmitted: false,
-      startTime: Date.now()
+    if (!sr.isLoaded) return stats
+    
+    mcqQuestions.forEach(q => {
+      const section = q.section as Section
+      stats[section].total++
+      
+      const progress = sr.getProgress(q.id)
+      if (progress.isMastered) {
+        stats[section].mastered++
+      }
+      if (!progress.timesAnswered) {
+        stats[section].new++
+      } else if (new Date(progress.nextReviewDate) <= new Date()) {
+        stats[section].due++
+      }
     })
-    setSelectedAnswers([])
-    setMode('quiz')
-  }, [selectedSection, questionCount])
-
-  const currentQuestion = quizState?.questions[quizState.currentIndex]
-  const isMultipleChoice = currentQuestion && currentQuestion.correctAnswers.length > 1
-
-  const handleAnswerSelect = useCallback((index: number) => {
-    if (quizState?.isSubmitted) return
     
-    if (isMultipleChoice) {
+    return stats
+  }, [sr.isLoaded, sr.getProgress])
+
+  // Start quiz with current settings
+  const startQuiz = (overrideSettings?: Partial<QuizSettings>) => {
+    const activeSettings = { ...settings, ...overrideSettings }
+    let pool: MCQQuestion[] = []
+    
+    // Get base pool based on mode/section
+    if (activeSettings.section) {
+      pool = getQuestionsBySection(activeSettings.section)
+    } else {
+      pool = [...mcqQuestions]
+    }
+    
+    // Apply filter mode
+    const poolIds = pool.map(q => q.id)
+    let filteredIds: string[] = poolIds
+    
+    switch (activeSettings.filterMode) {
+      case 'hideCorrect':
+        const correctIds = sr.getCorrectlyAnswered(poolIds)
+        filteredIds = poolIds.filter(id => !correctIds.includes(id))
+        break
+      case 'onlyIncorrect':
+        filteredIds = sr.getStrugglingQuestions(poolIds)
+        break
+      case 'onlyNew':
+        filteredIds = sr.getNewQuestions(poolIds)
+        break
+      case 'onlyDue':
+        filteredIds = sr.getDueQuestions(poolIds)
+        break
+      case 'onlyMarked':
+        filteredIds = sr.getMarkedQuestions(poolIds)
+        break
+    }
+    
+    // Apply mode-specific filtering
+    switch (activeSettings.mode) {
+      case 'due':
+        filteredIds = sr.getDueQuestions(filteredIds)
+        break
+      case 'new':
+        filteredIds = sr.getNewQuestions(filteredIds)
+        break
+      case 'marked':
+        filteredIds = sr.getMarkedQuestions(filteredIds)
+        break
+      case 'struggling':
+        filteredIds = sr.getStrugglingQuestions(filteredIds)
+        break
+    }
+    
+    // Filter pool to matching IDs
+    pool = pool.filter(q => filteredIds.includes(q.id))
+    
+    // Shuffle if enabled
+    if (activeSettings.shuffleQuestions) {
+      pool = [...pool].sort(() => Math.random() - 0.5)
+    }
+    
+    // Limit to question count
+    pool = pool.slice(0, activeSettings.questionCount)
+    
+    if (pool.length === 0) {
+      alert('No questions match your current filters. Try adjusting your settings.')
+      return
+    }
+    
+    setQuestions(pool)
+    setCurrentIndex(0)
+    setSelectedAnswers([])
+    setShowResult(false)
+    setSessionStats({ correct: 0, incorrect: 0, startTime: Date.now() })
+    setView('quiz')
+  }
+
+  // Handle answer selection
+  const handleAnswerSelect = (index: number) => {
+    if (showResult) return
+    
+    if (currentQuestion.correctAnswers.length === 1) {
+      setSelectedAnswers([index])
+    } else {
       setSelectedAnswers(prev => 
         prev.includes(index) 
           ? prev.filter(i => i !== index)
           : [...prev, index]
       )
-    } else {
-      setSelectedAnswers([index])
     }
-  }, [quizState?.isSubmitted, isMultipleChoice])
-
-  const submitAnswer = useCallback(() => {
-    if (!quizState || !currentQuestion) return
-    
-    setQuizState(prev => {
-      if (!prev) return prev
-      return {
-        ...prev,
-        answers: { ...prev.answers, [currentQuestion.id]: selectedAnswers },
-        isSubmitted: true,
-        showExplanation: true
-      }
-    })
-  }, [quizState, currentQuestion, selectedAnswers])
-
-  const arraysEqual = (a: number[], b: number[]) => {
-    if (a.length !== b.length) return false
-    const sortedA = [...a].sort()
-    const sortedB = [...b].sort()
-    return sortedA.every((val, idx) => val === sortedB[idx])
   }
 
-  const nextQuestion = useCallback(() => {
-    if (!quizState || !currentQuestion) return
+  // Submit answer
+  const submitAnswer = () => {
+    if (selectedAnswers.length === 0) return
     
-    if (quizState.currentIndex < quizState.questions.length - 1) {
-      setQuizState(prev => {
-        if (!prev) return prev
-        return {
-          ...prev,
-          currentIndex: prev.currentIndex + 1,
-          isSubmitted: false,
-          showExplanation: false
-        }
-      })
+    const isCorrect = 
+      selectedAnswers.length === currentQuestion.correctAnswers.length &&
+      selectedAnswers.every(a => currentQuestion.correctAnswers.includes(a))
+    
+    // Record in spaced repetition system
+    sr.recordAnswer(currentQuestion.id, isCorrect)
+    
+    // Update session stats
+    setSessionStats(prev => ({
+      ...prev,
+      correct: prev.correct + (isCorrect ? 1 : 0),
+      incorrect: prev.incorrect + (isCorrect ? 0 : 1)
+    }))
+    
+    setShowResult(true)
+  }
+
+  // Navigate to next question
+  const nextQuestion = () => {
+    if (currentIndex < questions.length - 1) {
+      setCurrentIndex(prev => prev + 1)
       setSelectedAnswers([])
+      setShowResult(false)
     } else {
-      const endTime = Date.now()
-      
-      let correct = 0
-      const newSectionStats = { ...stats.sectionStats }
-      
-      quizState.questions.forEach(q => {
-        const userAnswer = q.id === currentQuestion.id ? selectedAnswers : (quizState.answers[q.id] || [])
-        const isCorrect = arraysEqual(userAnswer, q.correctAnswers)
-        
-        if (isCorrect) correct++
-        
-        if (!newSectionStats[q.section]) {
-          newSectionStats[q.section] = { attempted: 0, correct: 0 }
-        }
-        newSectionStats[q.section].attempted++
-        if (isCorrect) newSectionStats[q.section].correct++
-      })
-      
-      saveStats({
-        totalAttempted: stats.totalAttempted + quizState.questions.length,
-        totalCorrect: stats.totalCorrect + correct,
-        sectionStats: newSectionStats
-      })
-      
-      setQuizState(prev => prev ? { 
-        ...prev, 
-        endTime,
-        answers: { ...prev.answers, [currentQuestion.id]: selectedAnswers }
-      } : prev)
-      setMode('results')
-    }
-  }, [quizState, currentQuestion, selectedAnswers, stats, saveStats])
-
-  const goBack = useCallback(() => {
-    if (!quizState || quizState.currentIndex === 0) return
-    
-    const prevIndex = quizState.currentIndex - 1
-    const prevQuestion = quizState.questions[prevIndex]
-    const prevAnswers = quizState.answers[prevQuestion.id] || []
-    
-    setQuizState(prev => {
-      if (!prev) return prev
-      return {
-        ...prev,
-        currentIndex: prevIndex,
-        isSubmitted: true,
-        showExplanation: true
-      }
-    })
-    setSelectedAnswers(prevAnswers)
-  }, [quizState])
-
-  const resetQuiz = useCallback(() => {
-    setQuizState(null)
-    setSelectedAnswers([])
-    setMode('menu')
-  }, [])
-
-  const resetStats = useCallback(() => {
-    if (confirm('Are you sure you want to reset all your statistics?')) {
-      saveStats({
-        totalAttempted: 0,
-        totalCorrect: 0,
-        sectionStats: {}
-      })
-    }
-  }, [saveStats])
-
-  const getQuizScore = () => {
-    if (!quizState) return { correct: 0, total: 0, percentage: 0 }
-    
-    let correct = 0
-    quizState.questions.forEach(q => {
-      const userAnswer = quizState.answers[q.id] || []
-      if (arraysEqual(userAnswer, q.correctAnswers)) {
-        correct++
-      }
-    })
-    
-    return {
-      correct,
-      total: quizState.questions.length,
-      percentage: Math.round((correct / quizState.questions.length) * 100)
+      // Quiz complete - show results
+      setView('stats')
     }
   }
 
-  const formatTime = (ms: number) => {
-    const seconds = Math.floor(ms / 1000)
-    const minutes = Math.floor(seconds / 60)
-    const remainingSeconds = seconds % 60
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
+  // Get progress indicator for a question
+  const getProgressIndicator = (questionId: string) => {
+    const progress = sr.getProgress(questionId)
+    if (progress.isMastered) return { icon: Star, color: 'text-yellow-500', label: 'Mastered' }
+    if (progress.isMarkedForReview) return { icon: Flag, color: 'text-orange-500', label: 'Marked' }
+    if (progress.timesIncorrect >= 2 && progress.streak === 0) return { icon: AlertCircle, color: 'text-red-500', label: 'Struggling' }
+    if (progress.timesAnswered > 0) return { icon: CheckCircle, color: 'text-green-500', label: 'Seen' }
+    return { icon: Brain, color: 'text-gray-400', label: 'New' }
   }
 
-  // MENU SCREEN
-  if (mode === 'menu') {
+  // Render menu view
+  const renderMenu = () => {
+    const globalStats = sr.getStats()
+    const dueCount = sr.getDueQuestions(allQuestionIds).length
+    const markedCount = sr.getMarkedQuestions(allQuestionIds).length
+    const newCount = sr.getNewQuestions(allQuestionIds).length
+    const strugglingCount = sr.getStrugglingQuestions(allQuestionIds).length
+    
     return (
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-6 mb-6 text-white">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-white/20 rounded-lg">
-              <Brain className="w-6 h-6" />
-            </div>
-            <h1 className="text-2xl font-bold">EBIR MCQ Practice</h1>
-          </div>
-          <p className="text-purple-100">
-            Test your knowledge across all EBIR syllabus sections with exam-style questions
-          </p>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900">EBIR MCQ Practice</h1>
+          <p className="text-gray-600 mt-1">Spaced repetition learning system</p>
         </div>
 
-        {stats.totalAttempted > 0 && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-semibold text-gray-900 flex items-center gap-2">
-                <BarChart3 className="w-5 h-5 text-purple-600" />
-                Your Progress
-              </h2>
-              <button
-                onClick={resetStats}
-                className="text-xs text-gray-500 hover:text-red-600 transition-colors"
-              >
-                Reset Stats
-              </button>
+        {/* Quick Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="bg-white rounded-xl p-4 border border-gray-200">
+            <div className="flex items-center gap-2 text-blue-600 mb-1">
+              <Target className="w-4 h-4" />
+              <span className="text-sm font-medium">Accuracy</span>
             </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-gray-900">{stats.totalAttempted}</div>
-                <div className="text-xs text-gray-500">Questions Attempted</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">{stats.totalCorrect}</div>
-                <div className="text-xs text-gray-500">Correct Answers</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-purple-600">
-                  {stats.totalAttempted > 0 
-                    ? Math.round((stats.totalCorrect / stats.totalAttempted) * 100) 
-                    : 0}%
-                </div>
-                <div className="text-xs text-gray-500">Accuracy</div>
-              </div>
-            </div>
+            <p className="text-2xl font-bold">{globalStats.accuracy}%</p>
           </div>
-        )}
+          <div className="bg-white rounded-xl p-4 border border-gray-200">
+            <div className="flex items-center gap-2 text-green-600 mb-1">
+              <Award className="w-4 h-4" />
+              <span className="text-sm font-medium">Mastered</span>
+            </div>
+            <p className="text-2xl font-bold">{globalStats.mastered}</p>
+          </div>
+          <div className="bg-white rounded-xl p-4 border border-gray-200">
+            <div className="flex items-center gap-2 text-orange-600 mb-1">
+              <Clock className="w-4 h-4" />
+              <span className="text-sm font-medium">Due</span>
+            </div>
+            <p className="text-2xl font-bold">{dueCount}</p>
+          </div>
+          <div className="bg-white rounded-xl p-4 border border-gray-200">
+            <div className="flex items-center gap-2 text-purple-600 mb-1">
+              <Flame className="w-4 h-4" />
+              <span className="text-sm font-medium">Answered</span>
+            </div>
+            <p className="text-2xl font-bold">{globalStats.totalAnswered}</p>
+          </div>
+        </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
-          <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-purple-600" />
-            Select Practice Mode
-          </h2>
+        {/* Quick Start Options */}
+        <div className="space-y-3">
+          <h2 className="font-semibold text-gray-900">Quick Start</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+          {/* Due for Review */}
+          {dueCount > 0 && (
             <button
-              onClick={() => setSelectedSection('all')}
-              className={`p-4 rounded-xl border-2 text-left transition-all ${
-                selectedSection === 'all'
-                  ? 'border-purple-500 bg-purple-50'
-                  : 'border-gray-200 hover:border-purple-300'
-              }`}
+              onClick={() => startQuiz({ mode: 'due', filterMode: 'all' })}
+              className="w-full bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-xl p-4 text-left transition-colors"
             >
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${
-                  selectedSection === 'all' ? 'bg-purple-100' : 'bg-gray-100'
-                }`}>
-                  <Shuffle className={`w-5 h-5 ${
-                    selectedSection === 'all' ? 'text-purple-600' : 'text-gray-600'
-                  }`} />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
+                    <Clock className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900">Review Due Questions</p>
+                    <p className="text-sm text-gray-600">{dueCount} questions ready for review</p>
+                  </div>
                 </div>
-                <div>
-                  <div className="font-medium text-gray-900">Random Mix</div>
-                  <div className="text-sm text-gray-500">{totalQuestions} questions from all sections</div>
-                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400" />
               </div>
             </button>
+          )}
+          
+          {/* New Questions */}
+          {newCount > 0 && (
+            <button
+              onClick={() => startQuiz({ mode: 'new', filterMode: 'all' })}
+              className="w-full bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl p-4 text-left transition-colors"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                    <Brain className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900">Learn New Questions</p>
+                    <p className="text-sm text-gray-600">{newCount} questions to discover</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400" />
+              </div>
+            </button>
+          )}
+          
+          {/* Marked for Review */}
+          {markedCount > 0 && (
+            <button
+              onClick={() => startQuiz({ mode: 'marked', filterMode: 'all' })}
+              className="w-full bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl p-4 text-left transition-colors"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
+                    <Flag className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900">Marked Questions</p>
+                    <p className="text-sm text-gray-600">{markedCount} flagged for later</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400" />
+              </div>
+            </button>
+          )}
+          
+          {/* Struggling Questions */}
+          {strugglingCount > 0 && (
+            <button
+              onClick={() => startQuiz({ mode: 'struggling', filterMode: 'all' })}
+              className="w-full bg-red-50 hover:bg-red-100 border border-red-200 rounded-xl p-4 text-left transition-colors"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center">
+                    <AlertCircle className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900">Practice Weak Areas</p>
+                    <p className="text-sm text-gray-600">{strugglingCount} questions need work</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400" />
+              </div>
+            </button>
+          )}
+          
+          {/* Random Mix */}
+          <button
+            onClick={() => startQuiz({ mode: 'all', filterMode: 'all' })}
+            className="w-full bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl p-4 text-left transition-colors"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gray-500 rounded-lg flex items-center justify-center">
+                  <Shuffle className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="font-semibold text-gray-900">Random Practice</p>
+                  <p className="text-sm text-gray-600">Mix of all {mcqQuestions.length} questions</p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-400" />
+            </div>
+          </button>
+        </div>
 
-            {(Object.keys(sectionInfo) as Array<keyof typeof sectionInfo>).map(section => {
+        {/* Section Practice */}
+        <div className="space-y-3">
+          <h2 className="font-semibold text-gray-900">Practice by Section</h2>
+          <div className="grid gap-2">
+            {(Object.keys(sectionInfo) as Section[]).map(section => {
               const info = sectionInfo[section]
-              const count = sectionStatsData[section] || 0
-              const sectionStat = stats.sectionStats[section]
-              const accuracy = sectionStat && sectionStat.attempted > 0
-                ? Math.round((sectionStat.correct / sectionStat.attempted) * 100)
-                : null
+              const stats = sectionStats[section]
+              const progressPercent = stats.total > 0 
+                ? Math.round((stats.mastered / stats.total) * 100) 
+                : 0
               
               return (
                 <button
                   key={section}
-                  onClick={() => setSelectedSection(section)}
-                  className={`p-4 rounded-xl border-2 text-left transition-all ${
-                    selectedSection === section
-                      ? sectionBgColors[section]
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                  onClick={() => {
+                    setSettings(prev => ({ ...prev, section }))
+                    startQuiz({ section, mode: 'section' })
+                  }}
+                  className="w-full bg-white hover:bg-gray-50 border border-gray-200 rounded-xl p-4 text-left transition-colors"
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-lg ${sectionColors[section]}`}>
+                      <span className={`w-8 h-8 rounded-lg bg-${info.color}-100 text-${info.color}-600 flex items-center justify-center font-bold text-sm`}>
                         {section}
-                      </div>
+                      </span>
                       <div>
-                        <div className="font-medium text-gray-900 text-sm leading-tight">{info.title}</div>
-                        <div className="text-xs text-gray-500">{count} questions</div>
+                        <p className="font-medium text-gray-900 text-sm">{info.title}</p>
+                        <p className="text-xs text-gray-500">{stats.total} questions</p>
                       </div>
                     </div>
-                    {accuracy !== null && (
-                      <div className={`text-sm font-medium ${
-                        accuracy >= 70 ? 'text-green-600' : accuracy >= 50 ? 'text-yellow-600' : 'text-red-600'
-                      }`}>
-                        {accuracy}%
-                      </div>
-                    )}
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-gray-900">{progressPercent}%</p>
+                      {stats.due > 0 && (
+                        <p className="text-xs text-orange-600">{stats.due} due</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-1.5">
+                    <div 
+                      className={`bg-${info.color}-500 h-1.5 rounded-full transition-all`}
+                      style={{ width: `${progressPercent}%` }}
+                    />
                   </div>
                 </button>
               )
@@ -373,190 +422,194 @@ export default function EBIRMCQClient() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
-          <h2 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <Target className="w-5 h-5 text-purple-600" />
-            Number of Questions
-          </h2>
-          <div className="flex flex-wrap gap-2">
-            {[5, 10, 15, 20, 25, 30].map(count => (
-              <button
-                key={count}
-                onClick={() => setQuestionCount(Math.min(count, availableQuestions))}
-                disabled={count > availableQuestions}
-                className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                  questionCount === count
-                    ? 'bg-purple-600 text-white'
-                    : count > availableQuestions
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {count}
-              </button>
-            ))}
-          </div>
-          {availableQuestions < 30 && (
-            <p className="text-xs text-gray-500 mt-2">
-              {availableQuestions} questions available in selected section
-            </p>
-          )}
+        {/* Settings & Stats Links */}
+        <div className="flex gap-3">
+          <button
+            onClick={() => setView('settings')}
+            className="flex-1 bg-white border border-gray-200 rounded-xl p-3 text-center hover:bg-gray-50 transition-colors"
+          >
+            <Filter className="w-5 h-5 mx-auto mb-1 text-gray-600" />
+            <span className="text-sm text-gray-700">Settings</span>
+          </button>
+          <button
+            onClick={() => setView('stats')}
+            className="flex-1 bg-white border border-gray-200 rounded-xl p-3 text-center hover:bg-gray-50 transition-colors"
+          >
+            <BarChart3 className="w-5 h-5 mx-auto mb-1 text-gray-600" />
+            <span className="text-sm text-gray-700">Statistics</span>
+          </button>
         </div>
-
-        <button
-          onClick={startQuiz}
-          disabled={availableQuestions === 0}
-          className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-4 rounded-xl font-semibold text-lg hover:from-purple-700 hover:to-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Play className="w-5 h-5" />
-          Start Quiz ({questionCount} questions)
-        </button>
       </div>
     )
   }
 
-  // QUIZ SCREEN
-  if (mode === 'quiz' && quizState && currentQuestion) {
-    const progress = ((quizState.currentIndex + 1) / quizState.questions.length) * 100
-    const isCorrect = quizState.isSubmitted && arraysEqual(selectedAnswers, currentQuestion.correctAnswers)
+  // Render quiz view
+  const renderQuiz = () => {
+    if (!currentQuestion) return null
+    
+    const progress = sr.getProgress(currentQuestion.id)
+    const progressIndicator = getProgressIndicator(currentQuestion.id)
+    const isCorrect = showResult && 
+      selectedAnswers.length === currentQuestion.correctAnswers.length &&
+      selectedAnswers.every(a => currentQuestion.correctAnswers.includes(a))
     
     return (
-      <div className="max-w-3xl mx-auto">
-        {/* Progress Header */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-4">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <span className={`px-2 py-1 rounded text-xs font-medium ${sectionColors[currentQuestion.section]}`}>
-                Section {currentQuestion.section}
-              </span>
-              <span className="text-sm text-gray-500">{currentQuestion.subsection}</span>
-            </div>
-            <span className="text-sm font-medium text-gray-600">
-              {quizState.currentIndex + 1} / {quizState.questions.length}
+      <div className="space-y-4">
+        {/* Quiz Header */}
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => setView('menu')}
+            className="text-gray-600 hover:text-gray-900 flex items-center gap-1"
+          >
+            <ChevronLeft className="w-5 h-5" />
+            <span>Exit</span>
+          </button>
+          
+          <div className="flex items-center gap-4 text-sm">
+            <span className="text-gray-600">
+              {currentIndex + 1} / {questions.length}
             </span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              className="bg-purple-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            />
+            <span className="text-green-600">{sessionStats.correct} ✓</span>
+            <span className="text-red-600">{sessionStats.incorrect} ✗</span>
           </div>
         </div>
 
+        {/* Progress Bar */}
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div 
+            className="bg-purple-600 h-2 rounded-full transition-all"
+            style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
+          />
+        </div>
+
         {/* Question Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-4">
-          <div className="p-6">
-            <div className="flex items-start gap-3 mb-6">
-              {isMultipleChoice && (
-                <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded">
-                  Select {currentQuestion.correctAnswers.length} answers
-                </span>
-              )}
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          {/* Question Header */}
+          <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className={`px-2 py-1 rounded text-xs font-medium bg-${sectionInfo[currentQuestion.section].color}-100 text-${sectionInfo[currentQuestion.section].color}-700`}>
+                Section {currentQuestion.section}
+              </span>
+              <span className="text-xs text-gray-500">{currentQuestion.subsection}</span>
             </div>
-            
-            <h2 className="text-lg font-medium text-gray-900 mb-6 leading-relaxed">
-              {currentQuestion.question}
-            </h2>
-
-            {/* Answer Options */}
-            <div className="space-y-3">
-              {currentQuestion.options.map((option, index) => {
-                const isSelected = selectedAnswers.includes(index)
-                const isCorrectAnswer = currentQuestion.correctAnswers.includes(index)
-                const showResult = quizState.isSubmitted
-                
-                let buttonClass = 'border-gray-200 hover:border-purple-300 hover:bg-purple-50'
-                let iconClass = 'border-gray-300'
-                
-                if (showResult) {
-                  if (isCorrectAnswer) {
-                    buttonClass = 'border-green-500 bg-green-50'
-                    iconClass = 'border-green-500 bg-green-500 text-white'
-                  } else if (isSelected && !isCorrectAnswer) {
-                    buttonClass = 'border-red-500 bg-red-50'
-                    iconClass = 'border-red-500 bg-red-500 text-white'
-                  }
-                } else if (isSelected) {
-                  buttonClass = 'border-purple-500 bg-purple-50'
-                  iconClass = 'border-purple-500 bg-purple-500 text-white'
-                }
-
-                return (
-                  <button
-                    key={index}
-                    onClick={() => handleAnswerSelect(index)}
-                    disabled={quizState.isSubmitted}
-                    className={`w-full p-4 rounded-xl border-2 text-left transition-all flex items-start gap-3 ${buttonClass} ${
-                      quizState.isSubmitted ? 'cursor-default' : 'cursor-pointer'
-                    }`}
-                  >
-                    <div className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${iconClass}`}>
-                      {showResult && isCorrectAnswer && <Check className="w-4 h-4" />}
-                      {showResult && isSelected && !isCorrectAnswer && <X className="w-4 h-4" />}
-                      {!showResult && isSelected && <Check className="w-4 h-4" />}
-                    </div>
-                    <span className="text-gray-800">{option}</span>
-                  </button>
-                )
-              })}
+            <div className="flex items-center gap-2">
+              {/* Mark for Review Button */}
+              <button
+                onClick={() => sr.toggleMarkForReview(currentQuestion.id)}
+                className={`p-1.5 rounded-lg transition-colors ${
+                  progress.isMarkedForReview 
+                    ? 'bg-orange-100 text-orange-600' 
+                    : 'hover:bg-gray-200 text-gray-400'
+                }`}
+                title={progress.isMarkedForReview ? 'Remove flag' : 'Flag for later review'}
+              >
+                {progress.isMarkedForReview ? <Flag className="w-4 h-4" /> : <FlagOff className="w-4 h-4" />}
+              </button>
+              {/* Progress Indicator */}
+              <div className={`flex items-center gap-1 ${progressIndicator.color}`} title={progressIndicator.label}>
+                <progressIndicator.icon className="w-4 h-4" />
+              </div>
             </div>
           </div>
 
-          {/* Explanation */}
-          {quizState.showExplanation && (
-            <div className={`p-6 border-t ${isCorrect ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}`}>
-              <div className="flex items-start gap-3">
-                <div className={`p-2 rounded-lg ${isCorrect ? 'bg-green-100' : 'bg-amber-100'}`}>
-                  <Lightbulb className={`w-5 h-5 ${isCorrect ? 'text-green-600' : 'text-amber-600'}`} />
-                </div>
-                <div>
-                  <h3 className={`font-semibold mb-1 ${isCorrect ? 'text-green-800' : 'text-amber-800'}`}>
-                    {isCorrect ? 'Correct!' : 'Explanation'}
-                  </h3>
-                  <p className="text-gray-700 text-sm leading-relaxed">
-                    {currentQuestion.explanation}
-                  </p>
-                </div>
+          {/* Question Text */}
+          <div className="p-4">
+            <p className="text-gray-900 font-medium leading-relaxed">
+              {currentQuestion.question}
+            </p>
+            {currentQuestion.correctAnswers.length > 1 && (
+              <p className="text-sm text-purple-600 mt-2">
+                Select all that apply ({currentQuestion.correctAnswers.length} correct answers)
+              </p>
+            )}
+          </div>
+
+          {/* Answer Options */}
+          <div className="px-4 pb-4 space-y-2">
+            {currentQuestion.options.map((option, index) => {
+              const isSelected = selectedAnswers.includes(index)
+              const isCorrectAnswer = currentQuestion.correctAnswers.includes(index)
+              
+              let optionClass = 'border-gray-200 hover:border-purple-300 hover:bg-purple-50'
+              if (showResult) {
+                if (isCorrectAnswer) {
+                  optionClass = 'border-green-500 bg-green-50'
+                } else if (isSelected && !isCorrectAnswer) {
+                  optionClass = 'border-red-500 bg-red-50'
+                }
+              } else if (isSelected) {
+                optionClass = 'border-purple-500 bg-purple-50'
+              }
+              
+              return (
+                <button
+                  key={index}
+                  onClick={() => handleAnswerSelect(index)}
+                  disabled={showResult}
+                  className={`w-full p-3 rounded-lg border-2 text-left transition-all ${optionClass} ${showResult ? 'cursor-default' : 'cursor-pointer'}`}
+                >
+                  <div className="flex items-start gap-3">
+                    <span className={`w-6 h-6 rounded-full border-2 flex items-center justify-center text-xs font-medium flex-shrink-0 mt-0.5 ${
+                      showResult && isCorrectAnswer 
+                        ? 'border-green-500 bg-green-500 text-white' 
+                        : showResult && isSelected && !isCorrectAnswer
+                          ? 'border-red-500 bg-red-500 text-white'
+                          : isSelected 
+                            ? 'border-purple-500 bg-purple-500 text-white' 
+                            : 'border-gray-300'
+                    }`}>
+                      {showResult && isCorrectAnswer ? '✓' : showResult && isSelected && !isCorrectAnswer ? '✗' : String.fromCharCode(65 + index)}
+                    </span>
+                    <span className="text-gray-700">{option}</span>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Explanation (shown after answering) */}
+          {showResult && (
+            <div className={`mx-4 mb-4 p-4 rounded-lg ${isCorrect ? 'bg-green-50 border border-green-200' : 'bg-amber-50 border border-amber-200'}`}>
+              <div className="flex items-center gap-2 mb-2">
+                {isCorrect ? (
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                ) : (
+                  <XCircle className="w-5 h-5 text-red-600" />
+                )}
+                <span className={`font-semibold ${isCorrect ? 'text-green-700' : 'text-red-700'}`}>
+                  {isCorrect ? 'Correct!' : 'Incorrect'}
+                </span>
+              </div>
+              <p className="text-gray-700 text-sm">{currentQuestion.explanation}</p>
+              
+              {/* Show spaced repetition info */}
+              <div className="mt-3 pt-3 border-t border-gray-200 text-xs text-gray-500">
+                <p>Next review: {new Date(sr.getProgress(currentQuestion.id).nextReviewDate).toLocaleDateString()}</p>
               </div>
             </div>
           )}
         </div>
 
-        {/* Navigation Buttons */}
-        <div className="flex items-center justify-between gap-4">
-          <button
-            onClick={goBack}
-            disabled={quizState.currentIndex === 0}
-            className="px-4 py-3 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Previous
-          </button>
-
-          <button
-            onClick={resetQuiz}
-            className="px-4 py-3 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors flex items-center gap-2"
-          >
-            <X className="w-4 h-4" />
-            Exit
-          </button>
-
-          {!quizState.isSubmitted ? (
+        {/* Action Buttons */}
+        <div className="flex gap-3">
+          {!showResult ? (
             <button
               onClick={submitAnswer}
               disabled={selectedAnswers.length === 0}
-              className="px-6 py-3 rounded-lg bg-purple-600 text-white font-medium hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="flex-1 bg-purple-600 text-white py-3 rounded-xl font-medium hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
             >
               Check Answer
-              <Check className="w-4 h-4" />
             </button>
           ) : (
             <button
               onClick={nextQuestion}
-              className="px-6 py-3 rounded-lg bg-purple-600 text-white font-medium hover:bg-purple-700 transition-colors flex items-center gap-2"
+              className="flex-1 bg-purple-600 text-white py-3 rounded-xl font-medium hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
             >
-              {quizState.currentIndex === quizState.questions.length - 1 ? 'Finish' : 'Next'}
-              <ArrowRight className="w-4 h-4" />
+              {currentIndex < questions.length - 1 ? (
+                <>Next Question <ChevronRight className="w-5 h-5" /></>
+              ) : (
+                <>View Results <BarChart3 className="w-5 h-5" /></>
+              )}
             </button>
           )}
         </div>
@@ -564,89 +617,91 @@ export default function EBIRMCQClient() {
     )
   }
 
-  // RESULTS SCREEN
-  if (mode === 'results' && quizState) {
-    const score = getQuizScore()
-    const timeTaken = quizState.endTime ? quizState.endTime - quizState.startTime : 0
+  // Render stats view
+  const renderStats = () => {
+    const globalStats = sr.getStats()
+    const sessionDuration = Math.round((Date.now() - sessionStats.startTime) / 1000 / 60)
+    const sessionAccuracy = sessionStats.correct + sessionStats.incorrect > 0
+      ? Math.round((sessionStats.correct / (sessionStats.correct + sessionStats.incorrect)) * 100)
+      : 0
     
     return (
-      <div className="max-w-3xl mx-auto">
-        {/* Score Card */}
-        <div className={`rounded-2xl p-8 mb-6 text-center ${
-          score.percentage >= 70 
-            ? 'bg-gradient-to-r from-green-500 to-emerald-600' 
-            : score.percentage >= 50 
-            ? 'bg-gradient-to-r from-yellow-500 to-orange-500'
-            : 'bg-gradient-to-r from-red-500 to-pink-600'
-        } text-white`}>
-          <div className="mb-4">
-            {score.percentage >= 70 ? (
-              <Trophy className="w-16 h-16 mx-auto" />
-            ) : score.percentage >= 50 ? (
-              <Target className="w-16 h-16 mx-auto" />
-            ) : (
-              <RotateCcw className="w-16 h-16 mx-auto" />
-            )}
-          </div>
-          <h1 className="text-4xl font-bold mb-2">{score.percentage}%</h1>
-          <p className="text-xl opacity-90">
-            {score.correct} out of {score.total} correct
-          </p>
-          {timeTaken > 0 && (
-            <p className="text-sm opacity-75 mt-2 flex items-center justify-center gap-1">
-              <Clock className="w-4 h-4" />
-              Completed in {formatTime(timeTaken)}
-            </p>
-          )}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold text-gray-900">Statistics</h2>
+          <button
+            onClick={() => setView('menu')}
+            className="text-gray-600 hover:text-gray-900"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
         </div>
 
-        {/* Performance Message */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-          <h2 className="font-semibold text-gray-900 mb-2">
-            {score.percentage >= 80 ? 'Excellent work!' :
-             score.percentage >= 70 ? 'Good job!' :
-             score.percentage >= 50 ? 'Keep practicing!' :
-             'Review the material and try again'}
-          </h2>
-          <p className="text-gray-600 text-sm">
-            {score.percentage >= 70 
-              ? 'You\'re showing strong knowledge of interventional radiology concepts.'
-              : 'Focus on the explanations for incorrect answers to improve your understanding.'}
-          </p>
+        {/* Session Stats (if just finished quiz) */}
+        {sessionStats.correct + sessionStats.incorrect > 0 && (
+          <div className="bg-gradient-to-br from-purple-500 to-purple-700 rounded-xl p-6 text-white">
+            <h3 className="font-semibold mb-4">Session Complete!</h3>
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <p className="text-3xl font-bold">{sessionStats.correct}</p>
+                <p className="text-purple-200 text-sm">Correct</p>
+              </div>
+              <div>
+                <p className="text-3xl font-bold">{sessionAccuracy}%</p>
+                <p className="text-purple-200 text-sm">Accuracy</p>
+              </div>
+              <div>
+                <p className="text-3xl font-bold">{sessionDuration}</p>
+                <p className="text-purple-200 text-sm">Minutes</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Overall Stats */}
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <h3 className="font-semibold text-gray-900 mb-4">Overall Progress</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-center p-3 bg-gray-50 rounded-lg">
+              <p className="text-2xl font-bold text-gray-900">{globalStats.totalAnswered}</p>
+              <p className="text-sm text-gray-600">Total Answered</p>
+            </div>
+            <div className="text-center p-3 bg-gray-50 rounded-lg">
+              <p className="text-2xl font-bold text-blue-600">{globalStats.accuracy}%</p>
+              <p className="text-sm text-gray-600">Accuracy</p>
+            </div>
+            <div className="text-center p-3 bg-gray-50 rounded-lg">
+              <p className="text-2xl font-bold text-green-600">{globalStats.mastered}</p>
+              <p className="text-sm text-gray-600">Mastered</p>
+            </div>
+            <div className="text-center p-3 bg-gray-50 rounded-lg">
+              <p className="text-2xl font-bold text-red-600">{globalStats.struggling}</p>
+              <p className="text-sm text-gray-600">Need Practice</p>
+            </div>
+          </div>
         </div>
 
-        {/* Question Review */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
-          <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-            <h2 className="font-semibold text-gray-900">Question Review</h2>
-          </div>
-          <div className="divide-y divide-gray-100 max-h-96 overflow-y-auto">
-            {quizState.questions.map((q, idx) => {
-              const userAnswer = quizState.answers[q.id] || []
-              const isCorrect = arraysEqual(userAnswer, q.correctAnswers)
+        {/* Section Breakdown */}
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <h3 className="font-semibold text-gray-900 mb-4">Progress by Section</h3>
+          <div className="space-y-3">
+            {(Object.keys(sectionInfo) as Section[]).map(section => {
+              const stats = sectionStats[section]
+              const progressPercent = stats.total > 0 
+                ? Math.round((stats.mastered / stats.total) * 100) 
+                : 0
               
               return (
-                <div key={q.id} className="p-4">
-                  <div className="flex items-start gap-3">
-                    <div className={`w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center ${
-                      isCorrect ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
-                    }`}>
-                      {isCorrect ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${sectionColors[q.section]}`}>
-                          {q.section}
-                        </span>
-                        <span className="text-xs text-gray-500">Q{idx + 1}</span>
-                      </div>
-                      <p className="text-sm text-gray-800 line-clamp-2">{q.question}</p>
-                      {!isCorrect && (
-                        <p className="text-xs text-gray-500 mt-1">
-                          Correct: {q.correctAnswers.map(i => q.options[i]).join(', ')}
-                        </p>
-                      )}
-                    </div>
+                <div key={section} className="space-y-1">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-700">Section {section}</span>
+                    <span className="text-gray-500">{stats.mastered}/{stats.total} mastered</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className={`bg-${sectionInfo[section].color}-500 h-2 rounded-full`}
+                      style={{ width: `${progressPercent}%` }}
+                    />
                   </div>
                 </div>
               )
@@ -655,25 +710,134 @@ export default function EBIRMCQClient() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex gap-3">
           <button
-            onClick={startQuiz}
-            className="flex-1 bg-purple-600 text-white py-3 rounded-xl font-medium hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
+            onClick={() => startQuiz()}
+            className="flex-1 bg-purple-600 text-white py-3 rounded-xl font-medium hover:bg-purple-700 transition-colors"
           >
-            <RotateCcw className="w-5 h-5" />
-            Try Again
+            Practice Again
           </button>
           <button
-            onClick={resetQuiz}
-            className="flex-1 border border-gray-200 text-gray-700 py-3 rounded-xl font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+            onClick={() => setView('menu')}
+            className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-medium hover:bg-gray-200 transition-colors"
           >
-            <ArrowLeft className="w-5 h-5" />
             Back to Menu
           </button>
         </div>
+
+        {/* Reset Button */}
+        <button
+          onClick={sr.resetAllProgress}
+          className="w-full text-red-600 text-sm hover:text-red-700"
+        >
+          Reset All Progress
+        </button>
       </div>
     )
   }
 
-  return null
+  // Render settings view
+  const renderSettings = () => {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold text-gray-900">Quiz Settings</h2>
+          <button
+            onClick={() => setView('menu')}
+            className="text-gray-600 hover:text-gray-900"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-4">
+          {/* Question Count */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Questions per Quiz
+            </label>
+            <select
+              value={settings.questionCount}
+              onChange={(e) => setSettings(prev => ({ ...prev, questionCount: parseInt(e.target.value) }))}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2"
+            >
+              <option value={10}>10 questions</option>
+              <option value={20}>20 questions</option>
+              <option value={30}>30 questions</option>
+              <option value={50}>50 questions</option>
+              <option value={100}>100 questions</option>
+            </select>
+          </div>
+
+          {/* Filter Mode */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Question Filter
+            </label>
+            <select
+              value={settings.filterMode}
+              onChange={(e) => setSettings(prev => ({ ...prev, filterMode: e.target.value as FilterMode }))}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2"
+            >
+              <option value="all">Show all questions</option>
+              <option value="hideCorrect">Hide recently correct</option>
+              <option value="onlyIncorrect">Only struggling questions</option>
+              <option value="onlyNew">Only new questions</option>
+              <option value="onlyDue">Only due for review</option>
+              <option value="onlyMarked">Only flagged questions</option>
+            </select>
+          </div>
+
+          {/* Shuffle Questions */}
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-700">Shuffle Questions</span>
+            <button
+              onClick={() => setSettings(prev => ({ ...prev, shuffleQuestions: !prev.shuffleQuestions }))}
+              className={`w-12 h-6 rounded-full transition-colors ${settings.shuffleQuestions ? 'bg-purple-600' : 'bg-gray-300'}`}
+            >
+              <div className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${settings.shuffleQuestions ? 'translate-x-6' : 'translate-x-0.5'}`} />
+            </button>
+          </div>
+
+          {/* Shuffle Options */}
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-700">Shuffle Answer Options</span>
+            <button
+              onClick={() => setSettings(prev => ({ ...prev, shuffleOptions: !prev.shuffleOptions }))}
+              className={`w-12 h-6 rounded-full transition-colors ${settings.shuffleOptions ? 'bg-purple-600' : 'bg-gray-300'}`}
+            >
+              <div className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform ${settings.shuffleOptions ? 'translate-x-6' : 'translate-x-0.5'}`} />
+            </button>
+          </div>
+        </div>
+
+        <button
+          onClick={() => {
+            setView('menu')
+          }}
+          className="w-full bg-purple-600 text-white py-3 rounded-xl font-medium hover:bg-purple-700 transition-colors"
+        >
+          Save Settings
+        </button>
+      </div>
+    )
+  }
+
+  // Main render
+  if (!sr.isLoaded) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="max-w-2xl mx-auto p-4">
+      {view === 'menu' && renderMenu()}
+      {view === 'quiz' && renderQuiz()}
+      {view === 'stats' && renderStats()}
+      {view === 'settings' && renderSettings()}
+    </div>
+  )
 }

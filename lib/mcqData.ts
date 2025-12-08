@@ -291,6 +291,1632 @@ export const mcqQuestions: MCQQuestion[] = [
   {id:'F023',section:'F',sectionTitle:'Interventional Oncology',subsection:'HCC',question:'Milan criteria for liver transplant in HCC?',options:['Single ≤3 cm','Single ≤5 cm or 2-3 tumors all ≤3 cm','Up to 5 tumors ≤5 cm each','Total burden ≤10 cm'],correctAnswers:[1],explanation:'Single ≤5cm OR 2-3 tumors all ≤3cm, no vascular invasion.',difficulty:'medium',examFrequency:'high'},
   {id:'F024',section:'F',sectionTitle:'Interventional Oncology',subsection:'Ablation',question:'Post-ablation syndrome is characterized by:',options:['Severe pain requiring opioids','Low-grade fever, fatigue, malaise','Jaundice and liver failure','Tumor lysis syndrome'],correctAnswers:[1],explanation:'Low-grade fever, malaise, self-limiting.',difficulty:'easy',examFrequency:'medium'},
   {id:'F025',section:'F',sectionTitle:'Interventional Oncology',subsection:'IRE',question:'IRE differs from thermal ablation by:',options:['Requiring higher temperatures','Preserving connective tissue architecture','Creating larger zones','Being less expensive'],correctAnswers:[1],explanation:'IRE preserves collagen/elastin, useful near vital structures.',difficulty:'medium',examFrequency:'medium'}
+
+{
+  id: 'a-new-1',
+  section: 'A',
+  subsection: 'Radiation Physics',
+  question: 'What is the typical effective dose for a diagnostic abdominal CT scan?',
+  options: [
+    '0.1-0.5 mSv',
+    '1-2 mSv',
+    '8-15 mSv',
+    '50-100 mSv',
+    '200-300 mSv'
+  ],
+  correctAnswers: [2],
+  explanation: 'A diagnostic abdominal CT scan typically delivers an effective dose of 8-15 mSv. For comparison, a chest X-ray is about 0.1 mSv, and annual background radiation is approximately 2-3 mSv. This knowledge is important for patient counseling and justification of imaging.',
+  difficulty: 'medium'
+},
+{
+  id: 'a-new-2',
+  section: 'A',
+  subsection: 'Radiation Protection',
+  question: 'According to the ALARA principle, which of the following most effectively reduces operator radiation exposure during fluoroscopy?',
+  options: [
+    'Increasing frame rate',
+    'Doubling the distance from the X-ray source',
+    'Using magnification mode',
+    'Positioning the image intensifier closer to the patient',
+    'Removing the lead apron for better mobility'
+  ],
+  correctAnswers: [1],
+  explanation: 'Doubling the distance from the radiation source reduces exposure by a factor of 4 (inverse square law). Increasing frame rate and magnification increase dose. The image intensifier should be close to the patient to reduce scatter, and lead aprons should always be worn.',
+  difficulty: 'medium'
+},
+{
+  id: 'a-new-3',
+  section: 'A',
+  subsection: 'Contrast Media',
+  question: 'A patient develops urticaria and mild facial swelling 10 minutes after iodinated contrast injection. What is the most appropriate initial management?',
+  options: [
+    'Immediate intubation',
+    'IV diphenhydramine and observation',
+    'IM epinephrine 0.5mg immediately',
+    'Stop the procedure and discharge home',
+    'IV corticosteroids only'
+  ],
+  correctAnswers: [1],
+  explanation: 'Urticaria with mild angioedema represents a mild-moderate allergic reaction. Initial treatment is IV antihistamines (diphenhydramine 25-50mg) with observation. Epinephrine is reserved for severe reactions with hypotension or bronchospasm. Corticosteroids help prevent biphasic reactions but act slowly.',
+  difficulty: 'medium'
+},
+{
+  id: 'a-new-4',
+  section: 'A',
+  subsection: 'Contrast Media',
+  question: 'What is the recommended eGFR threshold below which metformin should be temporarily discontinued before iodinated contrast administration?',
+  options: [
+    'eGFR < 60 mL/min/1.73m²',
+    'eGFR < 45 mL/min/1.73m²',
+    'eGFR < 30 mL/min/1.73m²',
+    'eGFR < 15 mL/min/1.73m²',
+    'Metformin never needs to be held'
+  ],
+  correctAnswers: [2],
+  explanation: 'Current guidelines (ACR, ESUR) recommend holding metformin for patients with eGFR < 30 mL/min/1.73m² receiving intravascular iodinated contrast due to the risk of lactic acidosis if contrast-induced nephropathy occurs. For eGFR 30-60, reassess renal function 48 hours post-procedure.',
+  difficulty: 'medium'
+},
+{
+  id: 'a-new-5',
+  section: 'A',
+  subsection: 'Vascular Access',
+  question: 'When performing ultrasound-guided common femoral artery puncture, the ideal puncture site is:',
+  options: [
+    'At the inguinal ligament level',
+    'Over the femoral head on fluoroscopy',
+    'At the femoral bifurcation',
+    '2 cm above the inguinal ligament',
+    'At the superficial femoral artery origin'
+  ],
+  correctAnswers: [1],
+  explanation: 'The ideal CFA puncture site is over the inferior third of the femoral head on fluoroscopy. This ensures puncture of the CFA (not SFA/profunda), allows effective compression against bone, and is below the inguinal ligament to reduce retroperitoneal hemorrhage risk.',
+  difficulty: 'easy'
+},
+{
+  id: 'a-new-6',
+  section: 'A',
+  subsection: 'Guidewires',
+  question: 'A J-tipped guidewire is preferred over a straight wire for initial vascular access because:',
+  options: [
+    'It has better torque control',
+    'It is stiffer and provides better support',
+    'The curved tip reduces risk of dissection and subintimal passage',
+    'It is more visible on fluoroscopy',
+    'It can cross total occlusions more easily'
+  ],
+  correctAnswers: [2],
+  explanation: 'The J-tip configuration deflects off vessel walls rather than catching on plaque or intima, reducing the risk of dissection and subintimal wire passage. Straight wires offer better steerability but higher perforation risk. Stiff wires are used for device support, not initial access.',
+  difficulty: 'easy'
+},
+{
+  id: 'a-new-7',
+  section: 'A',
+  subsection: 'Catheters',
+  question: 'Which catheter shape is most appropriate for selecting the contralateral common iliac artery from an ipsilateral femoral approach?',
+  options: [
+    'Straight flush catheter',
+    'Cobra C2',
+    'Roberts uterine catheter',
+    'Simmons 1',
+    'Mickelson'
+  ],
+  correctAnswers: [2],
+  explanation: 'The Roberts uterine catheter (or Omni flush/Contra catheter) has a reverse curve specifically designed for contralateral iliac selection from femoral access. Cobra catheters are used for visceral vessels. Simmons catheters require reformation in the aortic arch.',
+  difficulty: 'medium'
+},
+{
+  id: 'a-new-8',
+  section: 'A',
+  subsection: 'Hemostasis',
+  question: 'What is the minimum recommended ACT (Activated Clotting Time) before removal of a femoral arterial sheath after using heparin?',
+  options: [
+    '< 100 seconds',
+    '< 150 seconds',
+    '< 180 seconds',
+    '< 250 seconds',
+    'ACT does not need to be checked'
+  ],
+  correctAnswers: [2],
+  explanation: 'ACT should be < 150-180 seconds before sheath removal to allow adequate hemostasis with manual compression. Higher ACT values significantly increase the risk of access site bleeding and hematoma formation. Some centers use closure devices which may allow removal at higher ACTs.',
+  difficulty: 'medium'
+},
+{
+  id: 'a-new-9',
+  section: 'A',
+  subsection: 'Pharmacology',
+  question: 'The mechanism of action of heparin involves:',
+  options: [
+    'Direct inhibition of thrombin only',
+    'Potentiation of antithrombin III activity',
+    'Inhibition of platelet aggregation',
+    'Blocking vitamin K-dependent factor synthesis',
+    'Direct factor Xa inhibition only'
+  ],
+  correctAnswers: [1],
+  explanation: 'Heparin works by binding to and potentiating antithrombin III (AT-III), which then inhibits thrombin (IIa), factor Xa, and other serine proteases. This is distinct from direct thrombin inhibitors (bivalirudin) or vitamin K antagonists (warfarin). UFH requires AT-III to function.',
+  difficulty: 'easy'
+},
+{
+  id: 'a-new-10',
+  section: 'A',
+  subsection: 'Pharmacology',
+  question: 'What is the appropriate reversal agent for dabigatran in a patient requiring emergency intervention?',
+  options: [
+    'Protamine sulfate',
+    'Vitamin K',
+    'Fresh frozen plasma',
+    'Idarucizumab',
+    'Tranexamic acid'
+  ],
+  correctAnswers: [3],
+  explanation: 'Idarucizumab (Praxbind) is a specific reversal agent for dabigatran (a direct thrombin inhibitor). Protamine reverses heparin, vitamin K reverses warfarin, and FFP provides clotting factors but does not specifically reverse DOACs. Andexanet alfa reverses factor Xa inhibitors.',
+  difficulty: 'medium'
+},
+{
+  id: 'a-new-11',
+  section: 'A',
+  subsection: 'Imaging',
+  question: 'In DSA, temporal subtraction artifacts are most commonly caused by:',
+  options: [
+    'Incorrect contrast injection rate',
+    'Patient motion between mask and contrast images',
+    'Using too high a frame rate',
+    'Incorrect catheter positioning',
+    'Excessive contrast concentration'
+  ],
+  correctAnswers: [1],
+  explanation: 'Temporal subtraction in DSA requires perfect alignment between the mask (pre-contrast) and live (contrast) images. Patient motion between acquisition of these images creates misregistration artifacts appearing as white/black edges around structures. Pixel shifting can partially correct minor motion.',
+  difficulty: 'easy'
+},
+{
+  id: 'a-new-12',
+  section: 'A',
+  subsection: 'Sedation',
+  question: 'A patient under moderate sedation becomes unresponsive to verbal stimuli but responds to painful stimuli with purposeful movements. This represents:',
+  options: [
+    'Minimal sedation (anxiolysis)',
+    'Moderate sedation',
+    'Deep sedation',
+    'General anesthesia',
+    'Normal response to moderate sedation'
+  ],
+  correctAnswers: [2],
+  explanation: 'Deep sedation is defined as a drug-induced depression of consciousness where patients cannot be easily aroused but respond purposefully to repeated or painful stimulation. Moderate sedation maintains response to verbal commands. This patient has progressed to deep sedation and requires closer monitoring.',
+  difficulty: 'medium'
+},
+{
+  id: 'a-new-13',
+  section: 'A',
+  subsection: 'Anatomy',
+  question: 'The right gonadal vein drains directly into the:',
+  options: [
+    'Right renal vein',
+    'Inferior vena cava',
+    'Right common iliac vein',
+    'Right internal iliac vein',
+    'Azygos vein'
+  ],
+  correctAnswers: [1],
+  explanation: 'The right gonadal vein drains directly into the IVC, while the left gonadal vein drains into the left renal vein. This anatomical difference explains why left varicoceles are more common (longer drainage path, compression by sigmoid colon, nutcracker effect).',
+  difficulty: 'easy'
+},
+{
+  id: 'a-new-14',
+  section: 'A',
+  subsection: 'Anatomy',
+  question: 'The celiac trunk typically arises from the aorta at which vertebral level?',
+  options: [
+    'T10',
+    'T12-L1',
+    'L2',
+    'L3',
+    'L4'
+  ],
+  correctAnswers: [1],
+  explanation: 'The celiac trunk arises from the anterior aorta at the T12-L1 level, just below the aortic hiatus. The SMA arises at L1, renal arteries at L1-L2, and IMA at L3. These landmarks are important for planning aortic interventions and visceral catheterization.',
+  difficulty: 'easy'
+},
+{
+  id: 'a-new-15',
+  section: 'A',
+  subsection: 'Patient Safety',
+  question: 'According to WHO surgical safety checklist principles, the "time out" before an IR procedure should include verification of:',
+  options: [
+    'Only patient identity',
+    'Patient identity and procedure site only',
+    'Patient identity, procedure, site, and relevant imaging',
+    'Only the consent form',
+    'Only antibiotic administration'
+  ],
+  correctAnswers: [2],
+  explanation: 'The WHO time-out requires verification of correct patient, correct procedure, correct site/side, relevant imaging availability, anticipated critical events, antibiotic prophylaxis if indicated, and confirmed consent. This reduces wrong-patient and wrong-site procedures.',
+  difficulty: 'easy'
+},
+{
+  id: 'a-new-16',
+  section: 'A',
+  subsection: 'Embolization Materials',
+  question: 'Which embolic agent provides the most permanent occlusion?',
+  options: [
+    'Gelfoam',
+    'Coils',
+    'Autologous blood clot',
+    'Vasopressin',
+    'Thrombin'
+  ],
+  correctAnswers: [1],
+  explanation: 'Coils provide permanent mechanical occlusion and are not resorbed. Gelfoam is temporary (2-6 weeks), autologous clot is very temporary, and vasopressin/thrombin cause temporary vasospasm or thrombosis. PVA particles and liquid embolics (glue, Onyx) also provide permanent occlusion.',
+  difficulty: 'easy'
+},
+{
+  id: 'a-new-17',
+  section: 'A',
+  subsection: 'Embolization Materials',
+  question: 'What is the mechanism of action of N-butyl cyanoacrylate (NBCA/glue) as an embolic agent?',
+  options: [
+    'Mechanical occlusion like a plug',
+    'Inducing thrombosis through platelet activation',
+    'Rapid polymerization on contact with ionic fluids (blood)',
+    'Creating vasospasm',
+    'Protein precipitation'
+  ],
+  correctAnswers: [2],
+  explanation: 'NBCA polymerizes instantly on contact with ionic solutions including blood, creating a solid cast within the vessel. The polymerization speed can be modified by mixing with Lipiodol. It provides permanent occlusion and is particularly useful for high-flow lesions and AVMs.',
+  difficulty: 'medium'
+},
+
+// ============================================
+// SECTION B: Arterial Interventions (Questions 18-37)
+// ============================================
+
+{
+  id: 'b-new-1',
+  section: 'B',
+  subsection: 'Aortic Disease',
+  question: 'According to the Stanford classification, a Type B aortic dissection involves:',
+  options: [
+    'Only the ascending aorta',
+    'Both ascending and descending aorta',
+    'Only the descending aorta distal to the left subclavian artery',
+    'The aortic arch only',
+    'The abdominal aorta only'
+  ],
+  correctAnswers: [2],
+  explanation: 'Stanford Type B dissection originates distal to the left subclavian artery and involves only the descending aorta. Type A involves the ascending aorta (regardless of extent). Type B is typically managed medically unless complicated (malperfusion, rupture, rapid expansion).',
+  difficulty: 'easy'
+},
+{
+  id: 'b-new-2',
+  section: 'B',
+  subsection: 'Aortic Disease',
+  question: 'What is the minimum recommended proximal landing zone length for thoracic endovascular aortic repair (TEVAR)?',
+  options: [
+    '5 mm',
+    '10 mm',
+    '20 mm',
+    '40 mm',
+    '60 mm'
+  ],
+  correctAnswers: [2],
+  explanation: 'A minimum of 20mm proximal landing zone in healthy aorta is recommended for adequate seal and to prevent type Ia endoleak. Shorter landing zones increase endoleak and migration risk. This may require coverage of the left subclavian artery with or without revascularization.',
+  difficulty: 'medium'
+},
+{
+  id: 'b-new-3',
+  section: 'B',
+  subsection: 'Peripheral Arterial Disease',
+  question: 'According to the TASC II classification, which lesion is classified as TASC D in the femoropopliteal segment?',
+  options: [
+    'Single stenosis ≤10cm',
+    'Single occlusion ≤5cm',
+    'Chronic total occlusion of CFA or SFA (>20cm)',
+    'Multiple stenoses totaling ≤10cm',
+    'Single stenosis 3-5cm'
+  ],
+  correctAnswers: [2],
+  explanation: 'TASC D femoropopliteal lesions include CTO >20cm involving SFA, chronic total occlusion of popliteal and proximal trifurcation vessels. TASC D traditionally favored surgery, though endovascular treatment is increasingly used. TASC A/B favor endovascular, TASC C/D traditionally favored surgery.',
+  difficulty: 'hard'
+},
+{
+  id: 'b-new-4',
+  section: 'B',
+  subsection: 'Peripheral Arterial Disease',
+  question: 'What is the primary advantage of drug-coated balloons (DCB) over plain balloon angioplasty in femoropopliteal disease?',
+  options: [
+    'Better acute lumen gain',
+    'Reduced restenosis rates',
+    'Lower cost',
+    'Shorter procedure time',
+    'Less risk of dissection'
+  ],
+  correctAnswers: [1],
+  explanation: 'DCBs deliver antiproliferative drugs (usually paclitaxel) to the vessel wall, significantly reducing neointimal hyperplasia and restenosis rates compared to plain balloon angioplasty. Acute lumen gain is similar, but long-term patency is improved.',
+  difficulty: 'medium'
+},
+{
+  id: 'b-new-5',
+  section: 'B',
+  subsection: 'Peripheral Arterial Disease',
+  question: 'In critical limb ischemia (CLI), which angiosome should be primarily targeted for revascularization in a patient with a heel ulcer?',
+  options: [
+    'Anterior tibial/dorsalis pedis',
+    'Peroneal artery',
+    'Posterior tibial artery',
+    'Any available vessel',
+    'Popliteal artery'
+  ],
+  correctAnswers: [2],
+  explanation: 'The heel is supplied by the posterior tibial artery (calcaneal branch). Angiosome-directed revascularization, restoring direct flow to the wound territory, improves wound healing compared to indirect revascularization through collaterals, though any revascularization is better than none.',
+  difficulty: 'hard'
+},
+{
+  id: 'b-new-6',
+  section: 'B',
+  subsection: 'Carotid Disease',
+  question: 'According to guidelines, carotid artery stenting (CAS) is preferred over carotid endarterectomy (CEA) in which scenario?',
+  options: [
+    'All patients over 70 years old',
+    'Previous neck radiation with hostile surgical field',
+    'All symptomatic patients',
+    'Patients with contralateral occlusion',
+    'All patients with >80% stenosis'
+  ],
+  correctAnswers: [1],
+  explanation: 'CAS is preferred when CEA carries high surgical risk: prior neck radiation, previous CEA with restenosis, surgically inaccessible lesions (high carotid bifurcation), or contralateral laryngeal nerve palsy. Age >70 actually favors CEA due to higher CAS stroke risk in elderly.',
+  difficulty: 'medium'
+},
+{
+  id: 'b-new-7',
+  section: 'B',
+  subsection: 'Carotid Disease',
+  question: 'During carotid artery stenting, embolic protection devices are used to:',
+  options: [
+    'Improve stent apposition',
+    'Reduce contrast usage',
+    'Capture debris released during intervention to prevent stroke',
+    'Maintain blood flow during balloon inflation',
+    'Reduce procedure time'
+  ],
+  correctAnswers: [2],
+  explanation: 'Embolic protection devices (filters or flow reversal systems) capture atherosclerotic debris dislodged during CAS to prevent cerebral embolization and stroke. Studies show reduced stroke rates with embolic protection. Filters are placed distally and retrieved after stenting.',
+  difficulty: 'easy'
+},
+{
+  id: 'b-new-8',
+  section: 'B',
+  subsection: 'Renal Artery',
+  question: 'Which finding best indicates hemodynamically significant renal artery stenosis on duplex ultrasound?',
+  options: [
+    'Peak systolic velocity >100 cm/s',
+    'Renal-aortic ratio >3.5',
+    'Resistive index >0.8',
+    'Renal length <8cm',
+    'Absent diastolic flow in the aorta'
+  ],
+  correctAnswers: [1],
+  explanation: 'A renal-aortic ratio (RAR) >3.5 or peak systolic velocity >200 cm/s indicates >60% stenosis. PSV >100 cm/s alone is not specific. Resistive index reflects parenchymal disease, not stenosis severity. Tardus parvus waveform in intrarenal arteries also suggests proximal stenosis.',
+  difficulty: 'medium'
+},
+{
+  id: 'b-new-9',
+  section: 'B',
+  subsection: 'Mesenteric Disease',
+  question: 'Chronic mesenteric ischemia typically requires stenosis/occlusion of how many mesenteric vessels before symptoms develop?',
+  options: [
+    'One vessel',
+    'At least two of three main vessels',
+    'All three vessels must be occluded',
+    'Only the SMA needs to be involved',
+    'Symptoms occur with any single vessel stenosis >50%'
+  ],
+  correctAnswers: [1],
+  explanation: 'Due to rich collateral networks between celiac, SMA, and IMA, chronic mesenteric ischemia typically requires significant stenosis/occlusion of at least 2 of 3 vessels. The classic triad is postprandial pain, food fear, and weight loss. Single vessel disease rarely causes chronic symptoms.',
+  difficulty: 'medium'
+},
+{
+  id: 'b-new-10',
+  section: 'B',
+  subsection: 'Mesenteric Disease',
+  question: 'In acute mesenteric ischemia, which imaging finding suggests bowel infarction and is a contraindication to endovascular revascularization alone?',
+  options: [
+    'SMA occlusion',
+    'Absent bowel wall enhancement',
+    'Pneumatosis intestinalis',
+    'Dilated small bowel loops',
+    'Mesenteric stranding'
+  ],
+  correctAnswers: [2],
+  explanation: 'Pneumatosis intestinalis (gas in bowel wall) indicates transmural infarction and requires surgical exploration for bowel resection, not just revascularization. Other signs of infarction include portal venous gas, lack of wall enhancement, and free perforation. Early SMA occlusion may still be viable.',
+  difficulty: 'medium'
+},
+{
+  id: 'b-new-11',
+  section: 'B',
+  subsection: 'Acute Limb Ischemia',
+  question: 'According to the Rutherford classification, class IIb acute limb ischemia is characterized by:',
+  options: [
+    'Viable limb, not immediately threatened',
+    'Marginally threatened, salvageable with prompt treatment',
+    'Immediately threatened with sensory loss and mild motor deficit',
+    'Irreversible ischemia with major tissue loss',
+    'No sensory or motor deficit'
+  ],
+  correctAnswers: [2],
+  explanation: 'Rutherford IIb indicates immediately threatened limb with sensory loss beyond toes and mild-moderate motor deficit, requiring immediate revascularization. Class I is viable, IIa is marginally threatened (salvageable if treated promptly), and III is irreversible. IIb has worse prognosis than IIa.',
+  difficulty: 'hard'
+},
+{
+  id: 'b-new-12',
+  section: 'B',
+  subsection: 'Acute Limb Ischemia',
+  question: 'Catheter-directed thrombolysis for acute limb ischemia is contraindicated in which situation?',
+  options: [
+    'Symptoms present for 10 days',
+    'History of stroke 2 years ago',
+    'Active gastrointestinal bleeding',
+    'Age over 75 years',
+    'Prior bypass surgery'
+  ],
+  correctAnswers: [2],
+  explanation: 'Absolute contraindications to thrombolysis include active bleeding, recent stroke (<2 months), and recent major surgery/trauma. Symptom duration >14 days is a relative contraindication. Age alone is not a contraindication. Prior bypass does not preclude thrombolysis.',
+  difficulty: 'medium'
+},
+{
+  id: 'b-new-13',
+  section: 'B',
+  subsection: 'Trauma',
+  question: 'In blunt thoracic aortic injury, the most common site of injury is:',
+  options: [
+    'Ascending aorta',
+    'Aortic root',
+    'Aortic isthmus (just distal to left subclavian)',
+    'Descending thoracic aorta at diaphragm',
+    'Aortic arch'
+  ],
+  correctAnswers: [2],
+  explanation: 'The aortic isthmus (junction of mobile arch and fixed descending aorta at ligamentum arteriosum) is the most common site of blunt aortic injury (90%). The differential deceleration forces at this transition point cause intimal tears. TEVAR has become first-line treatment.',
+  difficulty: 'easy'
+},
+{
+  id: 'b-new-14',
+  section: 'B',
+  subsection: 'Trauma',
+  question: 'What is the first-line treatment for a grade III splenic laceration with contrast extravasation in a hemodynamically stable patient?',
+  options: [
+    'Observation only',
+    'Immediate splenectomy',
+    'Splenic artery embolization',
+    'Blood transfusion and observation',
+    'Surgical splenorrhaphy'
+  ],
+  correctAnswers: [2],
+  explanation: 'Contrast extravasation indicates active bleeding requiring intervention. In a stable patient, splenic artery embolization (proximal or selective) preserves splenic function while controlling hemorrhage. Splenectomy is reserved for unstable patients or embolization failure. Observation with contrast blush risks delayed rupture.',
+  difficulty: 'medium'
+},
+{
+  id: 'b-new-15',
+  section: 'B',
+  subsection: 'Visceral Aneurysms',
+  question: 'Which visceral artery aneurysm has the highest risk of rupture?',
+  options: [
+    'Splenic artery aneurysm',
+    'Hepatic artery aneurysm',
+    'SMA aneurysm',
+    'Celiac artery aneurysm',
+    'Gastroduodenal artery aneurysm'
+  ],
+  correctAnswers: [1],
+  explanation: 'Hepatic artery aneurysms have approximately 80% rupture risk if untreated, with 35% mortality. Splenic artery aneurysms are most common but have lower rupture risk except in pregnancy. Treatment is indicated for hepatic aneurysms regardless of size, and for other visceral aneurysms >2cm.',
+  difficulty: 'hard'
+},
+{
+  id: 'b-new-16',
+  section: 'B',
+  subsection: 'Visceral Aneurysms',
+  question: 'During embolization of a splenic artery aneurysm, coils should ideally be placed:',
+  options: [
+    'Only proximal to the aneurysm',
+    'Only distal to the aneurysm',
+    'Both proximal and distal to the aneurysm (sandwich technique)',
+    'Only within the aneurysm sac',
+    'In the main splenic artery trunk only'
+  ],
+  correctAnswers: [2],
+  explanation: 'The sandwich technique (coils both proximal and distal to the aneurysm) prevents retrograde filling through collaterals, which is common in the splenic circulation via short gastric and gastroepiploic vessels. Proximal-only embolization risks continued aneurysm perfusion and growth.',
+  difficulty: 'medium'
+},
+{
+  id: 'b-new-17',
+  section: 'B',
+  subsection: 'Hemorrhage',
+  question: 'In a patient with massive upper GI bleeding and negative endoscopy, CT angiography is positive. What is the minimum bleeding rate typically detectable by CTA?',
+  options: [
+    '0.04 mL/min',
+    '0.1-0.3 mL/min',
+    '0.5-1.0 mL/min',
+    '2-3 mL/min',
+    '5 mL/min'
+  ],
+  correctAnswers: [1],
+  explanation: 'CTA can detect bleeding rates as low as 0.1-0.3 mL/min, making it more sensitive than conventional angiography (0.5-1.0 mL/min) and nuclear medicine bleeding scans (0.04 mL/min but less precise localization). CTA also provides anatomic roadmap for intervention.',
+  difficulty: 'hard'
+},
+{
+  id: 'b-new-18',
+  section: 'B',
+  subsection: 'Hemorrhage',
+  question: 'When performing bronchial artery embolization for hemoptysis, which of the following is the most feared complication?',
+  options: [
+    'Post-embolization syndrome',
+    'Spinal cord infarction',
+    'Bronchial stenosis',
+    'Chest wall pain',
+    'Fever'
+  ],
+  correctAnswers: [1],
+  explanation: 'Spinal cord infarction from embolization of the anterior spinal artery (artery of Adamkiewicz, which may arise from bronchial or intercostal arteries) is the most serious complication. Careful DSA to identify spinal branches and avoiding small particle embolization (<325μm) reduces this risk.',
+  difficulty: 'medium'
+},
+{
+  id: 'b-new-19',
+  section: 'B',
+  subsection: 'Dialysis Access',
+  question: 'What is the recommended first-line treatment for a thrombosed AV fistula?',
+  options: [
+    'Surgical thrombectomy',
+    'Create new access',
+    'Pharmacomechanical thrombolysis/thrombectomy',
+    'Systemic anticoagulation',
+    'Observation'
+  ],
+  correctAnswers: [2],
+  explanation: 'Endovascular pharmacomechanical thrombolysis/thrombectomy is first-line for thrombosed AV access, with high technical success rates and ability to treat underlying stenosis in the same session. It preserves venous capital and is less invasive than surgery. Underlying stenosis must be treated to prevent re-thrombosis.',
+  difficulty: 'medium'
+},
+{
+  id: 'b-new-20',
+  section: 'B',
+  subsection: 'Dialysis Access',
+  question: 'In a patient with central venous stenosis and arm swelling on the side of a functioning AV fistula, the most appropriate treatment is:',
+  options: [
+    'Ligate the fistula',
+    'Venous angioplasty ± stenting of the central stenosis',
+    'Arm elevation only',
+    'Create access on the opposite arm',
+    'Systemic anticoagulation'
+  ],
+  correctAnswers: [1],
+  explanation: 'Central venous stenosis (subclavian/brachiocephalic) causing symptomatic outflow obstruction should be treated with angioplasty ± stent placement to preserve the functioning access. Fistula ligation is last resort. Primary patency of central venous stents is limited, requiring surveillance and repeat intervention.',
+  difficulty: 'medium'
+},
+
+// ============================================
+// SECTION C: Venous Interventions (Questions 38-54)
+// ============================================
+
+{
+  id: 'c-new-1',
+  section: 'C',
+  subsection: 'DVT',
+  question: 'According to current guidelines, catheter-directed thrombolysis for DVT is most appropriate in which patient?',
+  options: [
+    'All patients with first-time DVT',
+    'Iliofemoral DVT with symptoms <14 days and low bleeding risk',
+    'Elderly patient with calf DVT',
+    'Asymptomatic DVT found incidentally',
+    'DVT with symptom duration >28 days'
+  ],
+  correctAnswers: [1],
+  explanation: 'CDT is recommended for acute (<14 days) iliofemoral DVT in patients with low bleeding risk and good functional status. It reduces post-thrombotic syndrome severity. Isolated calf DVT, chronic DVT, and high bleeding risk patients are better treated with anticoagulation alone.',
+  difficulty: 'medium'
+},
+{
+  id: 'c-new-2',
+  section: 'C',
+  subsection: 'DVT',
+  question: 'May-Thurner syndrome involves compression of which vessel?',
+  options: [
+    'Right common iliac vein by right common iliac artery',
+    'Left common iliac vein by right common iliac artery',
+    'IVC by the liver',
+    'Femoral vein by the femoral artery',
+    'Left renal vein by the SMA'
+  ],
+  correctAnswers: [1],
+  explanation: 'May-Thurner (iliac vein compression syndrome) involves compression of the left common iliac vein by the overlying right common iliac artery against the lumbar spine. This explains the 3:1 predominance of left-sided DVT. Treatment involves thrombolysis and iliac vein stenting.',
+  difficulty: 'easy'
+},
+{
+  id: 'c-new-3',
+  section: 'C',
+  subsection: 'PE',
+  question: 'Which of the following is an indication for catheter-directed therapy in pulmonary embolism?',
+  options: [
+    'Low-risk PE with negative troponin',
+    'Submassive PE with RV dysfunction despite anticoagulation',
+    'All patients with PE',
+    'Chronic thromboembolic pulmonary hypertension',
+    'Subsegmental PE'
+  ],
+  correctAnswers: [1],
+  explanation: 'Catheter-directed therapy (thrombolysis or thrombectomy) is indicated for massive PE with hemodynamic instability or submassive PE with RV dysfunction and clinical deterioration. Low-risk PE needs anticoagulation only. CTEPH requires pulmonary endarterectomy or balloon pulmonary angioplasty.',
+  difficulty: 'medium'
+},
+{
+  id: 'c-new-4',
+  section: 'C',
+  subsection: 'IVC Filters',
+  question: 'The primary indication for IVC filter placement is:',
+  options: [
+    'All patients with DVT',
+    'Contraindication to anticoagulation with acute VTE',
+    'Prevention of DVT in high-risk surgical patients',
+    'All patients with PE',
+    'Chronic DVT'
+  ],
+  correctAnswers: [1],
+  explanation: 'IVC filters are indicated when anticoagulation is contraindicated in patients with acute proximal DVT or PE (e.g., active bleeding, recent surgery). Prophylactic filter placement in surgical patients is controversial. Retrievable filters should be removed when anticoagulation can resume.',
+  difficulty: 'easy'
+},
+{
+  id: 'c-new-5',
+  section: 'C',
+  subsection: 'IVC Filters',
+  question: 'A patient with an IVC filter develops bilateral leg swelling 6 months after placement. The most likely cause is:',
+  options: [
+    'Heart failure',
+    'Filter thrombosis',
+    'Lymphedema',
+    'Filter migration',
+    'Filter fracture'
+  ],
+  correctAnswers: [1],
+  explanation: 'IVC filter thrombosis occurs in up to 30% of patients over time, presenting with bilateral leg edema from venous outflow obstruction. Treatment includes anticoagulation if possible, and potentially catheter-directed intervention. This is a reason to retrieve filters when the indication resolves.',
+  difficulty: 'medium'
+},
+{
+  id: 'c-new-6',
+  section: 'C',
+  subsection: 'Varicocele',
+  question: 'During varicocele embolization, the most common venous anatomy encountered is:',
+  options: [
+    'Single gonadal vein draining to IVC',
+    'Multiple parallel gonadal veins',
+    'Gonadal vein draining to common iliac vein',
+    'Absent gonadal vein',
+    'Gonadal vein draining to hepatic vein'
+  ],
+  correctAnswers: [1],
+  explanation: 'Multiple parallel gonadal veins are common (up to 20% have duplicated systems), requiring careful venography to identify all draining veins. Missing a parallel channel results in recurrence. The left gonadal vein drains to the left renal vein, right gonadal to the IVC.',
+  difficulty: 'medium'
+},
+{
+  id: 'c-new-7',
+  section: 'C',
+  subsection: 'Varicocele',
+  question: 'What is the technical success rate of percutaneous varicocele embolization?',
+  options: [
+    '50-60%',
+    '70-80%',
+    '90-95%',
+    '99-100%',
+    'Less than 50%'
+  ],
+  correctAnswers: [2],
+  explanation: 'Percutaneous varicocele embolization has technical success rates of 90-95%, comparable to surgical ligation but with advantages of local anesthesia, shorter recovery, and ability to treat recurrence from missed parallel veins. Clinical success (semen improvement, pain relief) is also high.',
+  difficulty: 'easy'
+},
+{
+  id: 'c-new-8',
+  section: 'C',
+  subsection: 'Pelvic Congestion',
+  question: 'Pelvic congestion syndrome is characterized by all of the following EXCEPT:',
+  options: [
+    'Chronic pelvic pain worsened by standing',
+    'Dilated ovarian veins >6mm',
+    'Pain improved with lying down',
+    'Associated with nulliparity',
+    'May have vulvar or thigh varicosities'
+  ],
+  correctAnswers: [3],
+  explanation: 'Pelvic congestion syndrome is associated with multiparity (multiple pregnancies), not nulliparity. The hormonal and anatomical changes of pregnancy contribute to ovarian vein dilation. Symptoms are typically postural (worse standing, better supine) and may include visible varicosities.',
+  difficulty: 'medium'
+},
+{
+  id: 'c-new-9',
+  section: 'C',
+  subsection: 'Portal Hypertension',
+  question: 'The hepatic venous pressure gradient (HVPG) threshold for clinically significant portal hypertension is:',
+  options: [
+    '>5 mmHg',
+    '>10 mmHg',
+    '>15 mmHg',
+    '>20 mmHg',
+    '>25 mmHg'
+  ],
+  correctAnswers: [1],
+  explanation: 'HVPG >10 mmHg defines clinically significant portal hypertension (CSPH), associated with varices formation and decompensation risk. Normal HVPG is 1-5 mmHg. HVPG >12 mmHg indicates high variceal bleeding risk. TIPS aims to reduce HVPG to <12 mmHg or by >50%.',
+  difficulty: 'medium'
+},
+{
+  id: 'c-new-10',
+  section: 'C',
+  subsection: 'TIPS',
+  question: 'Which of the following is a contraindication to TIPS?',
+  options: [
+    'Child-Pugh B cirrhosis',
+    'Ascites',
+    'Hepatic encephalopathy grade 3-4',
+    'Previous variceal bleeding',
+    'Portal vein velocity <10 cm/s'
+  ],
+  correctAnswers: [2],
+  explanation: 'Severe hepatic encephalopathy (grade 3-4) is a contraindication to TIPS as shunting portal blood past the liver worsens encephalopathy. Other contraindications include severe heart failure, severe pulmonary hypertension, uncontrolled sepsis, and severe hepatic failure.',
+  difficulty: 'medium'
+},
+{
+  id: 'c-new-11',
+  section: 'C',
+  subsection: 'TIPS',
+  question: 'The target portal pressure gradient after TIPS placement should be:',
+  options: [
+    '<5 mmHg',
+    '<8 mmHg',
+    '<12 mmHg or 50% reduction',
+    '<20 mmHg',
+    'Complete elimination of the gradient'
+  ],
+  correctAnswers: [2],
+  explanation: 'The target post-TIPS gradient is <12 mmHg or >50% reduction from baseline. This reduces variceal bleeding and refractory ascites while minimizing excessive shunting that causes encephalopathy. Covered stent-grafts maintain patency better than bare stents.',
+  difficulty: 'medium'
+},
+{
+  id: 'c-new-12',
+  section: 'C',
+  subsection: 'TIPS',
+  question: 'The most common cause of TIPS dysfunction within the first year is:',
+  options: [
+    'Stent infection',
+    'Hepatic vein stenosis',
+    'Intimal hyperplasia within the shunt',
+    'Portal vein thrombosis',
+    'Stent migration'
+  ],
+  correctAnswers: [2],
+  explanation: 'Intimal hyperplasia causing shunt stenosis is the most common cause of TIPS dysfunction, occurring in up to 80% of bare metal stents at 1 year. Covered stent-grafts (e-PTFE) significantly reduce this, with primary patency >80% at 1 year. Surveillance with Doppler ultrasound is essential.',
+  difficulty: 'medium'
+},
+{
+  id: 'c-new-13',
+  section: 'C',
+  subsection: 'Variceal Bleeding',
+  question: 'In a patient with acute variceal bleeding failing endoscopic therapy, the timing of rescue TIPS should ideally be:',
+  options: [
+    'Within 72 hours',
+    'After 1 week of conservative management',
+    'Only after second endoscopy failure',
+    'As elective procedure after discharge',
+    'Within 24-48 hours'
+  ],
+  correctAnswers: [4],
+  explanation: 'Rescue TIPS for failed endoscopic therapy should be performed within 24-48 hours (ideally <72 hours). Early TIPS in high-risk patients (Child-Pugh C or B with active bleeding) improves survival. Delayed TIPS has higher mortality. TIPS controls bleeding in >90% of cases.',
+  difficulty: 'medium'
+},
+{
+  id: 'c-new-14',
+  section: 'C',
+  subsection: 'Budd-Chiari',
+  question: 'The first-line interventional treatment for Budd-Chiari syndrome with hepatic vein thrombosis is:',
+  options: [
+    'Liver transplantation',
+    'Surgical shunt creation',
+    'Hepatic vein angioplasty/stenting',
+    'TIPS',
+    'Anticoagulation only'
+  ],
+  correctAnswers: [2],
+  explanation: 'Hepatic vein recanalization with angioplasty ± stenting is first-line for Budd-Chiari when technically feasible. If hepatic veins cannot be recanalized, TIPS (direct intrahepatic portosystemic shunt) is performed. Liver transplant is reserved for failure of interventional options or advanced cirrhosis.',
+  difficulty: 'medium'
+},
+{
+  id: 'c-new-15',
+  section: 'C',
+  subsection: 'Central Venous Access',
+  question: 'The optimal catheter tip position for a tunneled central venous catheter is:',
+  options: [
+    'Superior vena cava',
+    'Right atrium',
+    'Cavoatrial junction',
+    'Brachiocephalic vein',
+    'Internal jugular vein'
+  ],
+  correctAnswers: [2],
+  explanation: 'The cavoatrial junction is the optimal position, providing reliable blood return, reducing thrombosis risk (better flow), and avoiding atrial arrhythmias from deep atrial positioning. Too superior positioning (SVC, brachiocephalic) increases thrombosis and dysfunction risk.',
+  difficulty: 'easy'
+},
+{
+  id: 'c-new-16',
+  section: 'C',
+  subsection: 'Central Venous Access',
+  question: 'A patient with a port develops fever and positive blood cultures. The port was placed 8 months ago. Initial management includes:',
+  options: [
+    'Immediate port removal',
+    'Antibiotics alone without port removal',
+    'Blood cultures through port and peripheral, antibiotics, and reassessment',
+    'Port exchange over wire',
+    'Observation only'
+  ],
+  correctAnswers: [2],
+  explanation: 'Initial management includes blood cultures from the port and peripherally to confirm catheter-related bloodstream infection (CRBSI), with empiric antibiotics. Uncomplicated CRBSI may be treated with antibiotics and lock therapy. Port removal is needed for complicated infections, tunnel infection, or treatment failure.',
+  difficulty: 'medium'
+},
+{
+  id: 'c-new-17',
+  section: 'C',
+  subsection: 'Chronic Venous Disease',
+  question: 'According to the CEAP classification, C4 chronic venous disease includes:',
+  options: [
+    'Telangiectasias',
+    'Varicose veins',
+    'Edema',
+    'Skin changes (pigmentation, eczema, lipodermatosclerosis)',
+    'Active ulceration'
+  ],
+  correctAnswers: [3],
+  explanation: 'CEAP C4 indicates skin changes secondary to venous disease including pigmentation, eczema, and lipodermatosclerosis. C1 = telangiectasias, C2 = varicose veins, C3 = edema, C5 = healed ulcer, C6 = active ulcer. Higher C class indicates more advanced disease requiring treatment.',
+  difficulty: 'medium'
+},
+
+// ============================================
+// SECTION D: Non-Vascular Interventions (Questions 55-71)
+// ============================================
+
+{
+  id: 'd-new-1',
+  section: 'D',
+  subsection: 'Biliary',
+  question: 'What is the most common indication for percutaneous biliary drainage?',
+  options: [
+    'Benign biliary stricture',
+    'Bile leak after cholecystectomy',
+    'Malignant biliary obstruction when ERCP fails or is not possible',
+    'Primary sclerosing cholangitis',
+    'Choledocholithiasis'
+  ],
+  correctAnswers: [2],
+  explanation: 'Malignant biliary obstruction (pancreatic cancer, cholangiocarcinoma, metastases) when ERCP fails or is contraindicated is the most common indication. ERCP is generally first-line for distal obstruction. PTC is preferred for hilar tumors, prior surgery (Roux-en-Y), and failed ERCP.',
+  difficulty: 'easy'
+},
+{
+  id: 'd-new-2',
+  section: 'D',
+  subsection: 'Biliary',
+  question: 'During percutaneous transhepatic cholangiography, the bile duct is entered using a:',
+  options: [
+    '22-gauge Chiba needle aiming for central ducts',
+    '22-gauge needle with peripheral approach',
+    '18-gauge needle directly into the common bile duct',
+    'Trocar system',
+    'Microwave ablation needle'
+  ],
+  correctAnswers: [1],
+  explanation: 'PTC uses a 22-gauge Chiba needle advanced from a peripheral subcostal approach, targeting peripheral bile ducts while injecting contrast during slow withdrawal. Peripheral approach allows tract development and reduces major vascular injury. Central hilar puncture risks major bleeding.',
+  difficulty: 'medium'
+},
+{
+  id: 'd-new-3',
+  section: 'D',
+  subsection: 'Biliary',
+  question: 'After percutaneous biliary drainage, a biliary drain should typically be left for how long before tract maturation allows removal?',
+  options: [
+    '24-48 hours',
+    '1-2 weeks',
+    '4-6 weeks',
+    '3-6 months',
+    'Indefinitely'
+  ],
+  correctAnswers: [2],
+  explanation: 'Biliary tract maturation takes approximately 4-6 weeks, after which the catheter can be removed if the obstruction is resolved (e.g., stone clearance). Premature removal risks biliary peritonitis. For malignant obstruction, internal drainage via stent may allow catheter removal once function is confirmed.',
+  difficulty: 'medium'
+},
+{
+  id: 'd-new-4',
+  section: 'D',
+  subsection: 'Renal',
+  question: 'The preferred site for percutaneous nephrostomy access is:',
+  options: [
+    'Upper pole anterior calyx',
+    'Lower pole posterior calyx',
+    'Middle calyx',
+    'Renal pelvis directly',
+    'Any calyx with largest hydronephrosis'
+  ],
+  correctAnswers: [1],
+  explanation: 'Lower pole posterior calyx is preferred as it provides direct access to the collecting system through the avascular plane (Brödel\'s line), avoids the pleura, and allows comfortable catheter positioning. Upper pole risks pneumothorax. Anterior approach risks traversing bowel.',
+  difficulty: 'easy'
+},
+{
+  id: 'd-new-5',
+  section: 'D',
+  subsection: 'Renal',
+  question: 'Antegrade ureteric stenting is indicated when:',
+  options: [
+    'All cases of ureteric obstruction',
+    'Retrograde stenting has failed or is not possible',
+    'Simple renal calculi',
+    'Benign prostatic hyperplasia',
+    'Ureteropelvic junction obstruction in children'
+  ],
+  correctAnswers: [1],
+  explanation: 'Antegrade (percutaneous) ureteric stenting is performed when retrograde (cystoscopic) stenting fails or is not possible (e.g., ureteric obstruction from malignancy, bladder tumor obscuring orifice, urinary diversion). It requires nephrostomy access and can cross obstruction from above.',
+  difficulty: 'easy'
+},
+{
+  id: 'd-new-6',
+  section: 'D',
+  subsection: 'Abscess Drainage',
+  question: 'Which abscess location is most appropriate for percutaneous drainage?',
+  options: [
+    'Interloop abscess <2cm',
+    'Hepatic abscess 6cm with safe window',
+    'Appendiceal abscess with enteric fistula',
+    'Peripancreatic phlegmon without drainable collection',
+    'Multiple small (<1cm) splenic microabscesses'
+  ],
+  correctAnswers: [1],
+  explanation: 'A 6cm hepatic abscess with safe access window is ideal for percutaneous drainage. Collections should be >3cm with drainable content. Interloop abscesses without safe access, phlegmons, and multiple small abscesses are better managed medically or surgically.',
+  difficulty: 'medium'
+},
+{
+  id: 'd-new-7',
+  section: 'D',
+  subsection: 'Abscess Drainage',
+  question: 'The catheter size for percutaneous abscess drainage is primarily determined by:',
+  options: [
+    'Patient body habitus',
+    'Abscess location',
+    'Viscosity of the abscess contents',
+    'Operator preference only',
+    'Duration of symptoms'
+  ],
+  correctAnswers: [2],
+  explanation: 'Catheter size is chosen based on fluid viscosity: simple fluid needs 8-10Fr, thick pus needs 12-14Fr, and necrotic debris/fungal abscesses may need 14-16Fr or larger. Inadequate drainage due to small catheter size is a common cause of drainage failure.',
+  difficulty: 'medium'
+},
+{
+  id: 'd-new-8',
+  section: 'D',
+  subsection: 'Biopsy',
+  question: 'For a suspected hepatocellular carcinoma amenable to transplant, which biopsy approach is most appropriate?',
+  options: [
+    'Percutaneous core biopsy',
+    'EUS-guided FNA',
+    'Avoid biopsy; diagnose with imaging criteria',
+    'Surgical wedge biopsy',
+    'Transjugular liver biopsy'
+  ],
+  correctAnswers: [2],
+  explanation: 'HCC in transplant candidates should be diagnosed with imaging (LI-RADS criteria) rather than biopsy to avoid tumor seeding along the needle tract (up to 2.7% risk). Biopsy is reserved for atypical lesions where diagnosis would change management.',
+  difficulty: 'medium'
+},
+{
+  id: 'd-new-9',
+  section: 'D',
+  subsection: 'Biopsy',
+  question: 'When performing CT-guided lung biopsy, the most common complication is:',
+  options: [
+    'Hemoptysis',
+    'Pneumothorax',
+    'Air embolism',
+    'Tumor seeding',
+    'Infection'
+  ],
+  correctAnswers: [1],
+  explanation: 'Pneumothorax occurs in 15-40% of CT-guided lung biopsies, though only 5-15% require chest tube. Risk factors include COPD, small lesion, longer path through aerated lung, and multiple needle passes. Blood-patching and positioning can reduce risk.',
+  difficulty: 'easy'
+},
+{
+  id: 'd-new-10',
+  section: 'D',
+  subsection: 'Biopsy',
+  question: 'What is the minimum number of core samples typically needed for adequate histopathological diagnosis?',
+  options: [
+    '1 core',
+    '2-3 cores',
+    '5-6 cores',
+    '10 cores',
+    'As many as possible'
+  ],
+  correctAnswers: [1],
+  explanation: '2-3 adequate core samples typically provide sufficient tissue for histopathology and immunohistochemistry. Quality matters more than quantity. Additional passes increase complication risk. FNA alone may be insufficient for lymphoma and stromal tumors requiring architecture.',
+  difficulty: 'easy'
+},
+{
+  id: 'd-new-11',
+  section: 'D',
+  subsection: 'Gastrostomy',
+  question: 'The preferred method for percutaneous gastrostomy placement is:',
+  options: [
+    'Surgical gastrostomy always',
+    'Fluoroscopic-guided percutaneous gastrostomy',
+    'PEG (endoscopic) when possible',
+    'CT-guided gastrostomy',
+    'All methods have equal outcomes'
+  ],
+  correctAnswers: [2],
+  explanation: 'PEG (percutaneous endoscopic gastrostomy) is preferred when feasible due to direct visualization, lower complication rates, and ability to assess for pathology. Radiologic fluoroscopic gastrostomy is used when PEG is not possible (head/neck tumors, esophageal obstruction).',
+  difficulty: 'medium'
+},
+{
+  id: 'd-new-12',
+  section: 'D',
+  subsection: 'Gastrostomy',
+  question: 'A contraindication to percutaneous gastrostomy placement includes:',
+  options: [
+    'Prior abdominal surgery',
+    'Ascites',
+    'Obesity',
+    'Diabetes',
+    'Age over 80'
+  ],
+  correctAnswers: [1],
+  explanation: 'Ascites is a relative contraindication as it increases infection risk and may prevent tract maturation. Other contraindications include coagulopathy, gastric varices, peritonitis, and inability to appose stomach to abdominal wall. Prior surgery is not a contraindication though anatomy may be altered.',
+  difficulty: 'medium'
+},
+{
+  id: 'd-new-13',
+  section: 'D',
+  subsection: 'Spine',
+  question: 'The most common indication for vertebroplasty is:',
+  options: [
+    'Degenerative disc disease',
+    'Painful osteoporotic vertebral compression fracture',
+    'Spinal stenosis',
+    'Scoliosis',
+    'Vertebral body osteomyelitis'
+  ],
+  correctAnswers: [1],
+  explanation: 'Painful osteoporotic vertebral compression fractures refractory to conservative management are the main indication for vertebroplasty. It provides immediate pain relief in 80-90% of patients. Contraindications include osteomyelitis, cord compression, and coagulopathy.',
+  difficulty: 'easy'
+},
+{
+  id: 'd-new-14',
+  section: 'D',
+  subsection: 'Spine',
+  question: 'The most serious complication of vertebroplasty is:',
+  options: [
+    'Pain at puncture site',
+    'Cement leakage into spinal canal causing cord compression',
+    'Rib fracture',
+    'Transient fever',
+    'Cement extravasation into disc space'
+  ],
+  correctAnswers: [1],
+  explanation: 'Cement leakage into the spinal canal or foramina causing cord/nerve compression is the most serious complication, potentially requiring emergent surgical decompression. Venous embolism is also serious. Cement leakage into disc space is usually asymptomatic. Risk is reduced with PMMA viscosity control.',
+  difficulty: 'medium'
+},
+{
+  id: 'd-new-15',
+  section: 'D',
+  subsection: 'MSK',
+  question: 'For ultrasound-guided aspiration of a Baker\'s cyst, the optimal approach is:',
+  options: [
+    'Anterior approach through the knee',
+    'Medial approach',
+    'Lateral approach',
+    'Direct posterior approach with patient prone',
+    'Superior approach above the patella'
+  ],
+  correctAnswers: [3],
+  explanation: 'Baker\'s cysts (popliteal cysts) are approached posteriorly with the patient prone, allowing direct needle access while avoiding neurovascular structures (which are medial and lateral). Ultrasound guidance visualizes the cyst and confirms needle position.',
+  difficulty: 'medium'
+},
+{
+  id: 'd-new-16',
+  section: 'D',
+  subsection: 'MSK',
+  question: 'The preferred imaging guidance for sacroiliac joint injection is:',
+  options: [
+    'Ultrasound',
+    'MRI',
+    'Fluoroscopy or CT',
+    'No imaging needed',
+    'Plain radiography'
+  ],
+  correctAnswers: [2],
+  explanation: 'SI joint injection requires fluoroscopy or CT guidance due to the complex joint anatomy and overlying bone. The inferior aspect of the joint is targeted. Ultrasound cannot visualize the joint adequately. Contrast injection confirms intra-articular position before steroid injection.',
+  difficulty: 'medium'
+},
+{
+  id: 'd-new-17',
+  section: 'D',
+  subsection: 'Pain Management',
+  question: 'Celiac plexus neurolysis is indicated for pain management in:',
+  options: [
+    'Chronic low back pain',
+    'Pancreatic cancer pain',
+    'Appendicitis',
+    'Gallbladder pain',
+    'Renal colic'
+  ],
+  correctAnswers: [1],
+  explanation: 'Celiac plexus neurolysis (with alcohol or phenol) provides effective palliation for intractable pain from pancreatic cancer and other upper abdominal malignancies. It targets visceral afferent pain fibers and is highly effective when performed before narcotic tolerance develops.',
+  difficulty: 'easy'
+},
+
+// ============================================
+// SECTION E: Oncologic Interventions (Questions 72-88)
+// ============================================
+
+{
+  id: 'e-new-1',
+  section: 'E',
+  subsection: 'Ablation Principles',
+  question: 'What is the target ablation margin for hepatic radiofrequency ablation of HCC?',
+  options: [
+    'Exact tumor size only',
+    '5mm margin',
+    '10mm (1cm) margin',
+    '2cm margin',
+    'No margin needed if complete tumor coverage achieved'
+  ],
+  correctAnswers: [2],
+  explanation: 'A 10mm (1cm) ablation margin around the visible tumor is the target to ensure destruction of microscopic disease. Inadequate margins are the primary cause of local recurrence. This requires creating an ablation zone at least 2cm larger than the tumor.',
+  difficulty: 'medium'
+},
+{
+  id: 'e-new-2',
+  section: 'E',
+  subsection: 'Ablation Principles',
+  question: 'The "heat sink" effect in thermal ablation refers to:',
+  options: [
+    'Excessive heating of the ablation zone',
+    'Cooling of ablation zone by adjacent blood vessels',
+    'Heat injury to skin',
+    'Increased effectiveness near vessels',
+    'Generator overheating'
+  ],
+  correctAnswers: [1],
+  explanation: 'The heat sink effect occurs when nearby blood vessels (>3mm) conduct heat away from the ablation zone, causing incomplete ablation at the vessel margin. This is why tumors adjacent to major vessels have higher recurrence rates. Vascular occlusion techniques can mitigate this effect.',
+  difficulty: 'medium'
+},
+{
+  id: 'e-new-3',
+  section: 'E',
+  subsection: 'RFA',
+  question: 'The maximum tumor size generally recommended for radiofrequency ablation as a standalone treatment is:',
+  options: [
+    '1 cm',
+    '2 cm',
+    '3 cm',
+    '5 cm',
+    '7 cm'
+  ],
+  correctAnswers: [2],
+  explanation: 'RFA is most effective for tumors ≤3cm, with >90% complete ablation rates. Tumors 3-5cm have higher incomplete ablation and recurrence rates. Larger tumors may require combination therapy (TACE + ablation) or multiple overlapping ablations.',
+  difficulty: 'easy'
+},
+{
+  id: 'e-new-4',
+  section: 'E',
+  subsection: 'Microwave Ablation',
+  question: 'What is the main advantage of microwave ablation over radiofrequency ablation?',
+  options: [
+    'Lower cost',
+    'Smaller ablation zones',
+    'Less heat sink effect and faster ablation times',
+    'No grounding pads needed is the only difference',
+    'Less operator skill required'
+  ],
+  correctAnswers: [2],
+  explanation: 'Microwave ablation provides faster heating, larger ablation zones, and is less affected by heat sink effect because it does not rely on electrical conductivity (which decreases with tissue desiccation). It also allows multiple simultaneous probes. No grounding pads are needed.',
+  difficulty: 'medium'
+},
+{
+  id: 'e-new-5',
+  section: 'E',
+  subsection: 'Cryoablation',
+  question: 'Cryoablation is particularly advantageous for tumors near:',
+  options: [
+    'Major blood vessels',
+    'Bowel',
+    'The hilum',
+    'Nerves (renal tumors near ureter)',
+    'Diaphragm'
+  ],
+  correctAnswers: [3],
+  explanation: 'Cryoablation better preserves collagenous structures including the collecting system, making it advantageous for central renal tumors near the ureter/collecting system. The ice ball is also visible on CT/MRI/US, allowing real-time monitoring of ablation margin.',
+  difficulty: 'hard'
+},
+{
+  id: 'e-new-6',
+  section: 'E',
+  subsection: 'TACE',
+  question: 'Conventional TACE (cTACE) involves:',
+  options: [
+    'Chemotherapy injection followed by embolization with bland particles',
+    'Chemotherapy mixed with Lipiodol followed by particle embolization',
+    'Drug-eluting beads only',
+    'Radioembolization',
+    'Portal vein embolization'
+  ],
+  correctAnswers: [1],
+  explanation: 'cTACE involves injecting chemotherapy (typically doxorubicin or cisplatin) mixed with Lipiodol, followed by embolic particles (Gelfoam, PVA). Lipiodol acts as a carrier for chemotherapy and provides tumor targeting. DEB-TACE uses drug-eluting beads that slowly release chemotherapy.',
+  difficulty: 'easy'
+},
+{
+  id: 'e-new-7',
+  section: 'E',
+  subsection: 'TACE',
+  question: 'An absolute contraindication to TACE for HCC includes:',
+  options: [
+    'Multifocal HCC',
+    'Main portal vein thrombosis (tumor or bland)',
+    'Child-Pugh A cirrhosis',
+    'Tumor size >5cm',
+    'AFP >1000'
+  ],
+  correctAnswers: [1],
+  explanation: 'Main portal vein thrombosis is an absolute contraindication because TACE eliminates hepatic arterial flow, and without portal flow, hepatic failure will result. Branch portal vein thrombosis may be acceptable with careful patient selection. Radioembolization may be safer in these patients.',
+  difficulty: 'medium'
+},
+{
+  id: 'e-new-8',
+  section: 'E',
+  subsection: 'TACE',
+  question: 'Post-embolization syndrome after TACE typically includes all of the following EXCEPT:',
+  options: [
+    'Fever',
+    'Abdominal pain',
+    'Nausea',
+    'Jaundice requiring intervention',
+    'Elevated LFTs'
+  ],
+  correctAnswers: [3],
+  explanation: 'Post-embolization syndrome (fever, pain, nausea, elevated LFTs) is expected and self-limited, occurring in up to 90% of patients. Jaundice requiring intervention suggests liver failure or biliary injury, which is a complication rather than part of the syndrome.',
+  difficulty: 'easy'
+},
+{
+  id: 'e-new-9',
+  section: 'E',
+  subsection: 'Radioembolization',
+  question: 'Before Y-90 radioembolization, a planning angiogram with Tc-99m MAA is performed to:',
+  options: [
+    'Determine tumor size',
+    'Assess hepatic artery anatomy and lung shunt fraction',
+    'Treat the tumor',
+    'Measure portal pressure',
+    'Evaluate renal function'
+  ],
+  correctAnswers: [1],
+  explanation: 'The mapping angiogram identifies hepatic artery anatomy, variant vessels requiring coil embolization, and extrahepatic supply at risk. MAA (technetium-labeled macroaggregated albumin) simulation assesses lung shunt fraction; >20% is a contraindication due to radiation pneumonitis risk.',
+  difficulty: 'medium'
+},
+{
+  id: 'e-new-10',
+  section: 'E',
+  subsection: 'Radioembolization',
+  question: 'The maximum lung shunt fraction acceptable for Y-90 radioembolization is generally:',
+  options: [
+    '>50%',
+    '30-40%',
+    '<20%',
+    '<5%',
+    'Any shunt is acceptable'
+  ],
+  correctAnswers: [2],
+  explanation: 'Lung shunt fraction should be <20% (some centers use <15% as cutoff) to prevent radiation pneumonitis. Higher shunt fractions require dose reduction or treatment is contraindicated. Shunting occurs through microscopic tumor arteriovenous communications.',
+  difficulty: 'medium'
+},
+{
+  id: 'e-new-11',
+  section: 'E',
+  subsection: 'Portal Vein Embolization',
+  question: 'The primary goal of portal vein embolization before major hepatectomy is:',
+  options: [
+    'Tumor destruction',
+    'Reducing blood loss during surgery',
+    'Hypertrophy of the future liver remnant',
+    'Portal pressure reduction',
+    'Assessment of liver function'
+  ],
+  correctAnswers: [2],
+  explanation: 'PVE induces hypertrophy of the non-embolized future liver remnant (FLR) by redirecting portal flow. This allows patients with initially insufficient FLR (<20-30%) to undergo safe major hepatectomy. Typical hypertrophy is 10-15% increase in FLR volume over 3-4 weeks.',
+  difficulty: 'easy'
+},
+{
+  id: 'e-new-12',
+  section: 'E',
+  subsection: 'Portal Vein Embolization',
+  question: 'The minimum future liver remnant (FLR) generally required for safe hepatectomy in a patient with normal liver is:',
+  options: [
+    '10%',
+    '20-25%',
+    '40%',
+    '50%',
+    '60%'
+  ],
+  correctAnswers: [1],
+  explanation: 'FLR >20-25% is generally safe in normal liver. In cirrhosis or after chemotherapy, FLR >30-40% is needed due to impaired regenerative capacity. PVE allows patients with marginal FLR to undergo surgery by inducing compensatory hypertrophy.',
+  difficulty: 'medium'
+},
+{
+  id: 'e-new-13',
+  section: 'E',
+  subsection: 'Bone Metastases',
+  question: 'Palliative embolization for bone metastases is most commonly indicated for:',
+  options: [
+    'Osteoblastic metastases from prostate cancer',
+    'Hypervascular metastases (renal, thyroid) causing pain or before surgery',
+    'All bone metastases',
+    'Solitary metastasis for cure',
+    'Metastases responding well to chemotherapy'
+  ],
+  correctAnswers: [1],
+  explanation: 'Embolization is most effective for hypervascular bone metastases (renal cell carcinoma, thyroid, hepatoma) for pain palliation or preoperative devascularization to reduce surgical bleeding. Hypovascular metastases (breast, prostate, lung) respond less well.',
+  difficulty: 'medium'
+},
+{
+  id: 'e-new-14',
+  section: 'E',
+  subsection: 'Colorectal Liver Metastases',
+  question: 'For colorectal liver metastases, the role of ablation includes:',
+  options: [
+    'First-line treatment for all metastases',
+    'Treatment of unresectable disease or combined with resection',
+    'Replacement for chemotherapy',
+    'Only for metastases >5cm',
+    'Contraindicated in colorectal metastases'
+  ],
+  correctAnswers: [1],
+  explanation: 'Ablation for colorectal liver metastases is used for unresectable disease (location, number, insufficient FLR), combined with resection (resection + ablation for multiple tumors), or for recurrence. Surgery remains the gold standard when feasible.',
+  difficulty: 'medium'
+},
+{
+  id: 'e-new-15',
+  section: 'E',
+  subsection: 'Renal Cell Carcinoma',
+  question: 'The ideal candidate for percutaneous ablation of renal cell carcinoma is:',
+  options: [
+    'Any patient with RCC',
+    'T1a tumor (<4cm) in patient unfit for surgery or with solitary kidney',
+    'Large central tumor',
+    'Tumor invading renal vein',
+    'Tumor with extensive lymphadenopathy'
+  ],
+  correctAnswers: [1],
+  explanation: 'T1a RCC (<4cm) in surgical candidates or patients with comorbidities, solitary kidney, or hereditary RCC syndromes (VHL) are ideal for ablation. Outcomes are comparable to partial nephrectomy. Larger, central, or locally invasive tumors are better treated surgically.',
+  difficulty: 'medium'
+},
+{
+  id: 'e-new-16',
+  section: 'E',
+  subsection: 'Lung Ablation',
+  question: 'Which of the following is NOT a good indication for lung tumor ablation?',
+  options: [
+    'Primary NSCLC <3cm in a non-surgical candidate',
+    'Limited pulmonary metastases from colorectal cancer',
+    'Tumor adjacent to main pulmonary artery',
+    'Metastatic tumor <2cm with stable systemic disease',
+    'Local recurrence after radiation'
+  ],
+  correctAnswers: [2],
+  explanation: 'Tumors adjacent to major vessels (main pulmonary artery, aorta) pose high bleeding risk and heat sink effect causing incomplete ablation. Central tumors near major airways also risk bronchial injury. Peripheral tumors <3cm have the best outcomes.',
+  difficulty: 'medium'
+},
+{
+  id: 'e-new-17',
+  section: 'E',
+  subsection: 'Thyroid',
+  question: 'Radiofrequency ablation of benign thyroid nodules is most appropriate for:',
+  options: [
+    'All thyroid nodules',
+    'Symptomatic autonomously functioning nodule refusing surgery',
+    'Suspected malignancy',
+    'Nodules <1cm',
+    'Diffuse multinodular goiter'
+  ],
+  correctAnswers: [1],
+  explanation: 'RFA is effective for symptomatic benign thyroid nodules (compressive symptoms, cosmetic concerns) or autonomously functioning nodules in patients refusing or unfit for surgery. Malignancy must be excluded (FNA). Volume reduction of 50-80% is typical.',
+  difficulty: 'medium'
+},
+
+// ============================================
+// SECTION F: Miscellaneous/Special Topics (Questions 89-100)
+// ============================================
+
+{
+  id: 'f-new-1',
+  section: 'F',
+  subsection: 'Pediatric IR',
+  question: 'In pediatric interventional radiology, which statement is TRUE regarding radiation protection?',
+  options: [
+    'Children have similar radiation sensitivity to adults',
+    'Pediatric protocols can use adult exposure parameters',
+    'Children have higher radiation sensitivity and require dose reduction',
+    'Lead shielding is unnecessary in children',
+    'CT is preferred over fluoroscopy in all cases'
+  ],
+  correctAnswers: [2],
+  explanation: 'Children have higher radiation sensitivity (longer life for cancer expression, rapidly dividing cells) requiring careful dose optimization. Pediatric protocols should minimize fluoroscopy time, use lower frame rates, tighter collimation, and appropriate pediatric exposure settings.',
+  difficulty: 'easy'
+},
+{
+  id: 'f-new-2',
+  section: 'F',
+  subsection: 'Pediatric IR',
+  question: 'The most common indication for pediatric vascular intervention is:',
+  options: [
+    'Atherosclerotic disease',
+    'Central venous access',
+    'Aortic aneurysm repair',
+    'Carotid stenting',
+    'Peripheral arterial stenting'
+  ],
+  correctAnswers: [1],
+  explanation: 'Central venous access (tunneled catheters, ports) for chemotherapy, nutrition, or chronic illness is the most common pediatric vascular procedure. Atherosclerotic disease is rare in children. Other common procedures include vascular malformation treatment, biopsy, and abscess drainage.',
+  difficulty: 'easy'
+},
+{
+  id: 'f-new-3',
+  section: 'F',
+  subsection: 'Women\'s Health',
+  question: 'Uterine artery embolization (UAE) for fibroids achieves symptom improvement in what percentage of patients?',
+  options: [
+    '30-40%',
+    '50-60%',
+    '70-80%',
+    '85-95%',
+    '99-100%'
+  ],
+  correctAnswers: [3],
+  explanation: 'UAE provides significant symptom improvement (menorrhagia, bulk symptoms) in 85-95% of patients, with patient satisfaction rates of 80-90%. It preserves the uterus and avoids surgery. Volume reduction of individual fibroids is typically 40-60%.',
+  difficulty: 'easy'
+},
+{
+  id: 'f-new-4',
+  section: 'F',
+  subsection: 'Women\'s Health',
+  question: 'A potential complication specific to uterine artery embolization is:',
+  options: [
+    'Pneumothorax',
+    'Premature menopause from ovarian artery embolization',
+    'Spinal cord injury',
+    'Pulmonary embolism',
+    'Hepatic failure'
+  ],
+  correctAnswers: [1],
+  explanation: 'Premature ovarian failure can occur if embolic particles reach ovarian arteries (via utero-ovarian anastomoses or non-target embolization). Risk is higher in women >45 years. Other specific complications include post-embolization syndrome, fibroid expulsion, and endometritis.',
+  difficulty: 'medium'
+},
+{
+  id: 'f-new-5',
+  section: 'F',
+  subsection: 'Women\'s Health',
+  question: 'Postpartum hemorrhage embolization is most commonly performed for:',
+  options: [
+    'Placenta previa only',
+    'Uterine atony refractory to medical management',
+    'All vaginal deliveries',
+    'Minor postpartum bleeding',
+    'Prevention before delivery'
+  ],
+  correctAnswers: [1],
+  explanation: 'Uterine artery embolization for PPH is indicated when medical management (uterotonics) fails and patient is hemodynamically stable enough for angiography. It avoids hysterectomy, preserves fertility, and has >90% success rate. Bilateral UAE is typically performed.',
+  difficulty: 'medium'
+},
+{
+  id: 'f-new-6',
+  section: 'F',
+  subsection: 'Vascular Malformations',
+  question: 'According to the ISSVA classification, which is a high-flow vascular malformation?',
+  options: [
+    'Venous malformation',
+    'Lymphatic malformation',
+    'Infantile hemangioma',
+    'Arteriovenous malformation',
+    'Capillary malformation (port-wine stain)'
+  ],
+  correctAnswers: [3],
+  explanation: 'AVMs are high-flow malformations with arterial feeders, nidus, and draining veins. Venous, lymphatic, and capillary malformations are low-flow. Infantile hemangioma is a vascular tumor, not a malformation. This classification guides treatment approach.',
+  difficulty: 'easy'
+},
+{
+  id: 'f-new-7',
+  section: 'F',
+  subsection: 'Vascular Malformations',
+  question: 'The preferred embolic agent for treatment of arteriovenous malformations is:',
+  options: [
+    'Gelfoam',
+    'Coils alone',
+    'Liquid embolics (NBCA, Onyx)',
+    'Bland particles',
+    'Sclerosants'
+  ],
+  correctAnswers: [2],
+  explanation: 'Liquid embolics (NBCA glue, Onyx/EVOH) penetrate the AVM nidus and provide permanent occlusion. Proximal coiling alone allows recurrence via collaterals. Particles risk non-target embolization through AV shunts. Complete nidus obliteration is the goal.',
+  difficulty: 'medium'
+},
+{
+  id: 'f-new-8',
+  section: 'F',
+  subsection: 'Vascular Malformations',
+  question: 'Sclerotherapy for venous malformation most commonly uses:',
+  options: [
+    'Normal saline',
+    'Absolute ethanol or sodium tetradecyl sulfate (STS)',
+    'NBCA glue',
+    'Coils',
+    'Gelfoam'
+  ],
+  correctAnswers: [1],
+  explanation: 'Sclerotherapy with absolute ethanol or STS (Sotradecol) is first-line for venous malformations. These agents cause endothelial damage and thrombosis. Ethanol is more powerful but has more systemic side effects. Multiple sessions are typically needed.',
+  difficulty: 'medium'
+},
+{
+  id: 'f-new-9',
+  section: 'F',
+  subsection: 'Transplant',
+  question: 'The most common vascular complication after liver transplantation is:',
+  options: [
+    'Portal vein thrombosis',
+    'Hepatic vein stenosis',
+    'Hepatic artery stenosis or thrombosis',
+    'IVC stenosis',
+    'Aortic dissection'
+  ],
+  correctAnswers: [2],
+  explanation: 'Hepatic artery complications (stenosis, thrombosis) are most common (2-12%), causing biliary ischemia and graft loss if untreated. Early thrombosis requires re-transplant; stenosis can be treated with angioplasty/stenting. Portal and hepatic vein complications also occur but less frequently.',
+  difficulty: 'medium'
+},
+{
+  id: 'f-new-10',
+  section: 'F',
+  subsection: 'Transplant',
+  question: 'Biliary strictures after liver transplant are typically treated first with:',
+  options: [
+    'Surgical revision',
+    'Percutaneous balloon dilation and temporary stenting',
+    'Retransplantation',
+    'Conservative management only',
+    'Permanent metallic stenting'
+  ],
+  correctAnswers: [1],
+  explanation: 'Anastomotic biliary strictures are treated with serial balloon dilation ± temporary internal/external drainage. Most respond to endoscopic or percutaneous treatment. Surgery is reserved for refractory cases. Permanent metallic stents are avoided in benign disease.',
+  difficulty: 'medium'
+},
+{
+  id: 'f-new-11',
+  section: 'F',
+  subsection: 'Quality & Safety',
+  question: 'According to SIR guidelines, the threshold complication rate for diagnostic angiography should be:',
+  options: [
+    '<0.1%',
+    '<0.5%',
+    '<2%',
+    '<5%',
+    '<10%'
+  ],
+  correctAnswers: [2],
+  explanation: 'SIR quality improvement guidelines set threshold complication rates for procedures. Diagnostic angiography should have <2% major complications. Individual practitioners and departments should track outcomes against these benchmarks for quality assurance.',
+  difficulty: 'medium'
+},
+{
+  id: 'f-new-12',
+  section: 'F',
+  subsection: 'Quality & Safety',
+  question: 'A "near miss" in interventional radiology should be:',
+  options: [
+    'Ignored as no harm occurred',
+    'Reported and analyzed to prevent future events',
+    'Only reported if patient requests',
+    'Discussed informally only',
+    'Documented only if witnessed'
+  ],
+  correctAnswers: [1],
+  explanation: 'Near misses should be reported and analyzed through quality improvement systems as they represent opportunities to identify system failures before patient harm occurs. A culture of safety encourages reporting without blame to improve processes and prevent future events.',
+  difficulty: 'easy'
+}
 ]
 
 // Helper functions

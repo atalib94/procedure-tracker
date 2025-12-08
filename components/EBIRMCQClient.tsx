@@ -1886,6 +1886,63 @@ export default function EBIRMCQClient() {
           <p className="text-sm text-green-700">Your settings are automatically saved</p>
         </div>
 
+        {/* Data Management Section */}
+        <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-4">
+          <h3 className="font-medium text-gray-900 flex items-center gap-2">
+            <Settings className="w-4 h-4" />
+            Data Management
+          </h3>
+          
+          {/* Show orphaned data warning if any */}
+          {(() => {
+            const orphanedIds = sr.getOrphanedProgressIds(allQuestionIds)
+            const allProgress = sr.getAllProgress()
+            const orphanedMarked = orphanedIds.filter(id => allProgress[id]?.isMarkedForReview).length
+            
+            if (orphanedIds.length > 0) {
+              return (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                  <p className="text-sm text-yellow-800 font-medium">
+                    ⚠️ Found {orphanedIds.length} orphaned progress entries
+                  </p>
+                  <p className="text-xs text-yellow-700 mt-1">
+                    These are from questions that no longer exist in the database.
+                    {orphanedMarked > 0 && ` (${orphanedMarked} are marked/flagged)`}
+                  </p>
+                </div>
+              )
+            }
+            return null
+          })()}
+          
+          <button
+            onClick={() => {
+              sr.recalculateMastery()
+              alert('Mastery status recalculated for all questions!')
+            }}
+            className="w-full bg-blue-50 text-blue-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors"
+          >
+            🔄 Recalculate Mastery Status
+          </button>
+          
+          <p className="text-xs text-gray-500">
+            If mastery counts seem wrong, this will recalculate based on your answer history.
+            Questions with 3+ correct answers and a current streak of 2+ will be marked as mastered.
+          </p>
+          
+          <hr className="border-gray-200" />
+          
+          <button
+            onClick={sr.resetAllProgress}
+            className="w-full bg-red-50 text-red-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors"
+          >
+            🗑️ Reset All Progress
+          </button>
+          <p className="text-xs text-gray-500">
+            This will permanently delete all your quiz progress, streaks, and notes.
+          </p>
+        </div>
+
         <button
           onClick={() => {
             setView('menu')

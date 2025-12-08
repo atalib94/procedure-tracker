@@ -85,8 +85,9 @@ const STORAGE_KEY = 'ebir-mcq-spaced-repetition'
 // Helper to get today's date string
 const getTodayString = () => new Date().toISOString().split('T')[0]
 
-export function useSpacedRepetition() {
-  const [data, setData] = useState<SpacedRepetitionData>({
+// Helper to load initial data from localStorage
+const loadInitialData = (): SpacedRepetitionData => {
+  const defaultData: SpacedRepetitionData = {
     progress: {},
     sessions: [],
     lastStudyDate: null,
@@ -99,42 +100,55 @@ export function useSpacedRepetition() {
     dailyGoal: 20,
     todayAnswered: 0,
     todayDate: null
-  })
+  }
+  
+  if (typeof window === 'undefined') return defaultData
+  
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      // Handle legacy data structure
+      if (parsed.progress) {
+        const loadedData: SpacedRepetitionData = {
+          ...defaultData,
+          ...parsed,
+          currentStreak: parsed.currentStreak ?? 0,
+          longestStreak: parsed.longestStreak ?? 0,
+          lastPracticeDate: parsed.lastPracticeDate ?? null,
+          dailyGoal: parsed.dailyGoal ?? 20,
+          todayAnswered: parsed.todayAnswered ?? 0,
+          todayDate: parsed.todayDate ?? null
+        }
+        // Reset todayAnswered if it's a new day
+        if (loadedData.todayDate !== getTodayString()) {
+          loadedData.todayAnswered = 0
+          loadedData.todayDate = getTodayString()
+        }
+        return loadedData
+      }
+    }
+  } catch (e) {
+    console.error('Failed to load spaced repetition data:', e)
+  }
+  
+  return defaultData
+}
+
+export function useSpacedRepetition() {
+  // Initialize with data from localStorage to avoid race condition
+  const [data, setData] = useState<SpacedRepetitionData>(loadInitialData)
   const [isLoaded, setIsLoaded] = useState(false)
 
-  // Load from localStorage on mount
+  // Mark as loaded after initial render (for SSR compatibility)
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored) {
-        const parsed = JSON.parse(stored)
-        // Handle legacy data structure
-        if (parsed.progress) {
-          // Add default values for new fields if missing
-          const updated = {
-            ...parsed,
-            currentStreak: parsed.currentStreak ?? 0,
-            longestStreak: parsed.longestStreak ?? 0,
-            lastPracticeDate: parsed.lastPracticeDate ?? null,
-            dailyGoal: parsed.dailyGoal ?? 20,
-            todayAnswered: parsed.todayAnswered ?? 0,
-            todayDate: parsed.todayDate ?? null
-          }
-          // Reset todayAnswered if it's a new day
-          if (updated.todayDate !== getTodayString()) {
-            updated.todayAnswered = 0
-            updated.todayDate = getTodayString()
-          }
-          setData(updated)
-        }
-      }
-    } catch (e) {
-      console.error('Failed to load spaced repetition data:', e)
-    }
+    // Re-load from localStorage in case SSR had no access
+    const freshData = loadInitialData()
+    setData(freshData)
     setIsLoaded(true)
   }, [])
 
-  // Save to localStorage whenever data changes
+  // Save to localStorage whenever data changes (after initial load)
   useEffect(() => {
     if (isLoaded) {
       try {

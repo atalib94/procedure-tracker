@@ -411,9 +411,6 @@ export default function EBIRMCQClient() {
       resetTimerForNewQuestion()
     }
   }
-      setShowResult(false)
-    }
-  }
 
   // Handle flagging with note modal
   const handleFlagClick = () => {

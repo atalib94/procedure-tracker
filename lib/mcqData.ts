@@ -1,5 +1,4 @@
-// EBIR MCQ Question Bank
-// Questions organized by EBIR Syllabus Sections A-F
+// EBIR MCQ Question Bank - Expanded Edition (160 Questions)
 
 export interface MCQQuestion {
   id: string
@@ -8,7 +7,7 @@ export interface MCQQuestion {
   subsection: string
   question: string
   options: string[]
-  correctAnswers: number[] // indices of correct answers (0-based)
+  correctAnswers: number[]
   explanation: string
   difficulty: 'easy' | 'medium' | 'hard'
   examFrequency?: 'high' | 'medium' | 'low'
@@ -24,1226 +23,188 @@ export const sectionInfo = {
 }
 
 export const mcqQuestions: MCQQuestion[] = [
-  // ============================================
-  // SECTION A: Fundamental Topics in IR
-  // ============================================
-  {
-    id: 'A001',
-    section: 'A',
-    sectionTitle: 'Fundamental Topics in IR',
-    subsection: 'Patient Safety',
-    question: 'A 65-year-old man is undergoing placement of a percutaneous radiologically inserted gastrostomy tube. During the procedure, he develops nausea, and it is decided to administer intravenous (IV) metoclopramide. He has no renal or liver impairment and weighs 75 kg. What is the most appropriate dose?',
-    options: [
-      '1 milligram',
-      '10 milligrams',
-      '20 milligrams',
-      '4 milligrams'
-    ],
-    correctAnswers: [1],
-    explanation: 'The standard IV dose of metoclopramide for adults is 10mg. The EMA has restricted metoclopramide use due to neurological side effects, recommending maximum 30mg/day for up to 5 days. Single doses of 10mg are appropriate for procedural nausea.',
-    difficulty: 'easy',
-    examFrequency: 'medium'
-  },
-  {
-    id: 'A002',
-    section: 'A',
-    sectionTitle: 'Fundamental Topics in IR',
-    subsection: 'Radiation Safety',
-    question: 'What is the attenuation of a 0.5 mm lead equivalent apron?',
-    options: [
-      '50-70% of the incident radiation',
-      '70-90% of the incident radiation',
-      '90-95% of the incident radiation',
-      '95-99% of the incident radiation'
-    ],
-    correctAnswers: [3],
-    explanation: 'A 0.5 mm lead equivalent apron attenuates approximately 95-99% of scattered radiation at typical fluoroscopy energies. This is why protective aprons are essential for staff protection during procedures.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'A003',
-    section: 'A',
-    sectionTitle: 'Fundamental Topics in IR',
-    subsection: 'Radiation Safety',
-    question: 'According to the ALARA principle, which of the following is the most effective method to reduce operator radiation dose during fluoroscopy?',
-    options: [
-      'Using last image hold',
-      'Increasing the distance from the X-ray source',
-      'Wearing a thyroid shield',
-      'Using pulsed fluoroscopy at 15 frames/second'
-    ],
-    correctAnswers: [1],
-    explanation: 'According to the inverse square law, doubling the distance from the radiation source reduces exposure by a factor of 4. Distance is the most effective means of dose reduction. Other measures are important but less effective than maximizing distance.',
-    difficulty: 'easy',
-    examFrequency: 'high'
-  },
-  {
-    id: 'A004',
-    section: 'A',
-    sectionTitle: 'Fundamental Topics in IR',
-    subsection: 'Contrast Media',
-    question: 'A patient with an eGFR of 28 mL/min/1.73m² requires a CT-guided procedure with iodinated contrast. According to current guidelines, which prophylactic measure has the strongest evidence for preventing contrast-induced nephropathy?',
-    options: [
-      'N-acetylcysteine administration',
-      'Intravenous sodium bicarbonate',
-      'Intravenous isotonic saline hydration',
-      'Prophylactic hemodialysis post-procedure'
-    ],
-    correctAnswers: [2],
-    explanation: 'IV hydration with isotonic saline (0.9% NaCl or Ringer\'s lactate) before and after contrast administration has the strongest evidence for preventing contrast-induced nephropathy. N-acetylcysteine and bicarbonate have not shown consistent benefit in large trials. Prophylactic dialysis is not recommended.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'A005',
-    section: 'A',
-    sectionTitle: 'Fundamental Topics in IR',
-    subsection: 'Sedation',
-    question: 'During moderate sedation with midazolam and fentanyl, a patient becomes unresponsive and develops oxygen saturation of 82%. What is the most appropriate first action?',
-    options: [
-      'Administer flumazenil IV',
-      'Administer naloxone IV',
-      'Open airway with jaw thrust and deliver supplemental oxygen',
-      'Intubate the patient immediately'
-    ],
-    correctAnswers: [2],
-    explanation: 'The first priority in managing respiratory depression is basic airway management: open the airway, provide supplemental oxygen, and support ventilation if needed. Reversal agents (flumazenil, naloxone) can be given subsequently if basic measures are insufficient. Intubation is reserved for cases unresponsive to initial measures.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'A006',
-    section: 'A',
-    sectionTitle: 'Fundamental Topics in IR',
-    subsection: 'Anticoagulation',
-    question: 'A patient on rivaroxaban requires an urgent high-bleeding-risk procedure. The last dose was taken 14 hours ago. What is the most appropriate management?',
-    options: [
-      'Proceed immediately - the drug has a short half-life',
-      'Delay procedure for at least 24 hours if clinically possible',
-      'Administer prothrombin complex concentrate before proceeding',
-      'Check anti-Xa levels and proceed if below therapeutic range'
-    ],
-    correctAnswers: [1],
-    explanation: 'For high-bleeding-risk procedures, rivaroxaban should be held for at least 24-48 hours (depending on renal function). With normal renal function, holding for 24 hours allows adequate clearance. PCC is reserved for life-threatening bleeding. Anti-Xa levels can guide management but waiting is preferred if possible.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'A007',
-    section: 'A',
-    sectionTitle: 'Fundamental Topics in IR',
-    subsection: 'Vascular Access',
-    question: 'When performing ultrasound-guided common femoral artery puncture, what is the ideal anatomical landmark for arterial access?',
-    options: [
-      'At the level of the inguinal ligament',
-      'Over the femoral head on fluoroscopy',
-      'At the bifurcation of the superficial and deep femoral arteries',
-      'At the level of the lesser trochanter'
-    ],
-    correctAnswers: [1],
-    explanation: 'The common femoral artery should be punctured over the femoral head on fluoroscopy. This landmark ensures the puncture is in the CFA (not SFA/profunda) and allows for effective manual compression against bone. Puncture at the inguinal ligament may be too high, risking retroperitoneal hemorrhage.',
-    difficulty: 'easy',
-    examFrequency: 'high'
-  },
-  {
-    id: 'A008',
-    section: 'A',
-    sectionTitle: 'Fundamental Topics in IR',
-    subsection: 'Wires and Catheters',
-    question: 'Which guidewire characteristic is most important for navigating through a chronic total occlusion (CTO)?',
-    options: [
-      'Hydrophilic coating',
-      'High tip stiffness',
-      'Large diameter (0.038")',
-      'Floppy tip design'
-    ],
-    correctAnswers: [1],
-    explanation: 'CTO crossing typically requires guidewires with high tip stiffness/load to penetrate through the fibrous cap of the occlusion. Hydrophilic wires help with trackability but alone are insufficient. Floppy tips are used for atraumatic vessel navigation, not CTO crossing.',
-    difficulty: 'medium',
-    examFrequency: 'medium'
-  },
-  {
-    id: 'A009',
-    section: 'A',
-    sectionTitle: 'Fundamental Topics in IR',
-    subsection: 'Embolization',
-    question: 'Which embolic agent would be most appropriate for bronchial artery embolization in a patient with hemoptysis?',
-    options: [
-      'Polyvinyl alcohol particles 150-250 micrometers',
-      'Polyvinyl alcohol particles 350-500 micrometers',
-      'N-butyl cyanoacrylate glue',
-      'Gelfoam pledgets'
-    ],
-    correctAnswers: [1],
-    explanation: 'PVA particles 350-500 micrometers are the standard embolic agent for bronchial artery embolization. Smaller particles (<300 micrometers) risk non-target embolization to the spinal artery of Adamkiewicz, causing paralysis. Larger particles may not achieve distal occlusion. Glue is reserved for specific situations.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'A010',
-    section: 'A',
-    sectionTitle: 'Fundamental Topics in IR',
-    subsection: 'Complications',
-    question: 'A patient develops severe lower back pain and leg weakness immediately following bronchial artery embolization. What is the most likely diagnosis?',
-    options: [
-      'Retroperitoneal hemorrhage',
-      'Spinal cord ischemia',
-      'Aortic dissection',
-      'Femoral nerve injury'
-    ],
-    correctAnswers: [1],
-    explanation: 'This presentation is classic for spinal cord ischemia due to non-target embolization of the anterior spinal artery (artery of Adamkiewicz), which can arise from bronchial or intercostal arteries. This is the most devastating complication of bronchial artery embolization, occurring in <1% of cases.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-
-  // ============================================
-  // SECTION B: Vascular Diagnosis and Intervention
-  // ============================================
-  {
-    id: 'B001',
-    section: 'B',
-    sectionTitle: 'Vascular Diagnosis and Intervention',
-    subsection: 'Peripheral Arterial Disease',
-    question: 'A 45-year-old man presents to the emergency department with acute onset pain, pallor, pulselessness, paraesthesia, and paralysis at his left leg. Which of the following is the most likely diagnosis?',
-    options: [
-      'Arterial embolism',
-      'Cystic adventitial disease',
-      'Popliteal artery aneurysm',
-      'Popliteal artery entrapment syndrome'
-    ],
-    correctAnswers: [0],
-    explanation: 'The acute onset of the "6 Ps" (Pain, Pallor, Pulselessness, Paresthesia, Paralysis, Poikilothermia) is classic for acute arterial occlusion, most commonly from arterial embolism. Cystic adventitial disease and entrapment syndrome typically present with claudication. Popliteal aneurysms may thrombose but usually have a different history.',
-    difficulty: 'easy',
-    examFrequency: 'high'
-  },
-  {
-    id: 'B002',
-    section: 'B',
-    sectionTitle: 'Vascular Diagnosis and Intervention',
-    subsection: 'Peripheral Arterial Disease',
-    question: 'Regarding popliteal artery entrapment syndrome, if at angiography the initial images are normal, which manoeuvre should be performed to test for this condition?',
-    options: [
-      'Extreme inversion of the foot',
-      'Plantar flexion of the foot',
-      'Flex the knee',
-      'Inflate a blood pressure cuff on the calf'
-    ],
-    correctAnswers: [1],
-    explanation: 'Plantar flexion (and dorsiflexion) of the foot is used to provoke popliteal artery compression in entrapment syndrome. The gastrocnemius muscle compresses the artery during these maneuvers. This is typically performed during angiography or duplex ultrasound.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'B003',
-    section: 'B',
-    sectionTitle: 'Vascular Diagnosis and Intervention',
-    subsection: 'Peripheral Arterial Disease',
-    question: 'After percutaneous balloon angioplasty (PTA) of the superficial femoral artery (SFA), you diagnose a flow-limiting dissection. What is the most appropriate next step?',
-    options: [
-      'Stent the dissection',
-      'Atherectomy of the dissection membrane',
-      'Prolonged balloon dilation',
-      'Repeat imaging after one week'
-    ],
-    correctAnswers: [2],
-    explanation: 'The first-line treatment for a flow-limiting dissection after PTA is prolonged balloon dilation (typically 2-3 minutes). This often "tacks" the dissection flap and restores flow. Stenting should be reserved as a bailout if prolonged dilation fails. Atherectomy is not appropriate for dissections.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'B004',
-    section: 'B',
-    sectionTitle: 'Vascular Diagnosis and Intervention',
-    subsection: 'Aortic Intervention',
-    question: 'On completion angiography following EVAR, contrast is seen filling the aneurysm sac from a patent lumbar artery. What type of endoleak is this?',
-    options: [
-      'Type I endoleak',
-      'Type II endoleak',
-      'Type III endoleak',
-      'Type IV endoleak'
-    ],
-    correctAnswers: [1],
-    explanation: 'Type II endoleaks result from retrograde flow through branch vessels (lumbar arteries, IMA, accessory renal arteries). Type I involves attachment site leaks, Type III involves fabric tears or component disconnection, Type IV involves graft porosity (rare with modern grafts).',
-    difficulty: 'easy',
-    examFrequency: 'high'
-  },
-  {
-    id: 'B005',
-    section: 'B',
-    sectionTitle: 'Vascular Diagnosis and Intervention',
-    subsection: 'Venous Disease',
-    question: 'A 35-year-old woman presents with acute iliofemoral DVT with symptom onset 5 days ago. She has no contraindications to thrombolysis. What is the most appropriate treatment?',
-    options: [
-      'Anticoagulation alone',
-      'Catheter-directed thrombolysis',
-      'Surgical thrombectomy',
-      'IVC filter placement followed by anticoagulation'
-    ],
-    correctAnswers: [1],
-    explanation: 'For acute iliofemoral DVT (symptoms <14 days) in patients with low bleeding risk, catheter-directed thrombolysis (CDT) reduces post-thrombotic syndrome compared to anticoagulation alone. CDT is particularly beneficial in young, active patients with iliofemoral involvement.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'B006',
-    section: 'B',
-    sectionTitle: 'Vascular Diagnosis and Intervention',
-    subsection: 'Dialysis Access',
-    question: 'A patient with a brachiocephalic AV fistula develops hand coldness and weakness during dialysis. Symptoms resolve when the fistula is manually compressed. What is the diagnosis?',
-    options: [
-      'Central venous stenosis',
-      'Arterial steal syndrome',
-      'Venous hypertension',
-      'Fistula thrombosis'
-    ],
-    correctAnswers: [1],
-    explanation: 'Steal syndrome occurs when the fistula "steals" blood from the distal extremity, causing ischemic symptoms. The classic test is resolution of symptoms with fistula compression. Treatment options include banding, DRIL procedure, or fistula ligation in severe cases.',
-    difficulty: 'easy',
-    examFrequency: 'high'
-  },
-  {
-    id: 'B007',
-    section: 'B',
-    sectionTitle: 'Vascular Diagnosis and Intervention',
-    subsection: 'TIPS',
-    question: 'Which scoring systems are typically used to predict survival following TIPS? Select the two best options.',
-    options: [
-      'Child-Pugh score',
-      'EASL guidelines',
-      'Model for End-Stage Liver Disease (MELD)',
-      'Shock index'
-    ],
-    correctAnswers: [0, 2],
-    explanation: 'Child-Pugh and MELD scores are the standard scoring systems for predicting survival in patients with liver disease and are used to assess TIPS candidacy. MELD has largely replaced Child-Pugh for transplant listing. Both help predict post-TIPS mortality.',
-    difficulty: 'easy',
-    examFrequency: 'high'
-  },
-  {
-    id: 'B008',
-    section: 'B',
-    sectionTitle: 'Vascular Diagnosis and Intervention',
-    subsection: 'TIPS',
-    question: 'During TIPS creation, after portal vein puncture, what is the correct order of procedural steps?',
-    options: [
-      'Track dilatation → Portal pressure measurement → Stent placement → Variceal embolization',
-      'Portal pressure measurement → Track dilatation → Stent placement → Variceal embolization',
-      'Stent placement → Track dilatation → Portal pressure measurement → Variceal embolization',
-      'Variceal embolization → Portal pressure measurement → Track dilatation → Stent placement'
-    ],
-    correctAnswers: [1],
-    explanation: 'The correct sequence is: (1) Portal pressure measurement to confirm portal hypertension and establish baseline, (2) Track dilatation, (3) Stent placement, (4) Variceal embolization if present. Post-stent pressure gradient should be reduced to <12 mmHg.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'B009',
-    section: 'B',
-    sectionTitle: 'Vascular Diagnosis and Intervention',
-    subsection: 'Bronchial Arteries',
-    question: 'A 15-year-old with cystic fibrosis presents for bronchial artery embolization following hemoptysis. Which would be the most common bronchial arterial anatomical pattern?',
-    options: [
-      'One left bronchial artery and two right bronchial arteries',
-      'Shared origin of right and left bronchial arteries',
-      'The bronchial arteries arising above the usual level of the artery of Adamkiewicz',
-      'Two left bronchial arteries and one right bronchial artery'
-    ],
-    correctAnswers: [3],
-    explanation: 'The most common pattern is two left bronchial arteries and one right bronchial artery (40% of cases). The right bronchial often shares a common trunk with an intercostal artery (intercostobronchial trunk). Understanding variants is crucial to identify all bleeding sources.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'B010',
-    section: 'B',
-    sectionTitle: 'Vascular Diagnosis and Intervention',
-    subsection: 'GI Bleeding',
-    question: 'A patient with a bleeding duodenal ulcer has an occluded celiac trunk at the origin. Via which artery can the gastroduodenal artery be accessed for embolization?',
-    options: [
-      'Inferior mesenteric artery',
-      'Left gastric artery',
-      'Right gastroepiploic artery',
-      'Superior mesenteric artery'
-    ],
-    correctAnswers: [3],
-    explanation: 'When the celiac trunk is occluded, the GDA can be accessed via the SMA through the pancreaticoduodenal arcade (inferior → superior PDA). This collateral pathway is the key alternative route for hepatic and GDA access in celiac occlusion.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'B011',
-    section: 'B',
-    sectionTitle: 'Vascular Diagnosis and Intervention',
-    subsection: 'Visceral Aneurysms',
-    question: 'A 45-year-old man with recurrent pancreatitis has a 4 cm splenic artery pseudoaneurysm. What is the most likely cause?',
-    options: [
-      'Auto-immune response with elevated immunoglobulin levels',
-      'Infective complication of pancreatitis',
-      'Portal hypertension',
-      'Vessel wall erosion by pancreatic enzymes'
-    ],
-    correctAnswers: [3],
-    explanation: 'Splenic artery pseudoaneurysms in pancreatitis result from enzymatic erosion of the arterial wall by pancreatic enzymes. These are true emergencies with high rupture risk. Treatment is typically endovascular embolization.',
-    difficulty: 'easy',
-    examFrequency: 'high'
-  },
-  {
-    id: 'B012',
-    section: 'B',
-    sectionTitle: 'Vascular Diagnosis and Intervention',
-    subsection: 'Renal Artery',
-    question: 'During a renal angioplasty, early branching of the renal artery is observed. By definition, this means the branches are located:',
-    options: [
-      'After the division into dorsal and ventral branches',
-      'At the origin from the aorta',
-      'Within 1.5-2 cm of origin in the left renal artery or in the retrocaval segment of the right renal artery',
-      'Within 4 cm of origin in the right or left renal artery'
-    ],
-    correctAnswers: [2],
-    explanation: 'Early branching is defined as division within 1.5-2 cm of the origin for the left renal artery or within the retrocaval segment for the right renal artery. This anatomical variant affects stent selection and positioning strategy.',
-    difficulty: 'hard',
-    examFrequency: 'medium'
-  },
-
-  // ============================================
-  // SECTION C: Non-vascular Interventions
-  // ============================================
-  {
-    id: 'C001',
-    section: 'C',
-    sectionTitle: 'Non-vascular Interventions',
-    subsection: 'Image-guided Biopsy',
-    question: 'A 71-year-old man with extensive metastatic carcinoma requires tissue diagnosis. He has severe emphysema with minimal respiratory reserve and small, deep lung nodules. Which biopsy location would most safely avoid pneumothorax?',
-    options: [
-      'CT-guided biopsy of 1 cm mass in the anterior fourth rib',
-      'CT-guided biopsy of 2 cm mass in the T9 vertebral body',
-      'Ultrasound-guided biopsy of 1 cm left supraclavicular fossa mass',
-      'Ultrasound-guided biopsy of 2 cm mass at the dome of the right lobe of the liver'
-    ],
-    correctAnswers: [1],
-    explanation: 'Bone biopsy of the T9 vertebral body avoids crossing the pleura entirely, eliminating pneumothorax risk. Rib biopsy would still require traversing pleura. Supraclavicular and liver biopsies may be alternatives but vertebral body biopsy is safest for avoiding pneumothorax.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'C002',
-    section: 'C',
-    sectionTitle: 'Non-vascular Interventions',
-    subsection: 'Drainage',
-    question: 'A 70-year-old man presents with right upper quadrant pain, fever at 39.5°C, and tachycardia. CT shows a 6 cm rim-enhancing fluid collection in segment 3 of the liver. What is the most appropriate management?',
-    options: [
-      'Intravenous antibiotics alone',
-      'Percutaneous drainage',
-      'Percutaneous aspiration',
-      'Open surgical drainage'
-    ],
-    correctAnswers: [1],
-    explanation: 'A 6 cm liver abscess with systemic sepsis signs requires percutaneous drainage (not just aspiration). Drainage provides source control and allows ongoing evacuation of infected material. Antibiotics alone are insufficient for collections >5 cm. Surgery is reserved for failed percutaneous approaches.',
-    difficulty: 'easy',
-    examFrequency: 'high'
-  },
-  {
-    id: 'C003',
-    section: 'C',
-    sectionTitle: 'Non-vascular Interventions',
-    subsection: 'Colonic Stenting',
-    question: 'Which imaging feature would be an absolute contraindication to placement of a colonic stent for malignant obstruction?',
-    options: [
-      'Oedema of the transverse colon',
-      'Presence of perforation',
-      'Obstruction at the splenic flexure',
-      'Presence of a colo-vesical fistula'
-    ],
-    correctAnswers: [1],
-    explanation: 'Perforation is an absolute contraindication to colonic stenting as it requires surgical intervention. Colonic oedema, splenic flexure location, and fistulas are relative contraindications or technical challenges but not absolute contraindications.',
-    difficulty: 'easy',
-    examFrequency: 'high'
-  },
-  {
-    id: 'C004',
-    section: 'C',
-    sectionTitle: 'Non-vascular Interventions',
-    subsection: 'Colonic Stenting',
-    question: 'Which imaging strategy provides the highest technical success rate for colonic stent placement?',
-    options: [
-      'Fluoroscopic guidance alone',
-      'Endoscopic guidance alone',
-      'Combined fluoroscopic and endoscopic guidance',
-      'Fluoroscopy with cone beam CT'
-    ],
-    correctAnswers: [2],
-    explanation: 'Combined fluoroscopic and endoscopic guidance provides the highest technical success rate for colonic stenting. Fluoroscopy provides real-time visualization of wire and stent positioning, while endoscopy allows direct visualization of the stricture and ensures accurate placement.',
-    difficulty: 'easy',
-    examFrequency: 'medium'
-  },
-  {
-    id: 'C005',
-    section: 'C',
-    sectionTitle: 'Non-vascular Interventions',
-    subsection: 'Biliary Intervention',
-    question: 'A patient with hilar cholangiocarcinoma (Bismuth type IIIa) requires biliary drainage. Which approach is most appropriate?',
-    options: [
-      'Left-sided percutaneous drainage only',
-      'Right-sided percutaneous drainage only',
-      'ERCP with bilateral plastic stents',
-      'Right-sided percutaneous drainage, draining >50% of liver volume'
-    ],
-    correctAnswers: [3],
-    explanation: 'In Bismuth IIIa (right hepatic duct involvement), right-sided drainage is required to access the affected segments. The goal is to drain >50% of functioning liver volume to effectively relieve jaundice and prevent cholangitis in undrained segments.',
-    difficulty: 'hard',
-    examFrequency: 'high'
-  },
-  {
-    id: 'C006',
-    section: 'C',
-    sectionTitle: 'Non-vascular Interventions',
-    subsection: 'Gastrostomy',
-    question: 'During fluoroscopic gastrostomy tube placement, the safe window for gastric puncture is best identified by:',
-    options: [
-      'Anatomical landmarks only',
-      'CT guidance',
-      'Gastric insufflation and T-fastener placement',
-      'Ultrasound guidance'
-    ],
-    correctAnswers: [2],
-    explanation: 'Gastric insufflation displaces the transverse colon inferiorly and brings the anterior gastric wall against the abdominal wall. T-fasteners are then used to secure the stomach to the anterior abdominal wall, creating a safe tract before tube placement.',
-    difficulty: 'medium',
-    examFrequency: 'medium'
-  },
-  {
-    id: 'C007',
-    section: 'C',
-    sectionTitle: 'Non-vascular Interventions',
-    subsection: 'Lung Biopsy',
-    question: 'Following CT-guided lung biopsy, a patient develops progressive dyspnea with SpO2 of 88%. Chest X-ray shows 40% pneumothorax. What is the most appropriate management?',
-    options: [
-      'Observation and supplemental oxygen',
-      'Aspiration with small-bore needle',
-      'Small-bore chest drain insertion',
-      'Large-bore surgical chest drain'
-    ],
-    correctAnswers: [2],
-    explanation: 'A symptomatic pneumothorax >30% with hypoxia requires drainage. Small-bore chest drains (8-14 Fr) are appropriate for iatrogenic pneumothorax and are as effective as large-bore drains with less patient discomfort.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-
-  // ============================================
-  // SECTION D: Genito-urinary Intervention
-  // ============================================
-  {
-    id: 'D001',
-    section: 'D',
-    sectionTitle: 'Genito-urinary Intervention',
-    subsection: 'Nephrostomy',
-    question: 'What is the optimal site for percutaneous nephrostomy access?',
-    options: [
-      'Upper pole posterior calyx',
-      'Lower pole posterior calyx',
-      'Lower pole anterior calyx',
-      'Direct renal pelvis puncture'
-    ],
-    correctAnswers: [1],
-    explanation: 'The lower pole posterior calyx provides the safest access (Brödel\'s bloodless line), avoiding major vessels and allowing good drainage. Upper pole access risks pleural transgression. Anterior calyces require traversing more parenchyma. Direct pelvis puncture risks vascular injury.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'D002',
-    section: 'D',
-    sectionTitle: 'Genito-urinary Intervention',
-    subsection: 'Transplant Renal Artery Stenosis',
-    question: 'Which Doppler ultrasound findings suggest significant stenosis of a transplant renal artery? Select three options.',
-    options: [
-      'Peak systolic velocity >2 m/sec in the transplant renal artery',
-      'Interlobar artery slow systolic rise (Tardus Parvus waveform)',
-      'Interlobar artery systolic acceleration time >0.1 seconds',
-      'Aliasing in the interlobar renal arteries'
-    ],
-    correctAnswers: [0, 1, 2],
-    explanation: 'PSV >2 m/s at the anastomosis, tardus parvus waveforms (slow systolic acceleration), and prolonged acceleration time (>0.1 sec) in intrarenal arteries all suggest significant transplant renal artery stenosis. Aliasing in interlobar arteries is not a reliable sign of transplant RAS.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'D003',
-    section: 'D',
-    sectionTitle: 'Genito-urinary Intervention',
-    subsection: 'Transplant Renal Artery Stenosis',
-    question: 'A transplant renal artery stenosis is confirmed on angiography. What is the most appropriate initial therapeutic approach?',
-    options: [
-      'Covered stent placement',
-      'Balloon angioplasty',
-      'Primary bare stent placement',
-      'Cutting balloon angioplasty'
-    ],
-    correctAnswers: [1],
-    explanation: 'Balloon angioplasty alone is first-line treatment for transplant RAS, with high technical and clinical success rates. Stents are reserved for suboptimal angioplasty results, recurrent stenosis, or dissection. Cutting balloons are for resistant stenoses.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'D004',
-    section: 'D',
-    sectionTitle: 'Genito-urinary Intervention',
-    subsection: 'Uterine Artery Embolization',
-    question: 'A patient undergoing uterine artery embolization develops severe buttock pain post-procedure. What is the most likely cause?',
-    options: [
-      'Uterine necrosis',
-      'Ovarian failure',
-      'Non-target embolization of the superior gluteal artery',
-      'Endometritis'
-    ],
-    correctAnswers: [2],
-    explanation: 'Buttock pain following UAE suggests non-target embolization of the superior gluteal artery (via anastomoses with uterine/internal iliac branches). This causes gluteal claudication and can be avoided by careful catheter positioning and avoiding overly small particles.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'D005',
-    section: 'D',
-    sectionTitle: 'Genito-urinary Intervention',
-    subsection: 'Fallopian Tube Recanalization',
-    question: 'A 28-year-old woman with subfertility is referred for fallopian tube recanalization. What is the most common cause of occluded fallopian tubes?',
-    options: [
-      'Chlamydia infection',
-      'Endometriosis',
-      'Prior pelvic surgery',
-      'Uterine fibroid'
-    ],
-    correctAnswers: [0],
-    explanation: 'Chlamydia trachomatis infection is the most common cause of tubal occlusion worldwide. It causes salpingitis leading to scarring and obstruction. Many cases are subclinical. Endometriosis and surgery are less common causes.',
-    difficulty: 'easy',
-    examFrequency: 'medium'
-  },
-  {
-    id: 'D006',
-    section: 'D',
-    sectionTitle: 'Genito-urinary Intervention',
-    subsection: 'Varicocele',
-    question: 'During varicocele embolization, which embolic agents are most commonly used? Select two options.',
-    options: [
-      'Coils',
-      'Liquid sclerosant (sodium tetradecyl sulfate)',
-      'Polyvinyl alcohol particles',
-      'Gelfoam pledgets'
-    ],
-    correctAnswers: [0, 1],
-    explanation: 'Varicocele embolization typically uses coils for mechanical occlusion and/or liquid sclerosants (like sodium tetradecyl sulfate or sotradecol) to cause endothelial damage and thrombosis. The combination is highly effective with low recurrence rates.',
-    difficulty: 'easy',
-    examFrequency: 'medium'
-  },
-
-  // ============================================
-  // SECTION E: Musculoskeletal Intervention
-  // ============================================
-  {
-    id: 'E001',
-    section: 'E',
-    sectionTitle: 'Musculoskeletal Intervention',
-    subsection: 'MSK Biopsy',
-    question: 'A 35-year-old man has a permeative bone lesion in the femur being treated with alcohol injection for a vascular malformation in the lower leg. A biopsy is requested. What is the correct approach?',
-    options: [
-      'Use a high-speed drill with coaxial needle for multiple core biopsies',
-      'Further evaluation with MR imaging before biopsy',
-      'Refuse the biopsy because of risk of tumor seeding along the track',
-      'Perform aspiration biopsy to reduce fracture risk'
-    ],
-    correctAnswers: [1],
-    explanation: 'A permeative bone lesion pattern is concerning for malignancy (primary bone tumor vs metastasis). MRI should be performed before biopsy to fully characterize the lesion, assess extent, and plan the biopsy tract. The biopsy track must be placed so it can be excised with definitive surgery.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'E002',
-    section: 'E',
-    sectionTitle: 'Musculoskeletal Intervention',
-    subsection: 'Osteoid Osteoma',
-    question: 'Which MRI findings are typical for osteoid osteoma? Select two options.',
-    options: [
-      'Bone marrow oedema',
-      'Cortical thickening',
-      'No contrast enhancement after gadolinium',
-      'Marked periosteal reaction'
-    ],
-    correctAnswers: [0, 1],
-    explanation: 'Osteoid osteomas typically show bone marrow edema (which can be extensive) and cortical thickening/reactive sclerosis on MRI. The nidus typically enhances with gadolinium. Periosteal reaction is minimal unless there is pathological fracture.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'E003',
-    section: 'E',
-    sectionTitle: 'Musculoskeletal Intervention',
-    subsection: 'Osteoid Osteoma',
-    question: 'A 16-year-old with spinal osteoid osteoma at L3 has pain refractory to NSAIDs. RFA is planned. Which of the following is the most likely major complication?',
-    options: [
-      'Motor nerve injury',
-      'Synovitis',
-      'Arachnoiditis',
-      'Epidural haematoma'
-    ],
-    correctAnswers: [0],
-    explanation: 'Motor nerve injury is the most significant potential complication of spinal osteoid osteoma RFA due to the proximity of nerve roots and spinal cord. Temperature monitoring and protective measures (thermocouples, hydrodissection) are essential.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'E004',
-    section: 'E',
-    sectionTitle: 'Musculoskeletal Intervention',
-    subsection: 'Vertebroplasty/Kyphoplasty',
-    question: 'During vertebroplasty for an osteoporotic compression fracture, what is the most common route of cement leakage?',
-    options: [
-      'Through the basivertebral vein into the epidural space',
-      'Into the adjacent disc space',
-      'Through the cortical fracture line',
-      'Into the paravertebral soft tissues'
-    ],
-    correctAnswers: [0],
-    explanation: 'The most common route of cement leakage is via the basivertebral venous plexus into the epidural space. This can cause spinal cord or nerve root compression. Careful cement injection under continuous fluoroscopic monitoring is essential to detect early leakage.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'E005',
-    section: 'E',
-    sectionTitle: 'Musculoskeletal Intervention',
-    subsection: 'Osteoplasty',
-    question: 'A 78-year-old with an osteolytic acetabular metastasis from colorectal cancer undergoes CT-guided osteoplasty. Which nerve is at risk during a posterior approach?',
-    options: [
-      'Obturator nerve',
-      'Pudendal nerve',
-      'Sacral plexus',
-      'Sciatic nerve'
-    ],
-    correctAnswers: [3],
-    explanation: 'The sciatic nerve runs posterior to the hip joint and acetabulum. A posterior approach for acetabular procedures places it at risk. Careful needle trajectory planning using CT guidance is essential to avoid nerve injury.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'E006',
-    section: 'E',
-    sectionTitle: 'Musculoskeletal Intervention',
-    subsection: 'Spinal Intervention',
-    question: 'What is the most appropriate protective measure during RFA of a spinal osteoid osteoma near the neural foramen?',
-    options: [
-      'Hydrodissection with 0.9% saline',
-      'Hydrodissection with 5% dextrose',
-      'Gas dissection with CO2',
-      'Placement of thermocouples in the epidural and foraminal space'
-    ],
-    correctAnswers: [3],
-    explanation: 'Thermocouple placement allows real-time temperature monitoring at critical structures. When temperature rises above 45°C, ablation is stopped to prevent nerve damage. D5W (not saline) is used for hydrodissection as it is non-conductive, but temperature monitoring is more reliable.',
-    difficulty: 'hard',
-    examFrequency: 'high'
-  },
-
-  // ============================================
-  // SECTION F: Interventional Oncology
-  // ============================================
-  {
-    id: 'F001',
-    section: 'F',
-    sectionTitle: 'Interventional Oncology',
-    subsection: 'HCC Management',
-    question: 'A 77-year-old woman with Hepatitis C cirrhosis has a 35mm lesion in segment 8 showing arterial enhancement and delayed washout on CT. AFP is 530 μmol/L. What is the most appropriate next step?',
-    options: [
-      'Microwave ablation',
-      'Multidisciplinary tumor board discussion',
-      'Percutaneous biopsy',
-      'Transarterial chemoembolization'
-    ],
-    correctAnswers: [1],
-    explanation: 'Despite classic imaging features of HCC (arterial enhancement + washout in a cirrhotic liver with elevated AFP), MDT discussion is essential before treatment to assess liver function, performance status, tumor staging (BCLC), and determine optimal treatment pathway.',
-    difficulty: 'easy',
-    examFrequency: 'high'
-  },
-  {
-    id: 'F002',
-    section: 'F',
-    sectionTitle: 'Interventional Oncology',
-    subsection: 'HCC Management',
-    question: 'What are factors associated with failure of thermal ablation alone for HCC? Select three options.',
-    options: [
-      'Size of lesion >3 cm',
-      'Perivascular location',
-      'Likelihood of microsatellite lesions',
-      'High chance of tumor seeding following ablation'
-    ],
-    correctAnswers: [0, 1, 2],
-    explanation: 'Lesions >3 cm have higher local recurrence after ablation. Perivascular location causes "heat sink" effect reducing ablation efficacy. Larger tumors have higher rates of microsatellites. Tumor seeding is rare (<1%) and not a major factor in treatment failure.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'F003',
-    section: 'F',
-    sectionTitle: 'Interventional Oncology',
-    subsection: 'TACE',
-    question: 'During TACE for HCC, the right hepatic artery angiogram shows enhancement of the lesion. What is the appropriate next step before embolization?',
-    options: [
-      'Coil embolization of the gastroduodenal artery',
-      'Selective catheterization of the left hepatic artery to check for supply to the nodule',
-      'Superselective embolization with chemotherapy and lipiodol',
-      'Superior mesenteric artery angiogram for aberrant supply'
-    ],
-    correctAnswers: [1],
-    explanation: 'Before treating, all potential arterial supply to the tumor must be identified. The left hepatic artery should be catheterized to exclude dual supply. Missing a feeding vessel leads to incomplete treatment and early recurrence. SMA angiography is performed for replaced hepatic arteries.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'F004',
-    section: 'F',
-    sectionTitle: 'Interventional Oncology',
-    subsection: 'TACE',
-    question: 'Following superselective TACE with cisplatin, mitomycin C and lipiodol, the patient develops mild RUQ pain and fever of 38.0°C that afternoon. What is the most likely diagnosis?',
-    options: [
-      'Acute hepatitis',
-      'Cholecystitis',
-      'Liver infarction',
-      'Post-embolization syndrome'
-    ],
-    correctAnswers: [3],
-    explanation: 'Post-embolization syndrome (PES) is the most common "complication" after TACE, occurring in 60-80% of patients. It consists of fever, pain, nausea, and elevated liver enzymes, typically self-limiting within 72 hours. It should be distinguished from liver abscess or infarction.',
-    difficulty: 'easy',
-    examFrequency: 'high'
-  },
-  {
-    id: 'F005',
-    section: 'F',
-    sectionTitle: 'Interventional Oncology',
-    subsection: 'TACE',
-    question: 'Which materials are appropriate for chemoembolization of HCC? Select two options.',
-    options: [
-      'Doxorubicin-loaded drug-eluting beads',
-      'Lipiodol + doxorubicin + Gelfoam',
-      'Non-spherical PVA with doxorubicin',
-      'Irinotecan-loaded drug-eluting beads'
-    ],
-    correctAnswers: [0, 1],
-    explanation: 'Doxorubicin-loaded DEBs (DEB-TACE) and conventional TACE with lipiodol-doxorubicin-Gelfoam are both established treatments for HCC. Irinotecan DEBs are used for colorectal liver metastases, not HCC. Non-spherical PVA is not typically combined with chemotherapy for TACE.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'F006',
-    section: 'F',
-    sectionTitle: 'Interventional Oncology',
-    subsection: 'Follow-up',
-    question: 'Following TACE for HCC with good angiographic result and post-embolization syndrome, what is the most appropriate follow-up imaging?',
-    options: [
-      'CT scan on day 1',
-      'CT scan in 6 days',
-      'CT scan in 2 weeks',
-      'CT scan in 6 weeks'
-    ],
-    correctAnswers: [3],
-    explanation: 'Post-TACE imaging should be performed at 4-6 weeks to allow inflammation to settle and properly assess treatment response using mRECIST criteria. Earlier imaging may show artifacts from lipiodol and inflammatory changes that confound interpretation.',
-    difficulty: 'easy',
-    examFrequency: 'high'
-  },
-  {
-    id: 'F007',
-    section: 'F',
-    sectionTitle: 'Interventional Oncology',
-    subsection: 'TARE/SIRT',
-    question: 'During SIRT workup, Tc-99m MAA scan shows a lung shunt fraction of 25%. What is the most appropriate next step?',
-    options: [
-      'Proceed with standard Y-90 dose',
-      'Reduce Y-90 dose by 40%',
-      'Perform coil embolization of hepatopulmonary shunts and repeat MAA',
-      'Abandon SIRT treatment'
-    ],
-    correctAnswers: [2],
-    explanation: 'Lung shunt fraction >20% significantly increases radiation pneumonitis risk. Shunt-causing vessels (e.g., tumor arteriovenous shunts) should be coil-embolized and MAA repeated. If shunting persists >20%, dose reduction or treatment abandonment may be required.',
-    difficulty: 'hard',
-    examFrequency: 'high'
-  },
-  {
-    id: 'F008',
-    section: 'F',
-    sectionTitle: 'Interventional Oncology',
-    subsection: 'Ablation',
-    question: 'Which factor has the greatest impact on the size of the ablation zone during microwave ablation?',
-    options: [
-      'Power setting',
-      'Duration of ablation',
-      'Antenna design',
-      'Tissue impedance'
-    ],
-    correctAnswers: [1],
-    explanation: 'Duration of ablation has the greatest impact on ablation zone size in MWA. Unlike RFA, MWA is less affected by tissue impedance due to its different heating mechanism. Power and antenna design are important but duration is the primary variable operators control.',
-    difficulty: 'medium',
-    examFrequency: 'medium'
-  },
-  {
-    id: 'F009',
-    section: 'F',
-    sectionTitle: 'Interventional Oncology',
-    subsection: 'PVE',
-    question: 'A patient with colorectal liver metastases is planned for right hepatectomy. Portal vein embolization (PVE) is recommended. What is the risk of major complications?',
-    options: [
-      'Approximately 0.5%',
-      'Approximately 10%',
-      'Approximately 2%',
-      'Approximately 5%'
-    ],
-    correctAnswers: [2],
-    explanation: 'PVE has a major complication rate of approximately 2%, including hepatic failure, portal vein thrombosis, and bleeding. It is a relatively safe procedure that allows the future liver remnant to hypertrophy before major hepatic resection.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'F010',
-    section: 'F',
-    sectionTitle: 'Interventional Oncology',
-    subsection: 'HCC in Non-cirrhotic Liver',
-    question: 'A 76-year-old woman with a 6.3 cm biopsy-proven HCC in the left lobe of a non-cirrhotic liver. She had a STEMI 8 months ago with drug-eluting stent. What is the most appropriate treatment?',
-    options: [
-      'Multiple needle thermal ablation',
-      'Left hepatectomy',
-      'Trans-arterial radioembolization',
-      'Trans-arterial chemoembolization'
-    ],
-    correctAnswers: [1],
-    explanation: 'In non-cirrhotic liver with solitary HCC >5 cm, surgical resection (left hepatectomy) is the treatment of choice when feasible. The patient\'s cardiac status needs assessment but 8 months post-stent is typically sufficient interval. Ablation is less effective for tumors >3 cm.',
-    difficulty: 'hard',
-    examFrequency: 'high'
-  },
-
-  // Additional questions to expand the bank
-  {
-    id: 'B013',
-    section: 'B',
-    sectionTitle: 'Vascular Diagnosis and Intervention',
-    subsection: 'Central Venous Access',
-    question: 'A patient\'s portacath is non-functional and the tube has migrated to the pulmonary artery. The patient also reports intermittent palpitations. What is the most appropriate next step?',
-    options: [
-      'CT angiography of the chest',
-      'ECG monitoring for 24 hours',
-      'Endovascular retrieval',
-      'New portacath placement'
-    ],
-    correctAnswers: [2],
-    explanation: 'A migrated catheter fragment in the pulmonary artery requires urgent endovascular retrieval using snare devices. The palpitations may be due to the foreign body causing arrhythmias. Retrieval should be performed before complications occur (thrombus, infection, cardiac injury).',
-    difficulty: 'easy',
-    examFrequency: 'high'
-  },
-  {
-    id: 'A011',
-    section: 'A',
-    sectionTitle: 'Fundamental Topics in IR',
-    subsection: 'Contrast Media',
-    question: 'A patient develops urticaria, facial swelling, and mild bronchospasm 5 minutes after contrast injection. What is the appropriate treatment?',
-    options: [
-      'IV epinephrine 1mg',
-      'IM epinephrine 0.3-0.5mg + IV diphenhydramine + supplemental oxygen',
-      'IV diphenhydramine only',
-      'Observe and reassess in 30 minutes'
-    ],
-    correctAnswers: [1],
-    explanation: 'This is a moderate allergic reaction requiring IM epinephrine (0.3-0.5mg of 1:1000), antihistamines (H1 blocker), and supportive care with oxygen. IV epinephrine is reserved for severe anaphylaxis with cardiovascular collapse. Observation alone is insufficient.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'C008',
-    section: 'C',
-    sectionTitle: 'Non-vascular Interventions',
-    subsection: 'Colonic Stenting',
-    question: 'After colonic stent placement, the patient reports multiple episodes of diarrhea 16 hours post-procedure. What is the most appropriate action?',
-    options: [
-      'Advise this is normal and arrange an abdominal radiograph',
-      'Prescribe oral loperamide',
-      'Send stool sample for culture',
-      'Isolate patient and prescribe IV metronidazole'
-    ],
-    correctAnswers: [0],
-    explanation: 'Diarrhea following relief of colonic obstruction is expected and normal. The backed-up proximal bowel contents are now able to pass. An abdominal X-ray confirms stent position and excludes perforation. Anti-diarrheals should be avoided initially.',
-    difficulty: 'easy',
-    examFrequency: 'medium'
-  },
-  {
-    id: 'B014',
-    section: 'B',
-    sectionTitle: 'Vascular Diagnosis and Intervention',
-    subsection: 'Hepatic Artery Anatomy',
-    question: 'During chemoembolization, you notice a replaced right hepatic artery. From which vessel does this most commonly arise?',
-    options: [
-      'Left gastric artery',
-      'Superior mesenteric artery',
-      'Gastroduodenal artery',
-      'Celiac trunk'
-    ],
-    correctAnswers: [1],
-    explanation: 'A replaced right hepatic artery most commonly arises from the superior mesenteric artery (approximately 15-20% of the population). A replaced left hepatic artery typically arises from the left gastric artery. Knowledge of hepatic arterial variants is essential for safe hepatic interventions.',
-    difficulty: 'easy',
-    examFrequency: 'high'
-  },
-  {
-    id: 'F011',
-    section: 'F',
-    sectionTitle: 'Interventional Oncology',
-    subsection: 'Post-procedure Management',
-    question: 'A patient returns 1 week after TACE with doxorubicin-eluting beads, presenting with fever (38.7°C) and epigastric pain. What are the appropriate next management steps? Select three options.',
-    options: [
-      'Reassure the patient and discharge as this is an expected side effect',
-      'Blood tests including CRP and WCC and CT scan',
-      'Admit and commence broad-spectrum antibiotics',
-      'Percutaneous aspiration of treated lesion',
-      'Perform ECG and assess myocardial enzyme levels'
-    ],
-    correctAnswers: [1, 2, 4],
-    explanation: 'Fever at 1 week post-TACE is concerning for liver abscess or infection (not typical PES which resolves in 72 hours). Investigation with blood tests and CT is needed. Empirical antibiotics and cardiac workup (doxorubicin cardiotoxicity) should be initiated. Aspiration is only done if abscess is confirmed.',
-    difficulty: 'hard',
-    examFrequency: 'high'
-  },
-  {
-    id: 'B015',
-    section: 'B',
-    sectionTitle: 'Vascular Diagnosis and Intervention',
-    subsection: 'Hemoptysis',
-    question: 'Following bronchial artery embolization, a patient has recurrent hemoptysis on day 9. What are the most likely sources of recurrent bleeding? Select three options.',
-    options: [
-      'Systemic collaterals from right internal mammary artery',
-      'Systemic collaterals from right phrenic artery',
-      'Collaterals from right pulmonary artery',
-      'Further right bronchial artery supply'
-    ],
-    correctAnswers: [0, 1, 3],
-    explanation: 'Recurrent hemoptysis after BAE is usually from: (1) non-bronchial systemic collaterals (internal mammary, phrenic, intercostal), (2) reconstitution of embolized bronchial arteries, or (3) missed bronchial artery branches. Pulmonary artery bleeding is rare in inflammatory lung disease.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'A012',
-    section: 'A',
-    sectionTitle: 'Fundamental Topics in IR',
-    subsection: 'Stents',
-    question: 'Which statement about self-expanding metal stents (SEMS) vs balloon-expandable stents is correct?',
-    options: [
-      'SEMS are preferred at the aortic bifurcation due to precise placement',
-      'Balloon-expandable stents are preferred for tortuous iliac arteries',
-      'SEMS are preferred in areas subject to external compression',
-      'Balloon-expandable stents have better radial force than SEMS'
-    ],
-    correctAnswers: [3],
-    explanation: 'Balloon-expandable stents have greater radial force, making them ideal for calcified, resistant lesions and precise placement (e.g., renal artery ostia, aortic bifurcation). SEMS are preferred in tortuous vessels due to flexibility but may crush under external compression.',
-    difficulty: 'medium',
-    examFrequency: 'medium'
-  },
-  {
-    id: 'B016',
-    section: 'B',
-    sectionTitle: 'Vascular Diagnosis and Intervention',
-    subsection: 'TIPS',
-    question: 'A proximal hepatic vein stenosis is found during TIPS creation. What is the most appropriate management?',
-    options: [
-      'Balloon dilatation of the stenosis only',
-      'Cutting balloon venoplasty',
-      'Hepatic vein covered stent placement and dilatation',
-      'Uncovered stent placement and dilatation'
-    ],
-    correctAnswers: [2],
-    explanation: 'Hepatic vein stenosis in the setting of TIPS requires covered stent placement and dilatation. Covered stents provide better patency than balloon angioplasty alone or uncovered stents. The TIPS tract will connect with this stent for optimal outflow.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'C009',
-    section: 'C',
-    sectionTitle: 'Non-vascular Interventions',
-    subsection: 'Colonic Stenting',
-    question: 'Why is colonic stent placement preferred over emergency surgery for malignant obstruction in palliative patients? Select two options.',
-    options: [
-      'Lower mortality',
-      'Lower rate of stoma formation',
-      'Shorter intensive care stay',
-      'Better cancer survival'
-    ],
-    correctAnswers: [1, 2],
-    explanation: 'Colonic stenting as bridge-to-surgery or palliative treatment offers lower stoma rates and shorter ICU stays compared to emergency surgery. Mortality rates are similar. Cancer survival is not improved by stenting; it is a palliative measure.',
-    difficulty: 'medium',
-    examFrequency: 'medium'
-  },
-  {
-    id: 'D007',
-    section: 'D',
-    sectionTitle: 'Genito-urinary Intervention',
-    subsection: 'Transplant Renal Artery',
-    question: 'After balloon angioplasty of a transplant renal artery stenosis, acute thrombosis occurs. What are the appropriate options? Select three.',
-    options: [
-      'Immediate discussion/referral for surgical thrombectomy',
-      'Suction catheter thrombectomy',
-      'Repeat angioplasty',
-      'Inject thrombolytic agent'
-    ],
-    correctAnswers: [0, 1, 3],
-    explanation: 'Acute thrombosis of the transplant renal artery is an emergency. Options include: catheter thrombectomy (suction/mechanical), thrombolysis, or surgical thrombectomy. Repeat angioplasty alone will not resolve the thrombus and may cause further injury.',
-    difficulty: 'hard',
-    examFrequency: 'high'
-  },
-  {
-    id: 'A013',
-    section: 'A',
-    sectionTitle: 'Fundamental Topics in IR',
-    subsection: 'Closure Devices',
-    question: 'Following diagnostic angiography using a 6Fr sheath, which factor is a contraindication to vascular closure device deployment?',
-    options: [
-      'Mild peripheral arterial disease',
-      'Puncture site in the superficial femoral artery',
-      'BMI > 35',
-      'Previous closure device at the same site 6 months ago'
-    ],
-    correctAnswers: [1],
-    explanation: 'Puncture of the SFA (rather than CFA) is a contraindication to closure device use due to smaller vessel diameter and increased complication risk. Previous closure device use, obesity, and mild PAD are relative considerations but not absolute contraindications.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'E007',
-    section: 'E',
-    sectionTitle: 'Musculoskeletal Intervention',
-    subsection: 'Cryoablation',
-    question: 'What is the primary advantage of cryoablation over radiofrequency ablation for renal tumor treatment?',
-    options: [
-      'Shorter procedure time',
-      'Better visualization of the ice ball on CT',
-      'Higher complete ablation rate',
-      'No need for conscious sedation'
-    ],
-    correctAnswers: [1],
-    explanation: 'The main advantage of cryoablation is real-time visualization of the ice ball on CT or MRI, allowing precise monitoring of the ablation margin. RFA ablation zones are not visible in real-time. Cryoablation also causes less pain (can use conscious sedation) but procedure times are longer.',
-    difficulty: 'medium',
-    examFrequency: 'medium'
-  },
-  {
-    id: 'B017',
-    section: 'B',
-    sectionTitle: 'Vascular Diagnosis and Intervention',
-    subsection: 'Pseudoaneurysm',
-    question: 'A 3 cm femoral artery pseudoaneurysm with an 8 mm neck is identified following cardiac catheterization. Which feature is an absolute contraindication to ultrasound-guided thrombin injection?',
-    options: [
-      'Pseudoaneurysm size greater than 2 cm',
-      'Patient on therapeutic anticoagulation',
-      'Arteriovenous fistula communication',
-      'Neck length less than 10 mm'
-    ],
-    correctAnswers: [2],
-    explanation: 'Arteriovenous fistula communication is an absolute contraindication to thrombin injection as it risks systemic embolization through the venous system. Anticoagulation reduces success but is not an absolute contraindication. Size and neck dimensions are technical considerations.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'A014',
-    section: 'A',
-    sectionTitle: 'Fundamental Topics in IR',
-    subsection: 'Hepatic Venous Pressure',
-    question: 'During transjugular liver biopsy, the wedged hepatic venous pressure is 22 mmHg and free hepatic venous pressure is 6 mmHg. What does this indicate?',
-    options: [
-      'Normal portal pressure',
-      'Mild portal hypertension',
-      'Clinically significant portal hypertension',
-      'Pre-sinusoidal portal hypertension'
-    ],
-    correctAnswers: [2],
-    explanation: 'HVPG = 22-6 = 16 mmHg. Normal HVPG is 1-5 mmHg. Values ≥10 mmHg indicate clinically significant portal hypertension with risk of variceal bleeding. Values ≥12 mmHg predict high risk of variceal hemorrhage.',
-    difficulty: 'medium',
-    examFrequency: 'high'
-  },
-  {
-    id: 'B018',
-    section: 'B',
-    sectionTitle: 'Vascular Diagnosis and Intervention',
-    subsection: 'EVAR',
-    question: 'What is the minimum recommended proximal landing zone length for standard EVAR?',
-    options: [
-      '5 mm',
-      '10 mm',
-      '15 mm',
-      '25 mm'
-    ],
-    correctAnswers: [2],
-    explanation: 'A minimum 15 mm infrarenal neck length is typically required for standard EVAR to achieve adequate seal and prevent Type Ia endoleak. Shorter necks may require fenestrated/branched grafts or chimney techniques.',
-    difficulty: 'easy',
-    examFrequency: 'high'
-  },
-  {
-    id: 'F012',
-    section: 'F',
-    sectionTitle: 'Interventional Oncology',
-    subsection: 'Ablation',
-    question: 'What is the recommended minimum ablation margin for HCC treatment?',
-    options: [
-      '0.5 cm',
-      '1.0 cm',
-      '1.5 cm',
-      '2.0 cm'
-    ],
-    correctAnswers: [1],
-    explanation: 'A minimum 1 cm ablation margin around HCC is recommended to achieve complete tumor destruction and reduce local recurrence. This margin accounts for microscopic tumor extension and the technical uncertainty of ablation zone boundaries.',
-    difficulty: 'easy',
-    examFrequency: 'high'
-  },
-  {
-    id: 'C010',
-    section: 'C',
-    sectionTitle: 'Non-vascular Interventions',
-    subsection: 'Biliary Intervention',
-    question: 'A patient with malignant biliary obstruction has a bilirubin of 350 μmol/L. ERCP has failed. What is the preferred approach for percutaneous biliary drainage?',
-    options: [
-      'Left-sided approach',
-      'Right-sided approach',
-      'Either side - no preference',
-      'Combined bilateral approach always required'
-    ],
-    correctAnswers: [1],
-    explanation: 'Right-sided approach is generally preferred as the right system is larger and easier to access, provides better drainage of more liver volume, and the tract is shorter. Left-sided approach is used for left-predominant disease or when right system is inaccessible.',
-    difficulty: 'medium',
-    examFrequency: 'medium'
-  },
-  {
-    id: 'D008',
-    section: 'D',
-    sectionTitle: 'Genito-urinary Intervention',
-    subsection: 'Follow-up',
-    question: 'What is the most appropriate monitoring protocol for a patient after transplant renal artery intervention?',
-    options: [
-      'Serum urea, Doppler ultrasound, and blood pressure measurement',
-      'Serum creatinine, Doppler ultrasound, and blood pressure measurement',
-      'Serum creatinine, CT angiography, and urinalysis',
-      'Serum creatinine, Doppler ultrasound, and renal biopsy'
-    ],
-    correctAnswers: [1],
-    explanation: 'Post-intervention monitoring includes serum creatinine (renal function), Doppler ultrasound (stent patency and flow), and blood pressure measurement (treatment success). CTA exposes the patient to contrast and radiation unnecessarily when Doppler is effective.',
-    difficulty: 'easy',
-    examFrequency: 'medium'
-  }
+  // SECTION A (35 questions)
+  {id:'A001',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Patient Safety',question:'A 65-year-old man develops nausea during a procedure. What is the most appropriate IV metoclopramide dose?',options:['1 mg','10 mg','20 mg','4 mg'],correctAnswers:[1],explanation:'Standard IV dose is 10mg. EMA recommends max 30mg/day.',difficulty:'easy',examFrequency:'medium'},
+  {id:'A002',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Radiation Safety',question:'What is the attenuation of a 0.5 mm lead equivalent apron?',options:['50-70%','70-90%','90-95%','95-99%'],correctAnswers:[3],explanation:'A 0.5 mm lead apron attenuates 95-99% of scattered radiation.',difficulty:'medium',examFrequency:'high'},
+  {id:'A003',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Radiation Safety',question:'Which method is most effective to reduce operator radiation dose?',options:['Using last image hold','Increasing distance from X-ray source','Wearing thyroid shield','Pulsed fluoroscopy'],correctAnswers:[1],explanation:'Doubling distance reduces exposure by factor of 4 (inverse square law).',difficulty:'easy',examFrequency:'high'},
+  {id:'A004',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Contrast Media',question:'For a patient with eGFR 28, which measure best prevents CIN?',options:['N-acetylcysteine','IV sodium bicarbonate','IV isotonic saline hydration','Prophylactic hemodialysis'],correctAnswers:[2],explanation:'IV saline hydration has strongest evidence for preventing CIN.',difficulty:'medium',examFrequency:'high'},
+  {id:'A005',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Sedation',question:'During sedation, patient becomes unresponsive with O2 sat 82%. First action?',options:['Flumazenil IV','Naloxone IV','Jaw thrust and supplemental oxygen','Immediate intubation'],correctAnswers:[2],explanation:'First priority is basic airway management before reversal agents.',difficulty:'medium',examFrequency:'high'},
+  {id:'A006',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Anticoagulation',question:'Patient on rivaroxaban needs urgent high-risk procedure. Last dose 14 hours ago. Management?',options:['Proceed immediately','Delay at least 24 hours','Give PCC before proceeding','Check anti-Xa levels'],correctAnswers:[1],explanation:'Hold rivaroxaban 24-48 hours for high-risk procedures.',difficulty:'medium',examFrequency:'high'},
+  {id:'A007',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Vascular Access',question:'Ideal landmark for CFA puncture?',options:['At inguinal ligament','Over femoral head on fluoro','At SFA/profunda bifurcation','At lesser trochanter'],correctAnswers:[1],explanation:'Puncture over femoral head ensures CFA access and allows compression.',difficulty:'easy',examFrequency:'high'},
+  {id:'A008',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Wires and Catheters',question:'Most important guidewire characteristic for CTO crossing?',options:['Hydrophilic coating','High tip stiffness','Large diameter 0.038"','Floppy tip'],correctAnswers:[1],explanation:'High tip stiffness needed to penetrate fibrous cap.',difficulty:'medium',examFrequency:'medium'},
+  {id:'A009',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Embolization',question:'Best embolic agent for bronchial artery embolization?',options:['Gelfoam slurry','PVA particles 300-500 μm','Coils alone','Absolute ethanol'],correctAnswers:[1],explanation:'PVA 300-500 μm provides distal embolization, minimizes spinal artery risk.',difficulty:'medium',examFrequency:'high'},
+  {id:'A010',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Embolization',question:'Mechanism of action of NBCA glue?',options:['Thermal coagulation','Polymerization on ionic contact','Mechanical obstruction only','Chemical sclerosis'],correctAnswers:[1],explanation:'NBCA polymerizes on contact with blood, creating permanent cast.',difficulty:'medium',examFrequency:'medium'},
+  {id:'A011',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Stents',question:'Advantage of self-expanding vs balloon-expandable stents?',options:['Greater radial force','More precise deployment','Better tortuous vessel conformability','Lower profile'],correctAnswers:[2],explanation:'Self-expanding stents are more flexible and conform better.',difficulty:'easy',examFrequency:'high'},
+  {id:'A012',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Complications',question:'Acute leg ischemia immediately after femoral angiography - most likely cause?',options:['Vasospasm','Arterial thrombosis/embolism','Compartment syndrome','Contrast vasoconstriction'],correctAnswers:[1],explanation:'Usually due to thrombosis at puncture site or distal embolization.',difficulty:'medium',examFrequency:'high'},
+  {id:'A013',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Closure Devices',question:'Contraindication to vascular closure device after 6Fr diagnostic angiography?',options:['Mild PAD','Puncture in SFA','BMI >35','Previous closure device 6 months ago'],correctAnswers:[1],explanation:'SFA puncture is contraindication due to smaller vessel diameter.',difficulty:'medium',examFrequency:'high'},
+  {id:'A014',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Hepatic Venous Pressure',question:'WHVP 22 mmHg, FHVP 6 mmHg. What does this indicate?',options:['Normal portal pressure','Mild portal hypertension','Clinically significant portal hypertension','Pre-sinusoidal portal hypertension'],correctAnswers:[2],explanation:'HVPG=16 mmHg. ≥10 mmHg = clinically significant portal hypertension.',difficulty:'medium',examFrequency:'high'},
+  {id:'A015',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Radiation Safety',question:'Annual occupational dose limit (ICRP)?',options:['10 mSv','20 mSv','50 mSv','100 mSv'],correctAnswers:[1],explanation:'ICRP recommends 20 mSv/year averaged over 5 years.',difficulty:'easy',examFrequency:'high'},
+  {id:'A016',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Radiation Safety',question:'Which projection gives highest operator radiation dose?',options:['AP','LAO','RAO','Lateral'],correctAnswers:[1],explanation:'LAO positions tube on operators side, increasing scatter exposure.',difficulty:'medium',examFrequency:'high'},
+  {id:'A017',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Contrast Media',question:'Premedication protocol for severe prior contrast reaction?',options:['Hydrocortisone 200mg IV immediately','Prednisone 50mg at 13, 7, 1 hr + diphenhydramine','Diphenhydramine 50mg IV only','Contrast must be avoided'],correctAnswers:[1],explanation:'Standard protocol: steroids at 13, 7, 1 hour plus antihistamine.',difficulty:'medium',examFrequency:'high'},
+  {id:'A018',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Contrast Media',question:'TRUE statement about gadolinium-based contrast?',options:['Safe in all renal impairment','NSF risk highest with linear agents','Safe in iodine allergy without precautions','Group II agents have highest NSF risk'],correctAnswers:[1],explanation:'Linear (Group I) agents have highest NSF risk; macrocyclic are safer.',difficulty:'medium',examFrequency:'medium'},
+  {id:'A019',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Anticoagulation',question:'Target INR for urgent biliary drainage in patient on warfarin with INR 2.8?',options:['<1.5','<1.8','<2.0','Proceed regardless'],correctAnswers:[0],explanation:'Target INR <1.5 for high-bleeding-risk procedures.',difficulty:'medium',examFrequency:'high'},
+  {id:'A020',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Anticoagulation',question:'Which DOAC has a specific reversal agent?',options:['Rivaroxaban','Apixaban','Dabigatran','Edoxaban'],correctAnswers:[2],explanation:'Dabigatran reversed with idarucizumab (Praxbind).',difficulty:'easy',examFrequency:'high'},
+  {id:'A021',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Sedation',question:'Half-life of midazolam?',options:['30 minutes','1-2 hours','2-4 hours','6-8 hours'],correctAnswers:[1],explanation:'Midazolam half-life ~1.5-2.5 hours in healthy adults.',difficulty:'easy',examFrequency:'medium'},
+  {id:'A022',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Antibiotics',question:'Which procedure requires routine antibiotic prophylaxis per CIRSE?',options:['Diagnostic angiography','UFE','TIPS creation','Peripheral angioplasty'],correctAnswers:[2],explanation:'TIPS requires prophylaxis due to porto-systemic shunt creation.',difficulty:'medium',examFrequency:'medium'},
+  {id:'A023',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Vascular Access',question:'Preferred needle angle for US-guided venous access?',options:['15-30°','30-45°','45-60°','60-90°'],correctAnswers:[1],explanation:'30-45° provides optimal needle visualization on ultrasound.',difficulty:'easy',examFrequency:'medium'},
+  {id:'A024',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Wires and Catheters',question:'Reverse curve catheter (SOS Omni, Simmons) requires:',options:['Direct advancement','Reformation in aorta','Brachial approach only','Stiff guidewire'],correctAnswers:[1],explanation:'Must be reformed in large vessel before selecting branches.',difficulty:'easy',examFrequency:'medium'},
+  {id:'A025',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Embolization',question:'Recommended NBCA:Lipiodol ratio for high-flow AVMs?',options:['1:1 (50%)','1:2 (33%)','1:3 (25%)','1:4 (20%)'],correctAnswers:[0],explanation:'Higher concentration (1:1) achieves rapid polymerization for high-flow lesions.',difficulty:'hard',examFrequency:'medium'},
+  {id:'A026',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Radiation Safety',question:'Threshold skin dose for erythema?',options:['0.5 Gy','2 Gy','5 Gy','10 Gy'],correctAnswers:[1],explanation:'Transient erythema occurs at ~2 Gy.',difficulty:'medium',examFrequency:'high'},
+  {id:'A027',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Contrast Media',question:'CO2 angiography is contraindicated where?',options:['Abdominal aorta','Lower extremity arteries','Cerebral circulation','Hepatic arteries'],correctAnswers:[2],explanation:'Absolutely contraindicated above diaphragm - risk of cerebral air embolism.',difficulty:'easy',examFrequency:'high'},
+  {id:'A028',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Anticoagulation',question:'Minimum time to hold clopidogrel before high-risk procedure?',options:['24 hours','3 days','5 days','7 days'],correctAnswers:[2],explanation:'Hold clopidogrel 5 days for platelet function recovery.',difficulty:'easy',examFrequency:'high'},
+  {id:'A029',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Anticoagulation',question:'Bridging with LMWH recommended for:',options:['AF with CHA2DS2-VASc 2','Mechanical mitral valve','DVT >6 months ago','Bioprosthetic aortic valve'],correctAnswers:[1],explanation:'Mechanical valves (especially mitral) have highest thromboembolic risk.',difficulty:'medium',examFrequency:'medium'},
+  {id:'A030',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Embolization',question:'Gelfoam provides temporary occlusion for:',options:['24-48 hours','1-2 weeks','2-6 weeks','3-6 months'],correctAnswers:[2],explanation:'Gelfoam resorbs, recanalization occurs in 2-6 weeks.',difficulty:'easy',examFrequency:'medium'},
+  {id:'A031',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Stents',question:'Preferred stent for ostial renal artery stenosis?',options:['Self-expanding nitinol','Balloon-expandable','Covered stent-graft','Drug-eluting'],correctAnswers:[1],explanation:'Balloon-expandable for precise placement and higher radial force.',difficulty:'medium',examFrequency:'high'},
+  {id:'A032',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Radiation Safety',question:'Dose area product (DAP) is measured in:',options:['mGy','mSv','Gy·cm²','rad'],correctAnswers:[2],explanation:'DAP measured in Gy·cm², represents total radiation output.',difficulty:'easy',examFrequency:'medium'},
+  {id:'A033',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Vascular Access',question:'Micropuncture systems use which initial needle gauge?',options:['18G','19G','21G','25G'],correctAnswers:[2],explanation:'21G needles standard for micropuncture access.',difficulty:'easy',examFrequency:'medium'},
+  {id:'A034',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Contrast Media',question:'Osmolality of iso-osmolar contrast media?',options:['290 mOsm/kg','500 mOsm/kg','800 mOsm/kg','1500 mOsm/kg'],correctAnswers:[0],explanation:'IOCM (e.g., iodixanol) ~290 mOsm/kg, similar to blood.',difficulty:'medium',examFrequency:'medium'},
+  {id:'A035',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Sedation',question:'Ramsay sedation scale score 3 indicates:',options:['Anxious/agitated','Cooperative/tranquil','Responds to commands only','Responds to glabellar tap'],correctAnswers:[2],explanation:'Ramsay 3 = sedated but responds to commands.',difficulty:'medium',examFrequency:'low'},
+  // SECTION B (35 questions)
+  {id:'B001',section:'B',sectionTitle:'Vascular Intervention',subsection:'PAD',question:'TASC D lesion in femoropopliteal segment?',options:['Single stenosis ≤10 cm','CTO >20 cm involving popliteal','Multiple stenoses 10-15 cm','Single occlusion ≤5 cm'],correctAnswers:[1],explanation:'TASC D = CTOs >20 cm with popliteal involvement.',difficulty:'hard',examFrequency:'high'},
+  {id:'B002',section:'B',sectionTitle:'Vascular Intervention',subsection:'PAD',question:'First-line treatment for focal iliac stenosis?',options:['DCB angioplasty','Plain balloon alone','Primary stenting','Atherectomy + balloon'],correctAnswers:[2],explanation:'Primary stenting standard for iliac lesions (>80% 5-year patency).',difficulty:'easy',examFrequency:'high'},
+  {id:'B003',section:'B',sectionTitle:'Vascular Intervention',subsection:'PAD',question:'TRUE regarding DCB in femoropopliteal segment?',options:['Avoid in calcified lesions','Superior patency vs plain balloon','Requires 12-month DAPT','Contraindicated in ISR'],correctAnswers:[1],explanation:'DCBs show superior patency and useful for in-stent restenosis.',difficulty:'medium',examFrequency:'high'},
+  {id:'B004',section:'B',sectionTitle:'Vascular Intervention',subsection:'ALI',question:'8-hour ALI with motor deficit, intact sensation. Rutherford class?',options:['I - Viable','IIa - Marginally threatened','IIb - Immediately threatened','III - Irreversible'],correctAnswers:[2],explanation:'IIb = motor deficit, requires emergent revascularization.',difficulty:'medium',examFrequency:'high'},
+  {id:'B005',section:'B',sectionTitle:'Vascular Intervention',subsection:'ALI',question:'Maximum duration for catheter-directed thrombolysis in ALI?',options:['12 hours','24 hours','48 hours','72 hours'],correctAnswers:[2],explanation:'Limit to 48 hours to minimize bleeding complications.',difficulty:'medium',examFrequency:'medium'},
+  {id:'B006',section:'B',sectionTitle:'Vascular Intervention',subsection:'Carotid',question:'Symptomatic carotid stenosis threshold for intervention?',options:['>50%','>60%','>70%','>80%'],correctAnswers:[0],explanation:'Intervention for symptomatic stenosis >50% (NASCET).',difficulty:'easy',examFrequency:'high'},
+  {id:'B007',section:'B',sectionTitle:'Vascular Intervention',subsection:'Carotid',question:'Where to place embolic protection device during CAS?',options:['ICA distal to lesion','CCA proximal to lesion','ECA','Optional'],correctAnswers:[0],explanation:'Distal protection in ICA beyond the stenosis.',difficulty:'easy',examFrequency:'high'},
+  {id:'B008',section:'B',sectionTitle:'Vascular Intervention',subsection:'EVAR',question:'What is Type II endoleak?',options:['Leak at attachment site','Retrograde flow from branch vessels','Leak through graft fabric','Leak at modular junctions'],correctAnswers:[1],explanation:'Type II = retrograde flow from lumbar arteries or IMA.',difficulty:'easy',examFrequency:'high'},
+  {id:'B009',section:'B',sectionTitle:'Vascular Intervention',subsection:'EVAR',question:'Absolute contraindication to standard EVAR?',options:['Neck angle >60°','CIA diameter 20mm','Neck length 10mm','Previous open AAA repair'],correctAnswers:[2],explanation:'Neck <15mm inadequate for standard EVAR.',difficulty:'medium',examFrequency:'high'},
+  {id:'B010',section:'B',sectionTitle:'Vascular Intervention',subsection:'Venous',question:'Best predictor of successful DVT thrombolysis?',options:['Age >65','Symptoms <14 days','Prior DVT history','May-Thurner anatomy'],correctAnswers:[1],explanation:'Early treatment (<14 days) = best thrombolysis outcomes.',difficulty:'medium',examFrequency:'high'},
+  {id:'B011',section:'B',sectionTitle:'Vascular Intervention',subsection:'Venous',question:'What is May-Thurner syndrome?',options:['Left CIV compression by right CIA','Right CIV compression by left CIA','IVC compression by liver','Femoral vein compression'],correctAnswers:[0],explanation:'Left CIV compressed by right CIA against spine.',difficulty:'easy',examFrequency:'high'},
+  {id:'B012',section:'B',sectionTitle:'Vascular Intervention',subsection:'TIPS',question:'Target portosystemic gradient after TIPS?',options:['<5 mmHg','<8 mmHg','<12 mmHg','<15 mmHg'],correctAnswers:[2],explanation:'Target <12 mmHg to reduce variceal rebleeding.',difficulty:'medium',examFrequency:'high'},
+  {id:'B013',section:'B',sectionTitle:'Vascular Intervention',subsection:'TIPS',question:'Contraindication to TIPS?',options:['Child-Pugh B','Prior variceal banding','Severe right heart failure','Ascites'],correctAnswers:[2],explanation:'Right heart failure contraindicated - TIPS increases venous return.',difficulty:'medium',examFrequency:'high'},
+  {id:'B014',section:'B',sectionTitle:'Vascular Intervention',subsection:'Dialysis',question:'Minimum vein diameter for AVF creation?',options:['1.5 mm','2.0 mm','2.5 mm','3.0 mm'],correctAnswers:[2],explanation:'≥2.5 mm recommended for successful AVF creation.',difficulty:'medium',examFrequency:'medium'},
+  {id:'B015',section:'B',sectionTitle:'Vascular Intervention',subsection:'Dialysis',question:'Mature AVF with decreased flow and elevated venous pressures. Cause?',options:['Arterial inflow stenosis','Venous outflow stenosis','Central venous stenosis','Steal syndrome'],correctAnswers:[1],explanation:'Venous outflow stenosis = most common cause of AVF dysfunction.',difficulty:'medium',examFrequency:'high'},
+  {id:'B016',section:'B',sectionTitle:'Vascular Intervention',subsection:'GI Bleeding',question:'Preferred embolic for lower GI bleeding?',options:['Coils only','Gelfoam only','Microcoils ± Gelfoam','PVA particles'],correctAnswers:[2],explanation:'Microcoils allow precise occlusion while preserving collaterals.',difficulty:'medium',examFrequency:'high'},
+  {id:'B017',section:'B',sectionTitle:'Vascular Intervention',subsection:'Pseudoaneurysm',question:'Absolute contraindication to thrombin injection for femoral PSA?',options:['PSA >2 cm','Therapeutic anticoagulation','AVF communication','Neck <10 mm'],correctAnswers:[2],explanation:'AVF = absolute contraindication due to systemic embolization risk.',difficulty:'medium',examFrequency:'high'},
+  {id:'B018',section:'B',sectionTitle:'Vascular Intervention',subsection:'EVAR',question:'Minimum proximal landing zone for standard EVAR?',options:['5 mm','10 mm','15 mm','25 mm'],correctAnswers:[2],explanation:'≥15 mm infrarenal neck required for adequate seal.',difficulty:'easy',examFrequency:'high'},
+  {id:'B019',section:'B',sectionTitle:'Vascular Intervention',subsection:'Aortic Dissection',question:'Which indicates complicated Type B dissection requiring intervention?',options:['Entry tear >10mm','False lumen >22mm','Malperfusion syndrome','IMH >5mm'],correctAnswers:[2],explanation:'Malperfusion, rupture, refractory pain = complicated requiring intervention.',difficulty:'medium',examFrequency:'high'},
+  {id:'B020',section:'B',sectionTitle:'Vascular Intervention',subsection:'Renal Artery',question:'Most common cause of renal artery stenosis?',options:['FMD','Atherosclerosis','Takayasu arteritis','Neurofibromatosis'],correctAnswers:[1],explanation:'Atherosclerosis accounts for ~90% of RAS cases.',difficulty:'easy',examFrequency:'high'},
+  {id:'B021',section:'B',sectionTitle:'Vascular Intervention',subsection:'Mesenteric',question:'Golden window for revascularization in acute mesenteric ischemia?',options:['2 hours','6 hours','12 hours','24 hours'],correctAnswers:[2],explanation:'~6-12 hours before irreversible bowel necrosis.',difficulty:'medium',examFrequency:'high'},
+  {id:'B022',section:'B',sectionTitle:'Vascular Intervention',subsection:'Trauma',question:'Most common site of blunt thoracic aortic injury?',options:['Ascending aorta','Aortic arch','Aortic isthmus','Descending thoracic aorta'],correctAnswers:[2],explanation:'Isthmus (distal to left subclavian) >90% - deceleration injury.',difficulty:'easy',examFrequency:'high'},
+  {id:'B023',section:'B',sectionTitle:'Vascular Intervention',subsection:'Venous',question:'Anticoagulation duration after unprovoked proximal DVT?',options:['3 months','6 months','≥3 months, consider indefinite','12 months then stop'],correctAnswers:[2],explanation:'Unprovoked = at least 3 months, often indefinite.',difficulty:'medium',examFrequency:'medium'},
+  {id:'B024',section:'B',sectionTitle:'Vascular Intervention',subsection:'IVC Filters',question:'Most common indication for IVC filter?',options:['Prophylaxis in trauma','VTE with anticoagulation contraindication','Recurrent PE on anticoagulation','Free-floating thrombus'],correctAnswers:[1],explanation:'VTE with contraindication to anticoagulation = most common.',difficulty:'easy',examFrequency:'high'},
+  {id:'B025',section:'B',sectionTitle:'Vascular Intervention',subsection:'PAD',question:'ABI of 0.6 indicates:',options:['Normal','Mild PAD','Moderate PAD','Severe PAD'],correctAnswers:[2],explanation:'0.4-0.7 = moderate PAD.',difficulty:'easy',examFrequency:'high'},
+  {id:'B026',section:'B',sectionTitle:'Vascular Intervention',subsection:'PAD',question:'Most common site of atherosclerotic PAD?',options:['Common iliac','SFA','Popliteal','Tibial arteries'],correctAnswers:[1],explanation:'SFA (especially adductor canal) = most common site.',difficulty:'easy',examFrequency:'high'},
+  {id:'B027',section:'B',sectionTitle:'Vascular Intervention',subsection:'Carotid',question:'NASCET method compares narrowest diameter to:',options:['CCA','Carotid bulb','Distal ICA','ECA'],correctAnswers:[2],explanation:'NASCET measures relative to normal distal ICA.',difficulty:'medium',examFrequency:'high'},
+  {id:'B028',section:'B',sectionTitle:'Vascular Intervention',subsection:'EVAR',question:'Type Ia endoleak originates from:',options:['Proximal attachment site','Branch vessels','Graft fabric','Modular junctions'],correctAnswers:[0],explanation:'Ia = proximal; Ib = distal; II = branches; III = fabric/junctions.',difficulty:'easy',examFrequency:'high'},
+  {id:'B029',section:'B',sectionTitle:'Vascular Intervention',subsection:'TIPS',question:'Most common complication after TIPS?',options:['Bleeding','Infection','Hepatic encephalopathy','Stent thrombosis'],correctAnswers:[2],explanation:'HE occurs in 20-30% after TIPS.',difficulty:'easy',examFrequency:'high'},
+  {id:'B030',section:'B',sectionTitle:'Vascular Intervention',subsection:'Venous',question:'CEAP classification is used for:',options:['Arterial disease','Chronic venous disease','Lymphedema','DVT risk'],correctAnswers:[1],explanation:'CEAP = standard for chronic venous disease.',difficulty:'easy',examFrequency:'medium'},
+  {id:'B031',section:'B',sectionTitle:'Vascular Intervention',subsection:'GI Bleeding',question:'Most common cause of upper GI bleeding requiring embolization?',options:['Esophageal varices','Gastric ulcer','Duodenal ulcer','Mallory-Weiss tear'],correctAnswers:[2],explanation:'Duodenal ulcers (GDA) most common requiring embolization.',difficulty:'medium',examFrequency:'medium'},
+  {id:'B032',section:'B',sectionTitle:'Vascular Intervention',subsection:'Trauma',question:'IR role in pelvic trauma with hemodynamic instability?',options:['After surgery fails','Concurrent with ortho fixation','Venous bleeding only','Reserved for stable patients'],correctAnswers:[1],explanation:'Angioembolization concurrent with external fixation as primary hemostasis.',difficulty:'medium',examFrequency:'high'},
+  {id:'B033',section:'B',sectionTitle:'Vascular Intervention',subsection:'Dialysis',question:'Rule of 6s for AVF maturation includes all EXCEPT:',options:['Flow >600 mL/min','Diameter >6 mm','Depth <6 mm','Time >6 weeks'],correctAnswers:[0],explanation:'Rule of 6s: >6mm diameter, <6mm depth, >6 weeks.',difficulty:'medium',examFrequency:'medium'},
+  {id:'B034',section:'B',sectionTitle:'Vascular Intervention',subsection:'Renal Artery',question:'FMD most commonly affects which portion of renal artery?',options:['Ostium','Proximal third','Middle to distal third','Branch arteries'],correctAnswers:[2],explanation:'FMD = middle to distal, "string of beads" appearance.',difficulty:'easy',examFrequency:'high'},
+  {id:'B035',section:'B',sectionTitle:'Vascular Intervention',subsection:'Aortic Dissection',question:'Stanford Type A involves:',options:['Descending aorta only','Ascending aorta','Aortic arch only','Abdominal aorta'],correctAnswers:[1],explanation:'Type A = ascending aorta (surgical emergency).',difficulty:'easy',examFrequency:'high'},
+  // SECTION C (25 questions)
+  {id:'C001',section:'C',sectionTitle:'Non-vascular Interventions',subsection:'Biopsy',question:'Minimum safe platelet count for liver biopsy?',options:['25,000/μL','50,000/μL','75,000/μL','100,000/μL'],correctAnswers:[1],explanation:'≥50,000/μL generally considered safe.',difficulty:'easy',examFrequency:'high'},
+  {id:'C002',section:'C',sectionTitle:'Non-vascular Interventions',subsection:'Drainage',question:'Best catheter for complex multiloculated abscess?',options:['8 Fr pigtail','10 Fr pigtail','12 Fr locking loop','14-16 Fr with multiple sideholes'],correctAnswers:[3],explanation:'Complex abscesses need larger bore with multiple sideholes.',difficulty:'medium',examFrequency:'medium'},
+  {id:'C003',section:'C',sectionTitle:'Non-vascular Interventions',subsection:'Colonic Stenting',question:'Primary indication for colonic stenting in malignant LBO?',options:['Palliation only','Bridge to surgery only','Benign strictures','Both palliation and bridge to surgery'],correctAnswers:[3],explanation:'Serves both palliation and bridge to surgery.',difficulty:'easy',examFrequency:'high'},
+  {id:'C004',section:'C',sectionTitle:'Non-vascular Interventions',subsection:'Colonic Stenting',question:'Relative contraindication to colonic stenting?',options:['Sigmoid','Descending colon','Rectum <2 cm from anal verge','Splenic flexure'],correctAnswers:[2],explanation:'Very low rectal lesions cause pain and incontinence.',difficulty:'medium',examFrequency:'high'},
+  {id:'C005',section:'C',sectionTitle:'Non-vascular Interventions',subsection:'Biliary',question:'Drainage strategy for Bismuth III hilar obstruction?',options:['Single right drain','Single left drain','Bilateral to achieve >50% liver volume','External only'],correctAnswers:[2],explanation:'Bilateral drainage >50% FLR improves outcomes.',difficulty:'hard',examFrequency:'high'},
+  {id:'C006',section:'C',sectionTitle:'Non-vascular Interventions',subsection:'Biliary',question:'Antibiotic prophylaxis for biliary drainage?',options:['None needed','Single-dose cephalosporin','Piperacillin-tazobactam','Ampicillin only'],correctAnswers:[2],explanation:'Broad-spectrum covering gram-negatives and anaerobes.',difficulty:'medium',examFrequency:'medium'},
+  {id:'C007',section:'C',sectionTitle:'Non-vascular Interventions',subsection:'Gastrostomy',question:'Minimum time before gastrostomy tube exchange?',options:['1 week','2 weeks','4 weeks','6 weeks'],correctAnswers:[2],explanation:'Mature tract forms in 2-4 weeks.',difficulty:'easy',examFrequency:'medium'},
+  {id:'C008',section:'C',sectionTitle:'Non-vascular Interventions',subsection:'Lung Biopsy',question:'Most common complication of CT-guided lung biopsy?',options:['Hemoptysis','Pneumothorax','Air embolism','Tumor seeding'],correctAnswers:[1],explanation:'Pneumothorax 15-25%, chest tube needed in 5-15%.',difficulty:'easy',examFrequency:'high'},
+  {id:'C009',section:'C',sectionTitle:'Non-vascular Interventions',subsection:'Lung Biopsy',question:'Technique to reduce pneumothorax risk?',options:['Larger needle','Multiple rapid passes','Biopsy side down post-procedure','Immediate mobilization'],correctAnswers:[2],explanation:'Side down allows gravity to seal pleural puncture.',difficulty:'medium',examFrequency:'medium'},
+  {id:'C010',section:'C',sectionTitle:'Non-vascular Interventions',subsection:'Biliary',question:'Preferred approach for biliary drainage?',options:['Left-sided','Right-sided','Either side','Always bilateral'],correctAnswers:[1],explanation:'Right preferred - larger system, better drainage volume.',difficulty:'medium',examFrequency:'medium'},
+  {id:'C011',section:'C',sectionTitle:'Non-vascular Interventions',subsection:'Chest',question:'Recommended tube size for empyema?',options:['8-10 Fr','10-14 Fr','14-20 Fr','24-32 Fr'],correctAnswers:[2],explanation:'14-20 Fr for viscous fluid and debris.',difficulty:'medium',examFrequency:'medium'},
+  {id:'C012',section:'C',sectionTitle:'Non-vascular Interventions',subsection:'Abscess',question:'When to remove abscess drainage catheter?',options:['After 24 hours','After 48-72 hours','When output <10-20 mL/day + clinical improvement','After antibiotic course'],correctAnswers:[2],explanation:'Remove when minimal output and symptoms resolved.',difficulty:'easy',examFrequency:'medium'},
+  {id:'C013',section:'C',sectionTitle:'Non-vascular Interventions',subsection:'Esophageal',question:'Recommended stent length for esophageal malignancy?',options:['Exactly covering stricture','1 cm beyond proximally/distally','2-4 cm beyond proximally/distally','Entire esophagus'],correctAnswers:[2],explanation:'Extend 2-4 cm beyond tumor margins.',difficulty:'medium',examFrequency:'medium'},
+  {id:'C014',section:'C',sectionTitle:'Non-vascular Interventions',subsection:'Nephrostomy',question:'Optimal calyx for nephrostomy access?',options:['Upper pole','Middle','Lower pole posterior','Any calyx'],correctAnswers:[2],explanation:'Lower pole posterior = avascular approach, good drainage.',difficulty:'easy',examFrequency:'high'},
+  {id:'C015',section:'C',sectionTitle:'Non-vascular Interventions',subsection:'Biliary',question:'Purpose of cooling off period before biliary internalization?',options:['Reduce bilirubin only','Decompress system, reduce cholangitis risk','Assess bile leak','Tract maturation'],correctAnswers:[1],explanation:'Decompression reduces cholangitis/sepsis during manipulation.',difficulty:'medium',examFrequency:'medium'},
+  {id:'C016',section:'C',sectionTitle:'Non-vascular Interventions',subsection:'Biopsy',question:'Advantage of coaxial biopsy technique?',options:['Faster single-pass','Multiple samples through single pleural puncture','Better histology','Lower cost'],correctAnswers:[1],explanation:'Coaxial allows multiple samples through one outer needle.',difficulty:'easy',examFrequency:'medium'},
+  {id:'C017',section:'C',sectionTitle:'Non-vascular Interventions',subsection:'Drainage',question:'Seldinger technique involves:',options:['Direct trocar insertion','Guidewire exchange over needle','Surgical cut-down','Tandem needles'],correctAnswers:[1],explanation:'Needle access, guidewire, catheter exchange.',difficulty:'easy',examFrequency:'high'},
+  {id:'C018',section:'C',sectionTitle:'Non-vascular Interventions',subsection:'Gastrostomy',question:'Contraindication to percutaneous gastrostomy?',options:['Ascites','Prior abdominal surgery','Interposed colon','Esophageal stricture'],correctAnswers:[2],explanation:'Interposed colon = risk of colonic injury.',difficulty:'medium',examFrequency:'high'},
+  {id:'C019',section:'C',sectionTitle:'Non-vascular Interventions',subsection:'Biliary',question:'Bismuth-Corlette classification is for:',options:['Gallbladder carcinoma','Hilar cholangiocarcinoma','Distal bile duct cancer','Pancreatic head cancer'],correctAnswers:[1],explanation:'Classifies hilar cholangiocarcinoma by biliary involvement.',difficulty:'easy',examFrequency:'high'},
+  {id:'C020',section:'C',sectionTitle:'Non-vascular Interventions',subsection:'Chest',question:'Triangle of safety for chest tube bounded by:',options:['Pec major, lat dorsi, nipple line','Lat border pec major, ant border lat dorsi, 5th ICS','Ant axillary, post axillary, 2nd rib','Clavicle, sternum, nipple'],correctAnswers:[1],explanation:'Pec major, lat dorsi, and 5th intercostal space.',difficulty:'medium',examFrequency:'medium'},
+  {id:'C021',section:'C',sectionTitle:'Non-vascular Interventions',subsection:'Biopsy',question:'Preferred biopsy type for suspected lymphoma?',options:['FNA','Core needle biopsy','Excisional biopsy','FNA equivalent to core'],correctAnswers:[1],explanation:'Core biopsy needed for architecture/subtyping.',difficulty:'medium',examFrequency:'high'},
+  {id:'C022',section:'C',sectionTitle:'Non-vascular Interventions',subsection:'Lung Biopsy',question:'Factor most increasing pneumothorax risk?',options:['Lesion >3 cm','COPD/emphysema','Supine positioning','18G needle'],correctAnswers:[1],explanation:'COPD significantly increases pneumothorax risk.',difficulty:'medium',examFrequency:'high'},
+  {id:'C023',section:'C',sectionTitle:'Non-vascular Interventions',subsection:'Drainage',question:'Loculated pleural effusion best managed by:',options:['Large bore chest tube','Repeated thoracentesis','Small catheter + fibrinolytics','Observation'],correctAnswers:[2],explanation:'Fibrinolytics (tPA/DNase) break down septations.',difficulty:'medium',examFrequency:'medium'},
+  {id:'C024',section:'C',sectionTitle:'Non-vascular Interventions',subsection:'Gastrostomy',question:'RIG vs PEG: RIG preferred for:',options:['Faster procedure','Lower infection rate','Avoiding oral transit in H&N cancer','Better tract formation'],correctAnswers:[2],explanation:'RIG avoids oral transit, preferred in H&N cancer.',difficulty:'medium',examFrequency:'medium'},
+  {id:'C025',section:'C',sectionTitle:'Non-vascular Interventions',subsection:'Nephrostomy',question:'Most common complication of nephrostomy?',options:['Bleeding requiring transfusion','Sepsis','Catheter dislodgement','Bowel injury'],correctAnswers:[2],explanation:'Catheter dislodgement most common.',difficulty:'easy',examFrequency:'medium'},
+  // SECTION D (20 questions)
+  {id:'D001',section:'D',sectionTitle:'Genito-urinary Intervention',subsection:'Nephrostomy',question:'Most common indication for nephrostomy?',options:['Stone disease','Malignant ureteric obstruction','Benign stricture','Pyonephrosis'],correctAnswers:[1],explanation:'Malignant ureteric obstruction most common.',difficulty:'easy',examFrequency:'medium'},
+  {id:'D002',section:'D',sectionTitle:'Genito-urinary Intervention',subsection:'Transplant',question:'Transplant RAS typically occurs at:',options:['Donor artery origin','Anastomotic site','Mid-graft artery','Intraparenchymal'],correctAnswers:[1],explanation:'Anastomosis = most common site.',difficulty:'easy',examFrequency:'high'},
+  {id:'D003',section:'D',sectionTitle:'Genito-urinary Intervention',subsection:'UAE',question:'Best embolic agent for UFE?',options:['Coils','Gelfoam','PVA/microspheres 500-700 μm','NBCA'],correctAnswers:[2],explanation:'PVA/microspheres 500-700 μm are standard.',difficulty:'easy',examFrequency:'high'},
+  {id:'D004',section:'D',sectionTitle:'Genito-urinary Intervention',subsection:'UAE',question:'Post-embolization syndrome after UFE includes all EXCEPT:',options:['Pelvic pain','Low-grade fever','Nausea','Heavy vaginal bleeding'],correctAnswers:[3],explanation:'Heavy bleeding NOT typical - may indicate complications.',difficulty:'medium',examFrequency:'high'},
+  {id:'D005',section:'D',sectionTitle:'Genito-urinary Intervention',subsection:'Varicocele',question:'Preferred embolic for varicocele?',options:['Coils alone','Sclerosant alone','Coils + sclerosant','Particles'],correctAnswers:[2],explanation:'Combination provides best results.',difficulty:'medium',examFrequency:'medium'},
+  {id:'D006',section:'D',sectionTitle:'Genito-urinary Intervention',subsection:'Fallopian Tube',question:'FTR most successful in which occlusion?',options:['Fimbrial','Proximal (cornual)','Mid-tubal','Post-ligation'],correctAnswers:[1],explanation:'Proximal >80% success - often mucus/debris/spasm.',difficulty:'medium',examFrequency:'medium'},
+  {id:'D007',section:'D',sectionTitle:'Genito-urinary Intervention',subsection:'Transplant',question:'Post-transplant lymphocele management?',options:['Observation','Aspiration alone','Drainage + sclerotherapy','Immediate surgery'],correctAnswers:[2],explanation:'Symptomatic lymphoceles need drainage + sclerotherapy.',difficulty:'medium',examFrequency:'medium'},
+  {id:'D008',section:'D',sectionTitle:'Genito-urinary Intervention',subsection:'Follow-up',question:'Monitoring after transplant renal artery intervention?',options:['Urea, Doppler, BP','Creatinine, Doppler, BP','Creatinine, CTA, urinalysis','Creatinine, Doppler, biopsy'],correctAnswers:[1],explanation:'Creatinine, Doppler US, and BP measurement.',difficulty:'easy',examFrequency:'medium'},
+  {id:'D009',section:'D',sectionTitle:'Genito-urinary Intervention',subsection:'Pelvic Congestion',question:'Diagnostic ovarian vein diameter criterion for PCS?',options:['>4 mm','>6 mm','>8 mm','>10 mm'],correctAnswers:[2],explanation:'>8 mm is diagnostic criterion.',difficulty:'medium',examFrequency:'medium'},
+  {id:'D010',section:'D',sectionTitle:'Genito-urinary Intervention',subsection:'Nephrostomy',question:'Urgent nephrostomy most indicated for:',options:['Asymptomatic hydronephrosis','Mild renal impairment with stone','Pyonephrosis','Chronic stricture'],correctAnswers:[2],explanation:'Pyonephrosis = urological emergency.',difficulty:'easy',examFrequency:'high'},
+  {id:'D011',section:'D',sectionTitle:'Genito-urinary Intervention',subsection:'Renal Cyst',question:'Which Bosniak requires surgical excision?',options:['I','II','IIF','IV'],correctAnswers:[3],explanation:'Bosniak IV >90% malignancy rate.',difficulty:'easy',examFrequency:'high'},
+  {id:'D012',section:'D',sectionTitle:'Genito-urinary Intervention',subsection:'PAE',question:'Typical particle size for PAE?',options:['100-200 μm','200-400 μm','300-500 μm','500-700 μm'],correctAnswers:[2],explanation:'300-500 μm most commonly used.',difficulty:'medium',examFrequency:'medium'},
+  {id:'D013',section:'D',sectionTitle:'Genito-urinary Intervention',subsection:'UAE',question:'Contraindication to UFE?',options:['Multiple fibroids','Submucosal fibroid','Pedunculated subserosal with narrow stalk','Fibroid >10 cm'],correctAnswers:[2],explanation:'Narrow stalk pedunculated = detachment risk.',difficulty:'medium',examFrequency:'high'},
+  {id:'D014',section:'D',sectionTitle:'Genito-urinary Intervention',subsection:'Varicocele',question:'Grade I varicocele is:',options:['Subclinical','Palpable only with Valsalva','Palpable at rest','Visible'],correctAnswers:[1],explanation:'Grade I = palpable with Valsalva only.',difficulty:'easy',examFrequency:'medium'},
+  {id:'D015',section:'D',sectionTitle:'Genito-urinary Intervention',subsection:'Ureteric Stent',question:'Typical ureteric stent dwell time before exchange?',options:['1 month','3-6 months','12 months','2 years'],correctAnswers:[1],explanation:'Exchange every 3-6 months to prevent encrustation.',difficulty:'easy',examFrequency:'medium'},
+  {id:'D016',section:'D',sectionTitle:'Genito-urinary Intervention',subsection:'UAE',question:'Endpoint of UFE?',options:['Complete stasis in uterine arteries','Near-stasis with pruning of fibroid vessels','Filling utero-ovarian anastomoses','Reflux into aorta'],correctAnswers:[1],explanation:'Near-stasis with pruning, avoid complete occlusion.',difficulty:'medium',examFrequency:'high'},
+  {id:'D017',section:'D',sectionTitle:'Genito-urinary Intervention',subsection:'Transplant',question:'Doppler criteria for transplant RAS include all EXCEPT:',options:['PSV >200-250 cm/s','Tardus-parvus waveform','RI >0.8','PSV ratio >2:1'],correctAnswers:[2],explanation:'RI <0.5 (not >0.8) suggests stenosis. High RI = parenchymal disease.',difficulty:'hard',examFrequency:'medium'},
+  {id:'D018',section:'D',sectionTitle:'Genito-urinary Intervention',subsection:'PAE',question:'Prostate artery most commonly arises from:',options:['Superior vesical','Inferior vesical','Internal pudendal','Obturator'],correctAnswers:[1],explanation:'Inferior vesical artery most common origin.',difficulty:'medium',examFrequency:'medium'},
+  {id:'D019',section:'D',sectionTitle:'Genito-urinary Intervention',subsection:'Nephrostomy',question:'Brodels line refers to:',options:['PUJ','Avascular plane for nephrostomy','Kidney-adrenal border','Renal hilum level'],correctAnswers:[1],explanation:'Avascular plane ideal for nephrostomy access.',difficulty:'medium',examFrequency:'medium'},
+  {id:'D020',section:'D',sectionTitle:'Genito-urinary Intervention',subsection:'Renal',question:'Sclerosant for simple renal cysts?',options:['Absolute ethanol','Normal saline','Contrast','Antibiotics'],correctAnswers:[0],explanation:'Absolute ethanol most effective (>90% success).',difficulty:'easy',examFrequency:'medium'},
+  // SECTION E (20 questions)
+  {id:'E001',section:'E',sectionTitle:'MSK Intervention',subsection:'Biopsy',question:'Typical needle gauge for bone biopsy?',options:['18-20G','14-16G','11-13G','8-10G'],correctAnswers:[2],explanation:'11-13G standard for adequate core specimens.',difficulty:'easy',examFrequency:'medium'},
+  {id:'E002',section:'E',sectionTitle:'MSK Intervention',subsection:'Osteoid Osteoma',question:'RFA success rate for osteoid osteoma?',options:['60-70%','70-80%','80-90%','>90%'],correctAnswers:[3],explanation:'>90% primary success rate.',difficulty:'easy',examFrequency:'high'},
+  {id:'E003',section:'E',sectionTitle:'MSK Intervention',subsection:'Vertebroplasty',question:'Optimal timing for vertebroplasty in acute VCF?',options:['Within 48 hours','2-4 weeks','6-8 weeks','3 months'],correctAnswers:[1],explanation:'After 2-4 weeks conservative management fails.',difficulty:'medium',examFrequency:'high'},
+  {id:'E004',section:'E',sectionTitle:'MSK Intervention',subsection:'Vertebroplasty',question:'Most serious complication of vertebroplasty?',options:['Local hematoma','Adjacent level fracture','Pulmonary cement embolism','Infection'],correctAnswers:[2],explanation:'PCE most serious, though clinically significant is rare.',difficulty:'medium',examFrequency:'high'},
+  {id:'E005',section:'E',sectionTitle:'MSK Intervention',subsection:'Osteoplasty',question:'Primary goal of osteoplasty for metastatic lesions?',options:['Tumor eradication','Stabilization and pain relief','Fracture prevention only','Replace surgical fixation'],correctAnswers:[1],explanation:'Pain relief and structural stabilization.',difficulty:'easy',examFrequency:'medium'},
+  {id:'E006',section:'E',sectionTitle:'MSK Intervention',subsection:'Sacroplasty',question:'Best imaging for sacral insufficiency fractures?',options:['Plain radiography','CT','MRI','Bone scan'],correctAnswers:[2],explanation:'MRI most sensitive - shows bone marrow edema.',difficulty:'easy',examFrequency:'medium'},
+  {id:'E007',section:'E',sectionTitle:'MSK Intervention',subsection:'Cryoablation',question:'Main advantage of cryoablation over RFA for bone tumors?',options:['Shorter procedure','Better visualization of ablation zone','Higher efficacy','Lower cost'],correctAnswers:[1],explanation:'Ice ball visible on CT/MRI in real-time.',difficulty:'medium',examFrequency:'medium'},
+  {id:'E008',section:'E',sectionTitle:'MSK Intervention',subsection:'Joint Injection',question:'Preferred guidance for SI joint injection?',options:['Ultrasound','Fluoroscopy','CT','MRI'],correctAnswers:[1],explanation:'Fluoroscopy standard for SI joint.',difficulty:'easy',examFrequency:'medium'},
+  {id:'E009',section:'E',sectionTitle:'MSK Intervention',subsection:'Ablation',question:'Target temperature at RFA ablation zone margin?',options:['40-45°C','50-55°C','60-70°C','90-100°C'],correctAnswers:[2],explanation:'60-70°C at margin ensures cell death.',difficulty:'medium',examFrequency:'medium'},
+  {id:'E010',section:'E',sectionTitle:'MSK Intervention',subsection:'Vertebroplasty',question:'Contraindication to vertebroplasty?',options:['Acute VCF <4 weeks','Posterior wall disruption with canal compromise','Multiple contiguous fractures','Thoracolumbar junction fracture'],correctAnswers:[1],explanation:'Posterior wall disruption risks spinal canal cement.',difficulty:'medium',examFrequency:'high'},
+  {id:'E011',section:'E',sectionTitle:'MSK Intervention',subsection:'Discography',question:'Positive provocative discography defined by:',options:['Any pain','Concordant pain at low pressure','Disc degeneration on imaging','Annular tear visualization'],correctAnswers:[1],explanation:'Concordant pain reproduction at low pressure.',difficulty:'medium',examFrequency:'medium'},
+  {id:'E012',section:'E',sectionTitle:'MSK Intervention',subsection:'Biopsy',question:'Biopsy approach for suspected primary bone tumor:',options:['Shortest path','Cross compartments if needed','Single compartment, planned surgical tract','Always anterior'],correctAnswers:[2],explanation:'Must be planned for excision with resection.',difficulty:'hard',examFrequency:'high'},
+  {id:'E013',section:'E',sectionTitle:'MSK Intervention',subsection:'Kyphoplasty',question:'Main advantage of kyphoplasty over vertebroplasty?',options:['Lower cost','Faster procedure','Potential height restoration','Lower cement leakage'],correctAnswers:[2],explanation:'Balloon tamp potentially restores height.',difficulty:'easy',examFrequency:'high'},
+  {id:'E014',section:'E',sectionTitle:'MSK Intervention',subsection:'Vertebroplasty',question:'PMMA cement injectable at which consistency?',options:['Liquid phase','Toothpaste','Doughy phase','Solid phase'],correctAnswers:[1],explanation:'Toothpaste consistency allows controlled injection.',difficulty:'easy',examFrequency:'medium'},
+  {id:'E015',section:'E',sectionTitle:'MSK Intervention',subsection:'Nerve Block',question:'Celiac plexus neurolysis indicated for:',options:['Pelvic malignancy','Upper abdominal/pancreatic malignancy','Lower limb pain','Chest wall pain'],correctAnswers:[1],explanation:'Effective for upper abdominal visceral pain.',difficulty:'easy',examFrequency:'medium'},
+  {id:'E016',section:'E',sectionTitle:'MSK Intervention',subsection:'Osteoid Osteoma',question:'Classic presentation of osteoid osteoma?',options:['Constant severe pain','Night pain relieved by NSAIDs','Weight-bearing pain only','Painless swelling'],correctAnswers:[1],explanation:'Night pain dramatically relieved by NSAIDs.',difficulty:'easy',examFrequency:'high'},
+  {id:'E017',section:'E',sectionTitle:'MSK Intervention',subsection:'Ablation',question:'Preferred ablation for bone metastases near spinal cord?',options:['RFA','Microwave','Cryoablation','HIFU'],correctAnswers:[2],explanation:'Cryoablation - visible ice ball, less neural damage from cold.',difficulty:'medium',examFrequency:'medium'},
+  {id:'E018',section:'E',sectionTitle:'MSK Intervention',subsection:'Joint Injection',question:'Which joint requires image guidance due to depth?',options:['Shoulder','Knee','Hip','Ankle'],correctAnswers:[2],explanation:'Hip deep, routinely requires image guidance.',difficulty:'easy',examFrequency:'low'},
+  {id:'E019',section:'E',sectionTitle:'MSK Intervention',subsection:'Vertebroplasty',question:'Unipedicular vs bipedicular approach:',options:['Bipedicular always required','Unipedicular adequate for most','Operator preference only','Bipedicular has lower complications'],correctAnswers:[1],explanation:'Unipedicular adequate for most fractures.',difficulty:'medium',examFrequency:'medium'},
+  {id:'E020',section:'E',sectionTitle:'MSK Intervention',subsection:'Biopsy',question:'Touch preparation during bone biopsy:',options:['Never useful','Confirms adequate cellular material immediately','Replaces histology','Unacceptably increases procedure time'],correctAnswers:[1],explanation:'Immediate assessment of sample adequacy.',difficulty:'medium',examFrequency:'low'},
+  // SECTION F (25 questions)
+  {id:'F001',section:'F',sectionTitle:'Interventional Oncology',subsection:'HCC',question:'BCLC stage best treated with ablation?',options:['Stage 0 and A (very early/early)','Stage B (intermediate)','Stage C (advanced)','Stage D (terminal)'],correctAnswers:[0],explanation:'Stage 0-A candidates for curative treatments including ablation.',difficulty:'medium',examFrequency:'high'},
+  {id:'F002',section:'F',sectionTitle:'Interventional Oncology',subsection:'TACE',question:'Main indication for cTACE?',options:['BCLC Stage 0','BCLC Stage A','BCLC Stage B','BCLC Stage D'],correctAnswers:[2],explanation:'Stage B (intermediate) main indication.',difficulty:'easy',examFrequency:'high'},
+  {id:'F003',section:'F',sectionTitle:'Interventional Oncology',subsection:'TACE',question:'Absolute contraindication to TACE?',options:['Bilirubin 35 μmol/L','Portal vein thrombosis','Decompensated cirrhosis (Child-Pugh C)','Tumor >10 cm'],correctAnswers:[2],explanation:'Child-Pugh C = high liver failure risk.',difficulty:'medium',examFrequency:'high'},
+  {id:'F004',section:'F',sectionTitle:'Interventional Oncology',subsection:'SIRT',question:'Mandatory pre-treatment scan before Y90?',options:['CT chest','Bone scan','Tc-99m MAA scan','PET-CT'],correctAnswers:[2],explanation:'MAA scan assesses lung shunt and extrahepatic perfusion.',difficulty:'easy',examFrequency:'high'},
+  {id:'F005',section:'F',sectionTitle:'Interventional Oncology',subsection:'SIRT',question:'Maximum acceptable lung shunt fraction for Y90?',options:['5%','10%','20%','30%'],correctAnswers:[2],explanation:'<20% to avoid radiation pneumonitis.',difficulty:'medium',examFrequency:'high'},
+  {id:'F006',section:'F',sectionTitle:'Interventional Oncology',subsection:'Ablation',question:'Target ablation zone diameter for 2.5 cm tumor?',options:['2.5 cm','3.5 cm','4.5 cm','5.5 cm'],correctAnswers:[2],explanation:'Need 1 cm margin = 4.5 cm zone.',difficulty:'medium',examFrequency:'high'},
+  {id:'F007',section:'F',sectionTitle:'Interventional Oncology',subsection:'Ablation',question:'What is the heat sink effect?',options:['Heating adjacent bowel','Increased ablation near veins','Reduced ablation near large vessels','Skin burns from grounding pads'],correctAnswers:[2],explanation:'Blood flow cools tissue, reducing ablation efficacy.',difficulty:'medium',examFrequency:'high'},
+  {id:'F008',section:'F',sectionTitle:'Interventional Oncology',subsection:'PVE',question:'Goal of PVE before hepatectomy?',options:['Tumor necrosis','Induce FLR hypertrophy','Reduce portal hypertension','Prevent tumor spread'],correctAnswers:[1],explanation:'Induce compensatory hypertrophy of FLR.',difficulty:'easy',examFrequency:'high'},
+  {id:'F009',section:'F',sectionTitle:'Interventional Oncology',subsection:'Metastases',question:'Maximum tumor size suitable for CRLM ablation?',options:['2 cm','3 cm','4 cm','5 cm'],correctAnswers:[1],explanation:'≤3 cm = best outcomes (>90% local control).',difficulty:'easy',examFrequency:'high'},
+  {id:'F010',section:'F',sectionTitle:'Interventional Oncology',subsection:'TACE',question:'Typical imaging follow-up after TACE?',options:['2 weeks','4-6 weeks','3 months','6 months'],correctAnswers:[1],explanation:'4-6 weeks using mRECIST criteria.',difficulty:'easy',examFrequency:'medium'},
+  {id:'F011',section:'F',sectionTitle:'Interventional Oncology',subsection:'DEB-TACE',question:'Main advantage of DEB-TACE over cTACE?',options:['Higher response rate','Lower systemic drug exposure','Applicable to larger tumors','Lower cost'],correctAnswers:[1],explanation:'Controlled release = lower peak plasma levels, reduced toxicity.',difficulty:'medium',examFrequency:'medium'},
+  {id:'F012',section:'F',sectionTitle:'Interventional Oncology',subsection:'Ablation',question:'Recommended minimum ablation margin for HCC?',options:['0.5 cm','1.0 cm','1.5 cm','2.0 cm'],correctAnswers:[1],explanation:'1 cm margin reduces local recurrence.',difficulty:'easy',examFrequency:'high'},
+  {id:'F013',section:'F',sectionTitle:'Interventional Oncology',subsection:'Renal',question:'Thermal ablation recommended for renal tumors:',options:['<2 cm only','≤3 cm in poor surgical candidates','≤4 cm in all patients','Any size'],correctAnswers:[1],explanation:'≤3 cm in poor surgical candidates.',difficulty:'medium',examFrequency:'high'},
+  {id:'F014',section:'F',sectionTitle:'Interventional Oncology',subsection:'Lung',question:'Most critical factor for local recurrence after lung ablation?',options:['Tumor histology','Patient age','Ablation margin','Number of tumors'],correctAnswers:[2],explanation:'Adequate margin (>5mm, ideally 10mm) most important.',difficulty:'medium',examFrequency:'high'},
+  {id:'F015',section:'F',sectionTitle:'Interventional Oncology',subsection:'Bone',question:'Ablation for painful bone metastases provides pain relief in:',options:['30-40%','50-60%','70-80%','90-95%'],correctAnswers:[2],explanation:'Significant relief in 70-80%.',difficulty:'medium',examFrequency:'medium'},
+  {id:'F016',section:'F',sectionTitle:'Interventional Oncology',subsection:'TACE',question:'mRECIST assesses response by:',options:['Total tumor size change','Viable (enhancing) tumor change','Tumor markers','PET metabolic activity'],correctAnswers:[1],explanation:'mRECIST measures viable (arterially enhancing) tumor.',difficulty:'medium',examFrequency:'high'},
+  {id:'F017',section:'F',sectionTitle:'Interventional Oncology',subsection:'Ablation',question:'Microwave vs RFA:',options:['MWA has smaller zones','MWA more affected by heat sink','MWA faster with larger zones','MWA requires grounding pads'],correctAnswers:[2],explanation:'MWA faster, higher temps, less heat sink effect.',difficulty:'medium',examFrequency:'high'},
+  {id:'F018',section:'F',sectionTitle:'Interventional Oncology',subsection:'SIRT',question:'Target tumor radiation dose for Y90?',options:['50-80 Gy','80-120 Gy','120-150 Gy','>200 Gy'],correctAnswers:[2],explanation:'Target 120-150 Gy for tumor response.',difficulty:'hard',examFrequency:'medium'},
+  {id:'F019',section:'F',sectionTitle:'Interventional Oncology',subsection:'PVE',question:'Minimum FLR before major hepatectomy in normal liver?',options:['15-20%','25-30%','35-40%','>50%'],correctAnswers:[1],explanation:'25-30% for normal liver; 40% for cirrhotic.',difficulty:'medium',examFrequency:'high'},
+  {id:'F020',section:'F',sectionTitle:'Interventional Oncology',subsection:'TACE',question:'Most common chemotherapy agent in cTACE?',options:['Cisplatin','Doxorubicin','5-FU','Oxaliplatin'],correctAnswers:[1],explanation:'Doxorubicin (often with lipiodol) most common.',difficulty:'easy',examFrequency:'high'},
+  {id:'F021',section:'F',sectionTitle:'Interventional Oncology',subsection:'Ablation',question:'Hydrodissection during ablation is used to:',options:['Improve US visibility','Protect adjacent organs from thermal injury','Reduce bleeding','Increase ablation zone'],correctAnswers:[1],explanation:'Creates protective barrier for vulnerable structures.',difficulty:'easy',examFrequency:'high'},
+  {id:'F022',section:'F',sectionTitle:'Interventional Oncology',subsection:'SIRT',question:'GDA coil embolization before Y90 is performed to:',options:['Increase tumor uptake','Prevent GI ulceration from non-target embolization','Reduce lung shunting','Improve catheter stability'],correctAnswers:[1],explanation:'Prevents reflux into GI tract, avoids ulceration.',difficulty:'medium',examFrequency:'high'},
+  {id:'F023',section:'F',sectionTitle:'Interventional Oncology',subsection:'HCC',question:'Milan criteria for liver transplant in HCC?',options:['Single ≤3 cm','Single ≤5 cm or 2-3 tumors all ≤3 cm','Up to 5 tumors ≤5 cm each','Total burden ≤10 cm'],correctAnswers:[1],explanation:'Single ≤5cm OR 2-3 tumors all ≤3cm, no vascular invasion.',difficulty:'medium',examFrequency:'high'},
+  {id:'F024',section:'F',sectionTitle:'Interventional Oncology',subsection:'Ablation',question:'Post-ablation syndrome is characterized by:',options:['Severe pain requiring opioids','Low-grade fever, fatigue, malaise','Jaundice and liver failure','Tumor lysis syndrome'],correctAnswers:[1],explanation:'Low-grade fever, malaise, self-limiting.',difficulty:'easy',examFrequency:'medium'},
+  {id:'F025',section:'F',sectionTitle:'Interventional Oncology',subsection:'IRE',question:'IRE differs from thermal ablation by:',options:['Requiring higher temperatures','Preserving connective tissue architecture','Creating larger zones','Being less expensive'],correctAnswers:[1],explanation:'IRE preserves collagen/elastin, useful near vital structures.',difficulty:'medium',examFrequency:'medium'}
 ]
 
-// Helper function to get questions by section
+// Helper functions
 export function getQuestionsBySection(section: 'A' | 'B' | 'C' | 'D' | 'E' | 'F'): MCQQuestion[] {
   return mcqQuestions.filter(q => q.section === section)
 }
 
-// Helper function to get random questions
 export function getRandomQuestions(count: number, section?: 'A' | 'B' | 'C' | 'D' | 'E' | 'F'): MCQQuestion[] {
   let questions = section ? getQuestionsBySection(section) : [...mcqQuestions]
-  
-  // Shuffle array
   for (let i = questions.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [questions[i], questions[j]] = [questions[j], questions[i]]
   }
-  
   return questions.slice(0, Math.min(count, questions.length))
 }
 
-// Get section statistics
 export function getSectionStats() {
   const stats: Record<string, number> = {}
   for (const section of ['A', 'B', 'C', 'D', 'E', 'F'] as const) {

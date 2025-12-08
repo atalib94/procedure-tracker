@@ -24,6 +24,11 @@ export interface QuestionProgress {
   // Review notes (for flagged questions)
   reviewNote: string | null
   reviewImage: string | null  // Base64 encoded image
+  // Error analysis
+  errorNote: string | null    // "Why I got this wrong" note
+  // Confidence tracking
+  lastConfidence: 'guessing' | 'unsure' | 'confident' | null
+  confidentButWrong: number   // Count of times confident but wrong
 }
 
 export interface StudySession {
@@ -41,6 +46,13 @@ export interface SpacedRepetitionData {
   totalQuestionsAnswered: number
   totalCorrect: number
   totalIncorrect: number
+  // Streak tracking
+  currentStreak: number       // Consecutive days practiced
+  longestStreak: number       // Best streak ever
+  lastPracticeDate: string | null  // For calculating streak
+  dailyGoal: number           // Questions per day goal
+  todayAnswered: number       // Questions answered today
+  todayDate: string | null    // To reset todayAnswered
 }
 
 const DEFAULT_PROGRESS: QuestionProgress = {
@@ -57,10 +69,16 @@ const DEFAULT_PROGRESS: QuestionProgress = {
   isMarkedForReview: false,
   isMastered: false,
   reviewNote: null,
-  reviewImage: null
+  reviewImage: null,
+  errorNote: null,
+  lastConfidence: null,
+  confidentButWrong: 0
 }
 
 const STORAGE_KEY = 'ebir-mcq-spaced-repetition'
+
+// Helper to get today's date string
+const getTodayString = () => new Date().toISOString().split('T')[0]
 
 export function useSpacedRepetition() {
   const [data, setData] = useState<SpacedRepetitionData>({
@@ -69,7 +87,13 @@ export function useSpacedRepetition() {
     lastStudyDate: null,
     totalQuestionsAnswered: 0,
     totalCorrect: 0,
-    totalIncorrect: 0
+    totalIncorrect: 0,
+    currentStreak: 0,
+    longestStreak: 0,
+    lastPracticeDate: null,
+    dailyGoal: 20,
+    todayAnswered: 0,
+    todayDate: null
   })
   const [isLoaded, setIsLoaded] = useState(false)
 
@@ -81,7 +105,22 @@ export function useSpacedRepetition() {
         const parsed = JSON.parse(stored)
         // Handle legacy data structure
         if (parsed.progress) {
-          setData(parsed)
+          // Add default values for new fields if missing
+          const updated = {
+            ...parsed,
+            currentStreak: parsed.currentStreak ?? 0,
+            longestStreak: parsed.longestStreak ?? 0,
+            lastPracticeDate: parsed.lastPracticeDate ?? null,
+            dailyGoal: parsed.dailyGoal ?? 20,
+            todayAnswered: parsed.todayAnswered ?? 0,
+            todayDate: parsed.todayDate ?? null
+          }
+          // Reset todayAnswered if it's a new day
+          if (updated.todayDate !== getTodayString()) {
+            updated.todayAnswered = 0
+            updated.todayDate = getTodayString()
+          }
+          setData(updated)
         }
       }
     } catch (e) {
@@ -156,24 +195,93 @@ export function useSpacedRepetition() {
     }
   }
 
-  // Record an answer
-  const recordAnswer = useCallback((questionId: string, wasCorrect: boolean) => {
+  // Record an answer with optional confidence level
+  const recordAnswer = useCallback((questionId: string, wasCorrect: boolean, confidence?: 'guessing' | 'unsure' | 'confident') => {
+    const today = getTodayString()
+    
     setData(prev => {
       const currentProgress = prev.progress[questionId] || { ...DEFAULT_PROGRESS, questionId }
       const newProgress = calculateNextReview(currentProgress, wasCorrect)
+      
+      // Track confident but wrong
+      const confidentButWrong = (confidence === 'confident' && !wasCorrect) 
+        ? (currentProgress.confidentButWrong || 0) + 1 
+        : (currentProgress.confidentButWrong || 0)
+      
+      // Calculate streak
+      let newStreak = prev.currentStreak
+      let newLongestStreak = prev.longestStreak
+      
+      if (prev.lastPracticeDate) {
+        const lastDate = new Date(prev.lastPracticeDate)
+        const todayDate = new Date(today)
+        const diffDays = Math.floor((todayDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24))
+        
+        if (diffDays === 0) {
+          // Same day, streak unchanged
+        } else if (diffDays === 1) {
+          // Consecutive day, increment streak
+          newStreak = prev.currentStreak + 1
+        } else {
+          // Streak broken, reset to 1
+          newStreak = 1
+        }
+      } else {
+        // First ever practice
+        newStreak = 1
+      }
+      
+      newLongestStreak = Math.max(newLongestStreak, newStreak)
+      
+      // Update today's count
+      const todayAnswered = prev.todayDate === today ? prev.todayAnswered + 1 : 1
       
       return {
         ...prev,
         progress: {
           ...prev.progress,
-          [questionId]: newProgress
+          [questionId]: {
+            ...newProgress,
+            lastConfidence: confidence || null,
+            confidentButWrong
+          }
         },
         totalQuestionsAnswered: prev.totalQuestionsAnswered + 1,
         totalCorrect: prev.totalCorrect + (wasCorrect ? 1 : 0),
         totalIncorrect: prev.totalIncorrect + (wasCorrect ? 0 : 1),
-        lastStudyDate: new Date().toISOString()
+        lastStudyDate: new Date().toISOString(),
+        currentStreak: newStreak,
+        longestStreak: newLongestStreak,
+        lastPracticeDate: today,
+        todayAnswered,
+        todayDate: today
       }
     })
+  }, [])
+
+  // Set error note for a question
+  const setErrorNote = useCallback((questionId: string, note: string | null) => {
+    setData(prev => {
+      const currentProgress = prev.progress[questionId] || { ...DEFAULT_PROGRESS, questionId }
+      return {
+        ...prev,
+        progress: {
+          ...prev.progress,
+          [questionId]: {
+            ...currentProgress,
+            errorNote: note
+          }
+        }
+      }
+    })
+  }, [])
+
+  // Set daily goal
+  const setDailyGoal = useCallback((goal: number) => {
+    setData(prev => ({
+      ...prev,
+      dailyGoal: goal
+    }))
   }, [])
 
   // Toggle mark for review
@@ -267,6 +375,7 @@ export function useSpacedRepetition() {
     const mastered = allProgress.filter(p => p.isMastered).length
     const struggling = allProgress.filter(p => p.timesIncorrect >= 2 && p.streak === 0).length
     const markedForReview = allProgress.filter(p => p.isMarkedForReview).length
+    const confidentButWrong = allProgress.filter(p => (p.confidentButWrong || 0) > 0).length
     const accuracy = data.totalQuestionsAnswered > 0 
       ? Math.round((data.totalCorrect / data.totalQuestionsAnswered) * 100) 
       : 0
@@ -280,7 +389,15 @@ export function useSpacedRepetition() {
       mastered,
       struggling,
       markedForReview,
-      lastStudyDate: data.lastStudyDate
+      confidentButWrong,
+      lastStudyDate: data.lastStudyDate,
+      currentStreak: data.currentStreak,
+      longestStreak: data.longestStreak,
+      dailyGoal: data.dailyGoal,
+      todayAnswered: data.todayDate === getTodayString() ? data.todayAnswered : 0,
+      dailyGoalProgress: data.dailyGoal > 0 
+        ? Math.min(100, Math.round(((data.todayDate === getTodayString() ? data.todayAnswered : 0) / data.dailyGoal) * 100))
+        : 0
     }
   }, [data])
 
@@ -293,7 +410,13 @@ export function useSpacedRepetition() {
         lastStudyDate: null,
         totalQuestionsAnswered: 0,
         totalCorrect: 0,
-        totalIncorrect: 0
+        totalIncorrect: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        lastPracticeDate: null,
+        dailyGoal: 20,
+        todayAnswered: 0,
+        todayDate: null
       })
     }
   }, [])
@@ -316,6 +439,8 @@ export function useSpacedRepetition() {
     recordAnswer,
     toggleMarkForReview,
     setReviewNote,
+    setErrorNote,
+    setDailyGoal,
     getDueQuestions,
     getMarkedQuestions,
     getCorrectlyAnswered,

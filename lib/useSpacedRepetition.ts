@@ -32,7 +32,7 @@ export interface StudySession {
 }
 
 export interface SpacedRepetitionData {
-  odată: Record<string, QuestionProgress>  // questionId -> progress
+  progress: Record<string, QuestionProgress>  // questionId -> progress
   sessions: StudySession[]
   lastStudyDate: string | null
   totalQuestionsAnswered: number

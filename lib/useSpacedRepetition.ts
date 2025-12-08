@@ -21,6 +21,9 @@ export interface QuestionProgress {
   // Flags
   isMarkedForReview: boolean
   isMastered: boolean     // Answered correctly 3+ times with no recent errors
+  // Review notes (for flagged questions)
+  reviewNote: string | null
+  reviewImage: string | null  // Base64 encoded image
 }
 
 export interface StudySession {
@@ -52,7 +55,9 @@ const DEFAULT_PROGRESS: QuestionProgress = {
   timesIncorrect: 0,
   streak: 0,
   isMarkedForReview: false,
-  isMastered: false
+  isMastered: false,
+  reviewNote: null,
+  reviewImage: null
 }
 
 const STORAGE_KEY = 'ebir-mcq-spaced-repetition'
@@ -181,7 +186,27 @@ export function useSpacedRepetition() {
           ...prev.progress,
           [questionId]: {
             ...currentProgress,
-            isMarkedForReview: !currentProgress.isMarkedForReview
+            isMarkedForReview: !currentProgress.isMarkedForReview,
+            // Clear note and image when unmarking
+            ...(currentProgress.isMarkedForReview ? { reviewNote: null, reviewImage: null } : {})
+          }
+        }
+      }
+    })
+  }, [])
+
+  // Set review note for a flagged question
+  const setReviewNote = useCallback((questionId: string, note: string | null, image: string | null) => {
+    setData(prev => {
+      const currentProgress = prev.progress[questionId] || { ...DEFAULT_PROGRESS, questionId }
+      return {
+        ...prev,
+        progress: {
+          ...prev.progress,
+          [questionId]: {
+            ...currentProgress,
+            reviewNote: note,
+            reviewImage: image
           }
         }
       }
@@ -290,6 +315,7 @@ export function useSpacedRepetition() {
     getProgress,
     recordAnswer,
     toggleMarkForReview,
+    setReviewNote,
     getDueQuestions,
     getMarkedQuestions,
     getCorrectlyAnswered,

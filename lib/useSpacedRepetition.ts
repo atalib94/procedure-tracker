@@ -509,6 +509,43 @@ export function useSpacedRepetition() {
     return data.progress
   }, [data.progress])
 
+  // Remove orphaned progress entries (questions that no longer exist)
+  const cleanupOrphanedProgress = useCallback((validQuestionIds: string[]) => {
+    const validSet = new Set(validQuestionIds)
+    
+    setData(prev => {
+      const cleanedProgress: Record<string, QuestionProgress> = {}
+      let removedCount = 0
+      
+      for (const [questionId, progress] of Object.entries(prev.progress)) {
+        if (validSet.has(questionId)) {
+          cleanedProgress[questionId] = progress
+        } else {
+          removedCount++
+        }
+      }
+      
+      console.log(`Cleaned up ${removedCount} orphaned progress entries`)
+      
+      return {
+        ...prev,
+        progress: cleanedProgress
+      }
+    })
+  }, [])
+
+  // Get orphaned flagged questions with their notes (for display before cleanup)
+  const getOrphanedFlaggedDetails = useCallback((validQuestionIds: string[]): Array<{id: string, note: string | null, image: string | null}> => {
+    const validSet = new Set(validQuestionIds)
+    return Object.entries(data.progress)
+      .filter(([id, progress]) => !validSet.has(id) && progress.isMarkedForReview)
+      .map(([id, progress]) => ({
+        id,
+        note: progress.reviewNote,
+        image: progress.reviewImage
+      }))
+  }, [data.progress])
+
   return {
     isLoaded,
     getProgress,
@@ -529,6 +566,8 @@ export function useSpacedRepetition() {
     resetQuestionProgress,
     recalculateMastery,
     getOrphanedProgressIds,
-    getAllProgress
+    getAllProgress,
+    cleanupOrphanedProgress,
+    getOrphanedFlaggedDetails
   }
 }

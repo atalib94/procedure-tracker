@@ -616,9 +616,6 @@ export const mcqQuestions: MCQQuestion[] = [
 {id:'f-add-29',section:'F',sectionTitle:'Interventional Oncology',subsection:'Response',question:'Complete response by mRECIST is:',options:['50% size reduction','No enhancement (100% necrosis)','Stable size','Tumor marker normalization'],correctAnswers:[1],explanation:'Complete response = disappearance of arterial enhancement in all target lesions.',difficulty:'easy',examFrequency:'high'},
 {id:'f-add-30',section:'F',sectionTitle:'Interventional Oncology',subsection:'Palliation',question:'Interventional oncology palliative intent aims to:',options:['Cure disease','Improve quality of life and symptom control','Only extend survival','Replace systemic therapy'],correctAnswers:[1],explanation:'Palliative IO aims to control symptoms (pain, bleeding, obstruction) and improve quality of life.',difficulty:'easy',examFrequency:'medium'},
 
-  Here are 200 more high-yield EBIR questions:
-
-```typescript
 // SECTION A: Fundamentals (30 questions)
 {id:'a-ext-1',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Radiation Safety',question:'Scattered radiation to the operator is highest when the X-ray tube is positioned:',options:['Above the patient','Below the patient','Lateral to operator','Behind lead shield'],correctAnswers:[0],explanation:'Tube above patient (AP) directs scatter toward operator; tube below (PA) scatters into table.',difficulty:'medium',examFrequency:'high'},
 {id:'a-ext-2',section:'A',sectionTitle:'Fundamental Topics in IR',subsection:'Radiation Safety',question:'Pregnant operator radiation dose limit to fetus is:',options:['1 mSv total','5 mSv total','20 mSv total','Same as non-pregnant'],correctAnswers:[0],explanation:'Fetal dose limit 1 mSv for duration of pregnancy; declare pregnancy and monitor closely.',difficulty:'medium',examFrequency:'high'},

@@ -1153,7 +1153,634 @@ TECHNICAL TIPS FOR DCB:
     difficulty: 'medium',
     examFrequency: 'high'
   },
-
+{
+    id: 'B023',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'Acute Limb Ischemia',
+    question: 'A 65-year-old with atrial fibrillation presents with a cold, pulseless right leg for 4 hours. On examination, there is no sensory loss and motor function is intact. What is the Rutherford classification and optimal management?',
+    options: [
+      'Rutherford I; anticoagulation alone',
+      'Rutherford IIa; urgent revascularization within 6-12 hours',
+      'Rutherford IIb; emergent revascularization within 6 hours',
+      'Rutherford III; primary amputation'
+    ],
+    correctAnswers: [1],
+    explanation: `Viable limb with no neurological deficit but threatened without treatment = Rutherford IIa. Urgent (not emergent) revascularization is appropriate.
+RUTHERFORD CLASSIFICATION FOR ALI:
+CLASS I - VIABLE:
+- No sensory loss, no muscle weakness
+- Arterial Doppler signals present
+- Not immediately threatened
+- Can be observed, elective workup
+CLASS IIa - MARGINALLY THREATENED:
+- Minimal sensory loss (toes) or none
+- No muscle weakness
+- Arterial Doppler often absent, venous present
+- Salvageable with PROMPT treatment
+- This patient fits here
+CLASS IIb - IMMEDIATELY THREATENED:
+- Sensory loss beyond toes
+- Mild-moderate muscle weakness
+- Arterial Doppler absent
+- Salvageable with IMMEDIATE revascularization
+CLASS III - IRREVERSIBLE:
+- Profound sensory loss (anesthetic)
+- Paralysis (rigor)
+- No Doppler signals
+- Major tissue loss inevitable
+- Primary amputation
+MANAGEMENT BY CLASS:
+- Class I: Anticoagulation, imaging, plan revascularization
+- Class IIa: Heparin, urgent revascularization (6-12h window)
+- Class IIb: Heparin, emergent revascularization (<6h)
+- Class III: Amputation (revascularization causes reperfusion injury)
+REVASCULARIZATION OPTIONS:
+SURGICAL THROMBOEMBOLECTOMY:
+- Embolic etiology (AF, clear cutoff)
+- Short duration (<14 days)
+- Easily accessible (femoral)
+CATHETER-DIRECTED THROMBOLYSIS:
+- Thrombotic etiology (atherosclerosis)
+- Longer duration
+- Graft occlusion
+- Duration: 6-48 hours typical
+HYBRID APPROACH:
+- Pharmacomechanical thrombectomy
+- Aspiration + lysis
+- Faster than CDT alone
+REPERFUSION SYNDROME:
+- Metabolic acidosis, hyperkalemia
+- Myoglobinuria → AKI
+- Compartment syndrome
+- Cardiac arrhythmias
+- Anticipate with prolonged ischemia (>4-6h)`,
+    difficulty: 'medium',
+    examFrequency: 'high'
+  },
+  {
+    id: 'B024',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'Aortic Intervention',
+    question: 'A patient is planned for TEVAR for a descending thoracic aortic aneurysm. The proximal landing zone is in Zone 2 (between left carotid and left subclavian). What adjunctive procedure is typically required?',
+    options: [
+      'No adjunctive procedure needed',
+      'Left carotid-subclavian bypass or transposition before TEVAR',
+      'TEVAR with chimney graft to left subclavian',
+      'Left subclavian artery coil embolization'
+    ],
+    correctAnswers: [1],
+    explanation: `Zone 2 landing requires left subclavian artery coverage—revascularization (bypass or transposition) is recommended to prevent arm ischemia and stroke.
+AORTIC ARCH LANDING ZONES:
+- Zone 0: Ascending aorta (proximal to innominate)
+- Zone 1: Between innominate and left carotid
+- Zone 2: Between left carotid and left subclavian
+- Zone 3: Within 2cm distal to left subclavian
+- Zone 4: >2cm distal to left subclavian
+ZONE 2 COVERAGE IMPLICATIONS:
+- Left subclavian artery will be covered
+- Must address LSA perfusion
+LEFT SUBCLAVIAN COVERAGE CONSEQUENCES:
+- Left arm ischemia/claudication
+- Posterior circulation stroke (if dominant left vertebral)
+- Spinal cord ischemia (vertebral contributes to ASA)
+- Coronary steal (if LIMA graft present)
+REVASCULARIZATION OPTIONS:
+CAROTID-SUBCLAVIAN BYPASS:
+- Most common approach
+- Prosthetic graft (PTFE or Dacron)
+- Can be done pre-TEVAR or concomitantly
+CAROTID-SUBCLAVIAN TRANSPOSITION:
+- Native vessel anastomosis
+- Better long-term patency
+- More technically demanding
+CHIMNEY/SNORKEL GRAFT:
+- Parallel stent-graft in LSA
+- Allows single-stage procedure
+- Risk of gutter endoleak
+WHEN IS LSA REVASCULARIZATION MANDATORY:
+- Dominant left vertebral artery
+- Prior CABG with LIMA
+- Absent/occluded right vertebral
+- Left arm dialysis access
+- Compromised hypogastric arteries (spinal cord risk)
+SVS GUIDELINES:
+- Routine revascularization recommended
+- At minimum, selective revascularization based on anatomy
+- Emergent cases: Can cover and revascularize later if symptomatic
+SPINAL CORD ISCHEMIA CONSIDERATIONS:
+- Risk: 3-10% with extensive coverage
+- LSA contributes collateral via vertebral
+- CSF drainage if high-risk (long segment, prior aortic surgery)`,
+    difficulty: 'hard',
+    examFrequency: 'high'
+  },
+  {
+    id: 'B025',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'Dialysis Access',
+    question: 'A patient with a new radiocephalic AVF created 8 weeks ago presents for evaluation. The fistula has a thrill but the vein diameter is 3mm. What is the appropriate management?',
+    options: [
+      'Fistula is mature—proceed with cannulation',
+      'Fistula has failed to mature—create new access',
+      'Perform fistulogram to identify and treat inflow/outflow stenosis',
+      'Continue waiting—reassess at 6 months'
+    ],
+    correctAnswers: [2],
+    explanation: `Failure to mature (FTM) at 8 weeks with suboptimal vein diameter warrants investigation—fistulogram can identify treatable lesions in 80%+ of cases.
+FISTULA MATURATION CRITERIA (Rule of 6s):
+- Flow >600 mL/min
+- Diameter >6mm
+- Depth <6mm from skin surface
+- Length >6cm for cannulation
+- Maturation time: Usually 6-8 weeks (can be 4-6)
+THIS PATIENT:
+- 8 weeks post-creation
+- Only 3mm diameter (needs >6mm)
+- Has thrill (some flow present)
+- = FAILURE TO MATURE
+CAUSES OF FTM:
+INFLOW PROBLEMS:
+- Arterial stenosis (feeding artery)
+- Juxta-anastomotic stenosis (most common)
+- Small artery caliber
+OUTFLOW PROBLEMS:
+- Outflow vein stenosis
+- Central vein stenosis
+- Accessory veins (steal flow)
+SYSTEMIC:
+- Low cardiac output
+- Hypotension
+- Diabetes, peripheral vascular disease
+FISTULOGRAM FINDINGS & TREATMENT:
+JUXTA-ANASTOMOTIC STENOSIS:
+- Most common finding (60-70%)
+- Treat with PTA
+- High recurrence—may need repeat interventions
+ACCESSORY VEINS:
+- Competing outflow, steals flow from main vein
+- Treat with coil embolization
+- Allows preferential flow through main channel
+OUTFLOW STENOSIS:
+- PTA, consider DCB
+- Stent only for elastic recoil/recurrence
+CENTRAL VEIN STENOSIS:
+- PTA ± stent
+- Often from prior catheter
+ASSISTED MATURATION SUCCESS:
+- 80% of FTM fistulas can be salvaged
+- Multiple interventions may be needed
+- KDOQI: Fistula first—exhaust options before abandoning
+WHEN TO ABANDON:
+- Irreparable anatomy
+- Multiple failed interventions
+- Patient factors (short life expectancy)`,
+    difficulty: 'medium',
+    examFrequency: 'high'
+  },
+  {
+    id: 'B026',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'Pelvic Congestion',
+    question: 'A 38-year-old multiparous woman presents with chronic pelvic pain worse with prolonged standing, dyspareunia, and vulvar varicosities. Imaging confirms dilated ovarian veins with reflux. What is the first-line interventional treatment?',
+    options: [
+      'Hysterectomy with bilateral salpingo-oophorectomy',
+      'Ovarian vein embolization with coils and/or sclerosant',
+      'Open surgical ligation of ovarian veins',
+      'Medical therapy with NSAIDs and hormonal suppression only'
+    ],
+    correctAnswers: [1],
+    explanation: `Pelvic congestion syndrome (PCS) is effectively treated with ovarian vein embolization—minimally invasive with 80-90% symptom improvement.
+PELVIC CONGESTION SYNDROME:
+- Chronic pelvic pain >6 months
+- Worse with standing, end of day, post-coital
+- Multiparous women (increased pelvic blood flow with pregnancies)
+- Incompetent ovarian/pelvic veins with reflux
+DIAGNOSTIC CRITERIA:
+- Dilated ovarian veins >6-8mm
+- Retrograde flow on Valsalva
+- Pelvic varices (parametrial, uterine, vulvar)
+- Cross-pelvic collaterals
+IMAGING:
+- Transvaginal US: Dilated pelvic veins, reflux with Valsalva
+- MRV: Anatomy, exclude other pathology
+- Venography: Gold standard, diagnostic and therapeutic
+EMBOLIZATION TECHNIQUE:
+ACCESS:
+- Jugular or femoral approach
+- Catheterize bilateral ovarian veins (and internal iliacs if refluxing)
+LEFT OVARIAN VEIN:
+- Drains to left renal vein
+- More commonly affected (longer, no valves)
+- Nutcracker anatomy may contribute
+RIGHT OVARIAN VEIN:
+- Drains directly to IVC
+- Shorter, less commonly involved
+EMBOLIC AGENTS:
+- Coils (primary)
+- Sclerosant foam (3% sodium tetradecyl sulfate or polidocanol)
+- Combination is most effective
+- Glue (NBCA) in select cases
+TREATMENT EXTENT:
+- Both ovarian veins (even if one appears dominant)
+- Internal iliac tributaries if refluxing
+- Vulvar/labial varicosities may resolve after main treatment
+OUTCOMES:
+- Technical success: >95%
+- Clinical improvement: 80-90%
+- Recurrence: 10-20% (may need repeat embolization)
+DIFFERENTIAL DIAGNOSIS:
+- Endometriosis
+- Adenomyosis
+- Pelvic inflammatory disease
+- Musculoskeletal causes
+- Must exclude other causes before attributing to PCS`,
+    difficulty: 'medium',
+    examFrequency: 'medium'
+  },
+  {
+    id: 'B027',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'Carotid Intervention',
+    question: 'During carotid artery stenting, cerebral protection devices are used. Which type of embolic protection provides coverage during ALL phases of the procedure including lesion crossing?',
+    options: [
+      'Distal filter device',
+      'Distal balloon occlusion device',
+      'Proximal protection with flow reversal (Mo.Ma or Gore)',
+      'No protection device provides coverage during lesion crossing'
+    ],
+    correctAnswers: [2],
+    explanation: `Proximal protection with flow reversal is the ONLY method that protects during lesion crossing—filters and distal balloons require crossing the lesion BEFORE deployment.
+CEREBRAL PROTECTION STRATEGIES:
+DISTAL FILTER:
+- Deployed distal to lesion
+- Must CROSS lesion unprotected to deploy
+- Captures debris during intervention
+- Limitations: Crossing embolization, incomplete capture, vessel trauma
+- Examples: FilterWire, Spider, Emboshield
+DISTAL BALLOON OCCLUSION:
+- Balloon distal to lesion, occlude ICA
+- Must CROSS lesion to deploy
+- Aspirate debris before deflation
+- Limitations: Crossing risk, ischemia during occlusion
+- Example: GuardWire
+PROXIMAL PROTECTION (Flow Reversal):
+- Balloons in ECA and CCA BEFORE crossing
+- Reverses flow in ICA (blood flows retrograde to sheath)
+- Lesion crossed UNDER PROTECTION
+- This is the answer
+- Examples: Mo.Ma, Gore Flow Reversal System
+MECHANISM OF FLOW REVERSAL:
+- Occlude CCA (proximal) and ECA
+- ICA flow reverses via Circle of Willis
+- Any debris flows back to sheath, not to brain
+- Filter or aspiration captures debris
+ADVANTAGES OF PROXIMAL PROTECTION:
+- Protection during ALL phases (crossing, pre-dilation, stent, post-dilation)
+- No need to cross lesion unprotected
+- Works for any ICA anatomy
+- No sizing issues (unlike filters)
+DISADVANTAGES:
+- More complex setup
+- Requires adequate Circle of Willis
+- Intolerance in ~5% (no collaterals)
+- ECA occlusion may cause jaw claudication
+CLINICAL EVIDENCE:
+- Lower stroke rates in some registries
+- Preferred for: High-risk plaque (soft, ulcerated, long)
+- Consider for all CAS (debated)
+WHEN TO AVOID PROXIMAL PROTECTION:
+- Incomplete Circle of Willis
+- Contralateral ICA occlusion (may not tolerate)
+- CCA anatomy not suitable for balloon`,
+    difficulty: 'hard',
+    examFrequency: 'high'
+  },
+  {
+    id: 'B028',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'Gastrointestinal Bleeding',
+    question: 'A patient with massive lower GI bleeding has a positive CT angiography showing active extravasation from a branch of the superior mesenteric artery in the right colon. Colonoscopy cannot localize the source due to blood. What is the most appropriate embolic agent?',
+    options: [
+      'Gelfoam slurry for temporary occlusion',
+      'Microcoils for selective embolization',
+      'Large coils in the main SMA trunk',
+      'PVA particles 500-700 microns'
+    ],
+    correctAnswers: [1],
+    explanation: `Superselective microcoil embolization is preferred for lower GI bleeding—allows precise occlusion while preserving collateral supply and minimizing ischemia.
+LOWER GI BLEEDING EMBOLIZATION PRINCIPLES:
+- Superselective catheterization (as distal as possible)
+- Preserve collateral pathways
+- Avoid non-target embolization
+- Colon more prone to ischemia than upper GI (watershed areas)
+EMBOLIC AGENTS FOR GI BLEEDING:
+MICROCOILS (preferred for lower GI):
+- Precise placement
+- Permanent occlusion
+- Size: 2-3mm diameter typical
+- Pushable or detachable
+- Can pack tightly for secure occlusion
+GELFOAM:
+- Temporary (recanalizes in days-weeks)
+- May be used with coils
+- Higher rebleeding rate if used alone
+- Consider for: Upper GI, if surgery planned
+PVA PARTICLES:
+- AVOID in lower GI bleeding
+- Risk of non-target embolization
+- Can penetrate collaterals → bowel ischemia
+- Limited role in GI bleeding
+GLUE (NBCA):
+- Fast occlusion
+- Risk of non-target if refluxes
+- Operator-dependent
+- Reserve for: Coagulopathic patients, when speed critical
+TECHNICAL APPROACH:
+- Microcatheter to bleeding branch (vasa recta level)
+- Confirm position (no reflux to main trunk)
+- Deploy coils to occlude branch
+- Confirm cessation of extravasation
+- May need multiple branches
+ISCHEMIA RISK FACTORS:
+- Proximal embolization (main trunk)
+- Particle embolization
+- Shock/hypotension
+- Prior bowel surgery (disrupted collaterals)
+- Atherosclerotic disease
+OUTCOMES:
+- Technical success: 90-95%
+- Clinical success: 80-90%
+- Rebleeding: 10-20%
+- Ischemia: <5% with superselective technique
+POST-EMBOLIZATION:
+- Monitor for abdominal pain, fever
+- Lactate, WBC monitoring
+- Low threshold for CT if concern for ischemia
+- Most patients avoid surgery`,
+    difficulty: 'medium',
+    examFrequency: 'high'
+  },
+  {
+    id: 'B029',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'Vascular Trauma',
+    question: 'A patient with a traumatic subclavian artery injury has a contained pseudoaneurysm identified on CTA. Endovascular repair is planned. What is the MOST important consideration regarding covered stent selection for this location?',
+    options: [
+      'Stent length should exactly match lesion length',
+      'Preservation of vertebral artery patency',
+      'Use of balloon-expandable over self-expanding stent',
+      'Maximum oversizing to prevent migration'
+    ],
+    correctAnswers: [1],
+    explanation: `Vertebral artery origin must be preserved when stenting the subclavian—coverage causes posterior circulation stroke risk. Landing zones must avoid the vertebral origin.
+SUBCLAVIAN ARTERY ANATOMY:
+- First branch: Vertebral artery (posterior-superior)
+- Other branches: Thyrocervical trunk, internal mammary, costocervical
+- Right subclavian from innominate, left directly from arch
+VERTEBRAL ARTERY IMPORTANCE:
+- Supplies posterior circulation (brainstem, cerebellum, occipital)
+- Dominant vertebral (usually left) critical if covered
+- Covering non-dominant vertebral may be tolerated
+- ALWAYS assess vertebral dominance before intervention
+LANDING ZONE CONSIDERATIONS:
+- Proximal: Avoid covering vertebral artery
+- Distal: Avoid axillary branches if possible
+- Minimum 15-20mm landing zone each side
+- May need to sacrifice thyrocervical/costocervical
+COVERED STENT OPTIONS:
+BALLOON-EXPANDABLE (Viabahn VBX, iCAST):
+- Precise deployment
+- Better for focal lesions
+- Radial strength against external compression
+- Preferred in subclavian
+SELF-EXPANDING (Viabahn, Fluency):
+- Flexible, conforms to tortuous vessels
+- Risk of migration
+- May foreshorten
+STENT SIZING:
+- 10-20% oversizing to native artery
+- Subclavian typically 8-10mm diameter
+- Avoid excessive oversizing (edge dissection)
+TRAUMA-SPECIFIC CONSIDERATIONS:
+- Active bleeding: Expedient coverage, reassess branches later
+- Pseudoaneurysm: Can plan carefully, preserve branches
+- Associated injuries: Consider hybrid OR
+- Zone I injuries: May need sternotomy
+OUTCOMES:
+- Endovascular success rate >90%
+- Lower morbidity than open repair
+- Complications: Access site, stroke, stent thrombosis
+- Long-term patency: >85% at 5 years
+IF VERTEBRAL MUST BE COVERED:
+- Confirm contralateral vertebral patent and adequate
+- Assess Circle of Willis patency
+- May need vertebral transposition first (rarely)`,
+    difficulty: 'hard',
+    examFrequency: 'medium'
+  },
+  {
+    id: 'B030',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'Vascular Malformation',
+    question: 'A child presents with a facial lesion that is soft, compressible, enlarges with crying/Valsalva, and has no palpable thrill. MRI shows a T2 hyperintense, lobulated lesion without flow voids. What is the most likely diagnosis and preferred treatment?',
+    options: [
+      'Infantile hemangioma; propranolol',
+      'Arteriovenous malformation; embolization with liquid embolic',
+      'Venous malformation; sclerotherapy',
+      'Lymphatic malformation; surgical excision'
+    ],
+    correctAnswers: [2],
+    explanation: `Classic presentation of venous malformation (VM)—soft, compressible, enlarges with increased venous pressure, no thrill, T2 bright with no flow voids. Sclerotherapy is first-line treatment.
+VASCULAR ANOMALY CLASSIFICATION (ISSVA):
+TUMORS:
+- Infantile hemangioma (proliferates, then involutes)
+- Congenital hemangioma (fully formed at birth)
+- Kaposiform hemangioendothelioma
+MALFORMATIONS (present at birth, grow with child):
+- Capillary (CM)
+- Venous (VM)
+- Lymphatic (LM)
+- Arteriovenous (AVM)
+- Combined
+VENOUS MALFORMATION FEATURES:
+CLINICAL:
+- Soft, compressible ("empties" with pressure)
+- Enlarges with Valsalva, crying, dependency
+- Blue discoloration of skin
+- NO thrill, NO bruit (low flow)
+- Phleboliths (pathognomonic)
+MRI FINDINGS:
+- T2 hyperintense (fluid-filled channels)
+- T1 iso-hypointense
+- Slow enhancement post-contrast
+- NO flow voids (unlike AVM)
+- Lobulated, septated
+TREATMENT OPTIONS:
+SCLEROTHERAPY (first-line):
+- Agents: Sodium tetradecyl sulfate (STS), polidocanol, ethanol, bleomycin
+- Direct percutaneous injection under US/fluoroscopy
+- Multiple sessions typically needed
+- 80-90% improvement
+ETHANOL:
+- Most effective but highest complication rate
+- Skin necrosis, nerve injury
+- Requires general anesthesia (painful)
+- Reserve for extensive lesions
+BLEOMYCIN:
+- Safer profile
+- Good for superficial, small lesions
+- No skin necrosis
+SURGERY:
+- Adjunct to sclerotherapy
+- Complete excision difficult (infiltrative)
+- High recurrence if incomplete
+LASER:
+- For superficial cutaneous component
+- Nd:YAG for deeper, CO2/PDL for surface
+INFANTILE HEMANGIOMA (differentiate):
+- Appears after birth (weeks), proliferates, then involutes
+- GLUT1 positive (VM negative)
+- Treatment: Propranolol if problematic
+LYMPHATIC MALFORMATION:
+- Transilluminates
+- T2 bright with fluid-fluid levels
+- Treat with sclerotherapy (OK-432, doxycycline, bleomycin)`,
+    difficulty: 'medium',
+    examFrequency: 'high'
+  },
+  {
+    id: 'B031',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'Aortic Intervention',
+    question: 'A patient with a juxtarenal AAA not suitable for standard EVAR is being evaluated for fenestrated EVAR (FEVAR). What is the minimum recommended landing zone length in healthy aorta ABOVE the most cephalad renal artery fenestration?',
+    options: [
+      'No proximal seal zone needed—fenestrations provide seal',
+      '5mm of healthy aorta',
+      '15-20mm of healthy aorta',
+      '30mm of healthy aorta'
+    ],
+    correctAnswers: [2],
+    explanation: `Fenestrated EVAR requires adequate proximal seal zone ABOVE the fenestrations—minimum 15-20mm of healthy aorta above the highest target vessel is recommended.
+FENESTRATED EVAR PLANNING:
+PROXIMAL SEAL ZONE:
+- Must be in healthy (non-aneurysmal) aorta
+- Minimum 15-20mm above highest fenestration
+- This is ABOVE the renal arteries typically
+- Provides stable fixation and seal
+WHY 15-20MM NEEDED:
+- Seal zone integrity critical for durability
+- Less than this: Risk of Type Ia endoleak
+- Fenestrations don't provide seal—fabric does
+- Diseased aorta may not seal well
+FENESTRATION TYPES:
+FENESTRATION:
+- Small opening (6-8mm)
+- For branch arising perpendicular
+- Reinforced with nitinol ring
+- Renal arteries typically
+SCALLOP:
+- U-shaped cut-out
+- For branches at proximal edge
+- SMA often uses scallop
+- Provides less coverage
+BRANCH/DIRECTIONAL BRANCH:
+- Cuff extending into target vessel
+- For branches with downward orientation
+- Celiac may need this
+TARGET VESSELS:
+- Celiac axis
+- Superior mesenteric artery
+- Renal arteries (bilateral)
+- +/- accessory renals
+BRIDGING STENTS:
+- Connect fenestration to target vessel
+- Balloon-expandable (precise)
+- Covered stents preferred
+- Must seal within fenestration AND within vessel
+COMPLICATIONS:
+- Target vessel loss: 2-4% per vessel
+- Type Ia endoleak: 3-5%
+- Reintervention rate: 15-20% at 5 years
+- Spinal cord ischemia (extensive coverage)
+SURVEILLANCE:
+- CTA at 1, 6, 12 months then annual
+- Assess: Endoleak, target vessel patency, sac behavior
+- Duplex can supplement
+CONTRAINDICATIONS TO FEVAR:
+- Inadequate proximal neck (<15mm healthy aorta)
+- Severely diseased target vessels
+- Tortuous iliac access
+- Thrombus/calcification at fenestration sites`,
+    difficulty: 'hard',
+    examFrequency: 'high'
+  },
+  {
+    id: 'B032',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'Venous Intervention',
+    question: 'A patient with extensive acute iliofemoral DVT undergoes pharmacomechanical thrombectomy. Post-procedure venography shows a focal stenosis at the common iliac vein with >50% narrowing. What is the appropriate management?',
+    options: [
+      'Anticoagulation alone—stenosis will improve as clot lyses',
+      'Balloon angioplasty only',
+      'Venous stent placement',
+      'Repeat thrombolysis to address residual thrombus'
+    ],
+    correctAnswers: [2],
+    explanation: `Underlying iliac vein stenosis (often May-Thurner) should be stented after thrombectomy—leaving the stenosis untreated results in high rethrombosis rates.
+POST-THROMBECTOMY FINDINGS:
+- Underlying anatomic lesion found in 50-80% of iliofemoral DVT
+- May-Thurner syndrome (left CIV compression) most common
+- Other: Webs, chronic stenosis, external compression
+- Must address or DVT will recur
+WHY STENT (NOT JUST PTA):
+- Venous stenoses have high elastic recoil
+- PTA alone: >50% recurrence
+- Stenting provides scaffold, maintains lumen
+- Dedicated venous stents: Better radial force, flexibility
+STENTING TECHNIQUE:
+- Size to nominal diameter (not measured compressed diameter)
+- Common iliac vein: 16-18mm
+- External iliac: 14-16mm
+- Extend into IVC if needed (1-2cm OK)
+- Cover entire diseased segment
+STENT TYPES:
+DEDICATED VENOUS STENTS (preferred):
+- Wallstent (first generation)
+- VENOVO
+- Zilver Vena
+- VICI stent
+- Designed for venous environment (flexibility, radial force)
+NON-DEDICATED (if venous not available):
+- Wallstent
+- Z-stent
+- Not ideal but used historically
+POST-STENT MANAGEMENT:
+- Anticoagulation: Minimum 6 months, often longer
+- Compression stockings
+- Surveillance: Duplex at 1, 3, 6, 12 months
+- Reintervention for in-stent restenosis
+OUTCOMES:
+- Primary patency: 70-80% at 2 years
+- Secondary patency: >90%
+- PTS prevention: Better than anticoagulation alone
+- ATTRACT subgroup: Iliofemoral DVT may benefit
+WHEN NOT TO STENT:
+- Extensive residual thrombus (risk of stent thrombosis)
+- Femoral vein lesions (stenting avoided—crosses hip joint)
+- No clear anatomic lesion (rare)`,
+    difficulty: 'hard',
+    examFrequency: 'high'
+  },
   // ═══════════════════════════════════════════════════════════════════════════
   // SECTION C: Non-vascular Interventions
   // ═══════════════════════════════════════════════════════════════════════════

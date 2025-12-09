@@ -626,6 +626,534 @@ ILIOFEMORAL COMPLICATIONS:
     examFrequency: 'medium'
   },
 
+  {
+    id: 'B013',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'Aortic Intervention',
+    question: 'A 68-year-old male undergoes EVAR for a 5.8cm infrarenal AAA. Post-procedure angiography shows brisk contrast filling the aneurysm sac from the proximal attachment site. What is the most appropriate immediate management?',
+    options: [
+      'Observe and repeat CT in 1 month',
+      'Balloon molding of the proximal seal zone',
+      'Immediate conversion to open repair',
+      'Coil embolization of the sac'
+    ],
+    correctAnswers: [1],
+    explanation: `Type Ia endoleak identified intra-procedurally should be treated immediately—balloon molding is the first-line intervention.
+TYPE Ia ENDOLEAK:
+- Definition: Inadequate seal at proximal attachment site
+- HIGH-PRESSURE, HIGH-FLOW leak
+- Continued aneurysm pressurization → rupture risk
+- Must be treated before leaving the OR
+INTRA-OPERATIVE MANAGEMENT ALGORITHM:
+1. Balloon molding (compliant balloon at proximal neck) — FIRST STEP
+2. Proximal extension cuff if molding fails
+3. Palmaz stent (balloon-expandable) for persistent leak
+4. Endostaples/EndoAnchors for hostile necks
+5. Chimney/snorkel if renal coverage needed
+6. Conversion to open ONLY if all else fails
+WHY BALLOON MOLDING FIRST:
+- Often the graft just needs better apposition
+- Quick, low-risk, no additional hardware
+- Success rate ~50-70% for minor leaks
+- If fails, proceed to cuff/stent
+WHEN TO USE PROXIMAL CUFF:
+- Inadequate seal zone length
+- Neck dilation post-deployment
+- Persistent leak after molding
+PALMAZ STENT INDICATIONS:
+- Refractory leak after cuff
+- Type Ia with Type III component
+- Provides radial force for sealing
+RISK FACTORS FOR TYPE Ia:
+- Short neck (<15mm)
+- Angulated neck (>60°)
+- Conical neck
+- Thrombus/calcification in seal zone
+- Undersized device`,
+    difficulty: 'medium',
+    examFrequency: 'high'
+  },
+  {
+    id: 'B014',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'Lower Extremity Venous',
+    question: 'A patient with chronic iliofemoral venous obstruction and severe post-thrombotic syndrome is evaluated for venous stenting. IVUS shows a 70% stenosis of the left common iliac vein with external compression. What is the TARGET diameter for stent sizing?',
+    options: [
+      'Match the diameter of the stenotic segment',
+      'Match the adjacent normal vein diameter',
+      '12-14mm for common iliac vein regardless of measurements',
+      '16-18mm for common iliac vein, using nominal venous diameters'
+    ],
+    correctAnswers: [3],
+    explanation: `Venous stents should be sized to NOMINAL expected diameters, not the diseased/compressed segment—common iliac vein targets 16-18mm.
+VENOUS STENT SIZING PRINCIPLES:
+- Veins are collapsible—measured diameter is NOT true diameter
+- Chronic obstruction causes remodeling → smaller measured size
+- Must restore to physiological nominal diameter
+- Undersizing = early failure, thrombosis, restenosis
+NOMINAL VENOUS DIAMETERS (memorize these):
+- Common iliac vein: 16-18mm
+- External iliac vein: 14-16mm
+- Common femoral vein: 12-14mm
+- Femoral vein: 10-12mm
+WHY IVUS IS ESSENTIAL:
+- Venography underestimates stenosis (contrast flows around)
+- IVUS shows true cross-sectional area
+- Identifies webs, spurs, compression
+- >50% area reduction = significant stenosis
+MAY-THURNER SYNDROME:
+- Left CIV compression by right CIA against L5 vertebra
+- Causes: DVT, chronic venous insufficiency, claudication
+- IVUS finding: Spur or web at compression point
+- Treatment: Stent across compression (16-18mm)
+STENTING TECHNIQUE PEARLS:
+- Land in healthy vein proximally and distally
+- Extend into IVC if needed (1-2cm protrusion OK)
+- Overlap stents by 1-2cm
+- Post-dilate to nominal diameter
+- Dedicated venous stents preferred (Wallstent, VENOVO, Zilver Vena)
+ANTICOAGULATION POST-STENT:
+- Anticoagulation 6-12 months minimum
+- Some advocate indefinite for extensive disease
+- Add antiplatelet if stent thrombosis concern`,
+    difficulty: 'hard',
+    examFrequency: 'high'
+  },
+  {
+    id: 'B015',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'Cerebrovascular',
+    question: 'A patient with acute ischemic stroke and LVO is evaluated for mechanical thrombectomy. The ASPECTS score is 5. Based on current guidelines, what is the significance of this score?',
+    options: [
+      'Favorable for thrombectomy—proceed immediately',
+      'Unfavorable—thrombectomy is contraindicated',
+      'Borderline—advanced imaging (perfusion) should guide decision',
+      'Not relevant—time from onset is the only factor'
+    ],
+    correctAnswers: [2],
+    explanation: `ASPECTS 5 is borderline—advanced perfusion imaging helps identify salvageable tissue and guide thrombectomy decisions.
+ASPECTS (Alberta Stroke Program Early CT Score):
+- 10-point scale assessing MCA territory on NCCT
+- Each region scores 1 point (normal)
+- Subtract 1 for each region with early ischemic changes
+- Score 10 = normal, Score 0 = complete MCA infarct
+THE 10 REGIONS:
+Basal ganglia level (4 regions):
+- C = Caudate
+- L = Lentiform nucleus
+- IC = Internal capsule
+- I = Insular ribbon
+Supraganglionic level (6 regions):
+- M1, M2, M3 = Anterior, lateral, posterior MCA cortex
+- M4, M5, M6 = Same regions at higher cut
+ASPECTS INTERPRETATION:
+- 8-10: Small core, favorable for thrombectomy
+- 6-7: Moderate core, generally favorable
+- 5: Borderline—perfusion imaging recommended
+- 0-4: Large core, historically excluded from trials
+EVOLVING EVIDENCE (DAWN, DEFUSE-3, SELECT-2):
+- Perfusion mismatch more important than ASPECTS alone
+- SELECT-2: Benefit shown even with ASPECTS 3-5 if mismatch present
+- Core-penumbra mismatch identifies salvageable tissue
+- Extended window (6-24h) based on perfusion, not time alone
+PERFUSION PARAMETERS:
+- Core: CBF <30% (irreversible)
+- Penumbra: Tmax >6s (salvageable)
+- Mismatch ratio: Penumbra/Core >1.8
+- Target mismatch: Core <70ml, penumbra >15ml
+CURRENT PRACTICE:
+- ASPECTS ≥6: Proceed with thrombectomy in window
+- ASPECTS <6: Perfusion-guided selection
+- Time is brain, but tissue is the target`,
+    difficulty: 'hard',
+    examFrequency: 'high'
+  },
+  {
+    id: 'B016',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'Visceral Aneurysm',
+    question: 'A 45-year-old female is incidentally found to have a 2.8cm splenic artery aneurysm. She is planning pregnancy in the near future. What is the recommended management?',
+    options: [
+      'Observation with annual ultrasound surveillance',
+      'Elective treatment before pregnancy regardless of size',
+      'Treatment only if symptomatic or >3cm',
+      'Defer treatment until after pregnancy'
+    ],
+    correctAnswers: [1],
+    explanation: `Splenic artery aneurysms in women of childbearing age planning pregnancy should be treated electively—rupture risk dramatically increases during pregnancy.
+SPLENIC ARTERY ANEURYSM (SAA):
+- Most common visceral aneurysm (60%)
+- 4:1 female predominance
+- Associated with: Multiparity, portal hypertension, fibromuscular dysplasia
+RUPTURE RISK FACTORS:
+- Pregnancy (especially 3rd trimester, labor/delivery)
+- Size >2cm (some say >2.5cm)
+- Rapid growth
+- Symptomatic
+- Portal hypertension
+PREGNANCY-RELATED RUPTURE:
+- Maternal mortality: 70-75%
+- Fetal mortality: 90-95%
+- Risk increases with each trimester
+- Mechanism: Hormonal changes (estrogen/progesterone on vessel wall)
+- Increased splenic blood flow during pregnancy
+TREATMENT THRESHOLDS:
+TREAT REGARDLESS OF SIZE:
+- Women of childbearing age planning pregnancy ← THIS CASE
+- Symptomatic (pain, expansion)
+- Pseudoaneurysm (any size)
+TREAT IF >2-2.5CM:
+- All patients (even asymptomatic)
+- Portal hypertension patients
+- Liver transplant candidates
+TREATMENT OPTIONS:
+ENDOVASCULAR (preferred):
+- Coil embolization (proximal and distal)
+- Covered stent (if preserving splenic flow needed)
+- Plug devices
+- Success rate >95%
+SURGICAL:
+- Aneurysmectomy with/without splenectomy
+- For: Complex anatomy, failed endovascular
+LOCATION MATTERS:
+- Proximal/mid SAA: Embolization safe (collaterals via short gastrics)
+- Hilar: Risk of splenic infarction, may need splenectomy`,
+    difficulty: 'medium',
+    examFrequency: 'high'
+  },
+  {
+    id: 'B017',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'Renal Intervention',
+    question: 'A patient with resistant hypertension (BP 165/95 on 4 medications) has a 75% ostial renal artery stenosis. Renal vein renin sampling shows a lateralizing ratio of 2.5:1. What does this finding suggest?',
+    options: [
+      'Stenosis is hemodynamically insignificant',
+      'High likelihood of blood pressure improvement after revascularization',
+      'Bilateral renal artery disease',
+      'Primary hyperaldosteronism rather than renovascular hypertension'
+    ],
+    correctAnswers: [1],
+    explanation: `Renal vein renin ratio ≥1.5:1 (lateralizing) predicts blood pressure response to revascularization with ~90% accuracy.
+RENAL VEIN RENIN SAMPLING:
+- Compares renin secretion between kidneys
+- Lateralizing ratio = Affected kidney renin / Contralateral renin
+- Ratio ≥1.5:1 = Significant lateralization
+- Ratio ≥2.0:1 = Strong lateralization
+INTERPRETATION:
+- ≥1.5:1 with suppressed contralateral: Best predictor of cure/improvement
+- <1.5:1: Bilateral disease, essential hypertension, or non-functional stenosis
+- This patient's 2.5:1 = HIGH likelihood of benefit
+CAVEATS OF RENIN SAMPLING:
+- Must stop ACE-I/ARB 2-4 weeks prior (stimulate renin)
+- Stop beta-blockers (suppress renin)
+- Sodium restriction increases sensitivity
+- Captopril stimulation test can enhance sensitivity
+ASTRAL AND CORAL TRIALS:
+- Showed no benefit of stenting over medical therapy in general population
+- BUT: Selected patients with high clinical suspicion may benefit
+- Trials criticized for including non-significant stenoses
+WHO MIGHT BENEFIT FROM RENAL STENTING:
+- Flash pulmonary edema with RAS
+- Resistant hypertension with lateralizing renins
+- Declining renal function on ACE-I/ARB
+- Solitary functioning kidney with significant RAS
+- Recent onset hypertension with clear anatomic cause
+TECHNICAL POINTS:
+- Ostial lesions need stent with 1-2mm protrusion into aorta
+- Distal protection not routinely used (atheroma less friable)
+- Target: <30% residual stenosis
+- Complications: Dissection, embolization, access site`,
+    difficulty: 'hard',
+    examFrequency: 'medium'
+  },
+  {
+    id: 'B018',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'Upper Extremity',
+    question: 'A violinist presents with right arm claudication and digital ischemia. Angiography shows compression of the subclavian artery with arm abduction. What is the most likely diagnosis and definitive treatment?',
+    options: [
+      'Buerger disease; smoking cessation',
+      'Thoracic outlet syndrome; first rib resection',
+      'Subclavian steal syndrome; carotid-subclavian bypass',
+      'Giant cell arteritis; high-dose steroids'
+    ],
+    correctAnswers: [1],
+    explanation: `Arterial thoracic outlet syndrome (TOS) with positional compression requires surgical decompression—first rib resection is definitive treatment.
+THORACIC OUTLET SYNDROME TYPES:
+NEUROGENIC TOS (95%):
+- Brachial plexus compression
+- Pain, paresthesias, weakness
+- Provocative tests: Adson, Wright, Roos
+ARTERIAL TOS (1%):
+- Subclavian artery compression
+- Claudication, embolization, aneurysm
+- Often with cervical rib or anomalous first rib
+VENOUS TOS (Paget-Schroetter) (4%):
+- Subclavian vein thrombosis
+- "Effort thrombosis" in young athletes
+- Swelling, cyanosis, pain
+ARTERIAL TOS FINDINGS:
+- Positional compression on angiography (this case)
+- Post-stenotic aneurysm formation
+- Distal embolization (digital ischemia)
+- Cervical rib on X-ray (50%)
+- Abnormal first rib or scalene muscle hypertrophy
+DIAGNOSIS:
+- Duplex with provocative positioning
+- CTA/MRA with arm abduction
+- Conventional angiography gold standard
+- Chest X-ray for cervical rib
+TREATMENT ALGORITHM:
+ARTERIAL TOS:
+- First rib resection ± cervical rib resection
+- Scalene muscle release
+- Repair/replace subclavian if aneurysmal
+- Treat distal embolization (thrombolysis, embolectomy)
+VENOUS TOS:
+- Thrombolysis for acute thrombosis
+- Then: First rib resection (usually 2-4 weeks later)
+- Some advocate same-admission surgery
+NEUROGENIC TOS:
+- Physical therapy first (3-6 months)
+- Surgery if failed conservative management
+WHY NOT OTHER OPTIONS:
+- Buerger: Young smoker, affects small vessels, no compression
+- Subclavian steal: Retrograde vertebral flow, no arm compression
+- GCA: Large vessel vasculitis, no positional component`,
+    difficulty: 'medium',
+    examFrequency: 'medium'
+  },
+  {
+    id: 'B019',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'Portal Venous System',
+    question: 'A patient with cirrhosis and refractory ascites undergoes TIPS creation. Post-procedure, the portal-systemic gradient is reduced from 22 mmHg to 6 mmHg. What is the concern with this gradient?',
+    options: [
+      'Gradient is optimal—no concerns',
+      'Gradient too high—TIPS is stenosed',
+      'Gradient too low—high risk of hepatic encephalopathy',
+      'Gradient measurement is unreliable post-TIPS'
+    ],
+    correctAnswers: [2],
+    explanation: `Post-TIPS PSG <8 mmHg increases hepatic encephalopathy risk—the target is 8-12 mmHg, not maximally low.
+PORTAL-SYSTEMIC GRADIENT (PSG):
+- Normal: 1-5 mmHg
+- Clinically significant portal HTN: ≥10 mmHg
+- Variceal bleeding threshold: ≥12 mmHg
+TIPS TARGET GRADIENT:
+- Goal: PSG 8-12 mmHg (or <12 mmHg)
+- <8 mmHg: Too much shunting → encephalopathy risk
+- >12 mmHg: Inadequate decompression
+- This patient's 6 mmHg is TOO LOW
+WHY TOO LOW IS BAD:
+- Excessive portal decompression
+- Hepatofugal flow (liver starved of portal nutrients)
+- Increased systemic ammonia exposure
+- Hepatic encephalopathy in 25-45% of TIPS patients
+- Higher rates with lower gradients
+TIPS SIZING STRATEGY:
+- 8mm stent: Standard starting point
+- 10mm stent: If 8mm doesn't achieve target
+- Can dilate up but harder to reduce
+- Some use under-dilated stent initially
+REDUCING POST-TIPS ENCEPHALOPATHY:
+- Avoid over-shunting (PSG <8)
+- Lactulose prophylaxis
+- Rifaximin if recurrent
+- Consider TIPS reduction if refractory
+TIPS REDUCTION OPTIONS:
+- Parallel stent-graft (reducing flow)
+- Shunt-reducing stent
+- Balloon-occluded TIPS modification
+INDICATIONS FOR TIPS:
+- Variceal bleeding (acute or secondary prevention)
+- Refractory ascites
+- Hepatic hydrothorax
+- Budd-Chiari syndrome
+- Hepatorenal syndrome (bridge to transplant)
+CONTRAINDICATIONS:
+- Absolute: Right heart failure, severe tricuspid regurg
+- Relative: Encephalopathy, bilirubin >5, MELD >18 (high mortality)`,
+    difficulty: 'hard',
+    examFrequency: 'high'
+  },
+  {
+    id: 'B020',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'Arteriovenous Malformation',
+    question: 'A patient with a high-flow AVM of the lower extremity is referred for embolization. Which embolic agent is most appropriate for the NIDUS of this lesion?',
+    options: [
+      'Gelfoam pledgets',
+      'Coils in the feeding arteries',
+      'Liquid embolic (Onyx or NBCA)',
+      'Polyvinyl alcohol (PVA) particles'
+    ],
+    correctAnswers: [2],
+    explanation: `AVM treatment requires nidus penetration—liquid embolics (Onyx, NBCA) are optimal for this purpose. Feeding vessel embolization alone leads to recurrence.
+AVM TREATMENT PRINCIPLES:
+- Goal: Obliterate the NIDUS (abnormal vascular core)
+- Feeding artery only embolization = FAILURE
+- Why? Collaterals recruit rapidly → recurrence
+- Must penetrate and cast the nidus itself
+EMBOLIC AGENTS FOR AVM:
+LIQUID EMBOLICS (nidus penetration):
+- Onyx (EVOH): Controlled injection, non-adhesive
+- NBCA (glue): Fast polymerization, adhesive
+- Advantages: Fill nidus, reach small vessels
+- This is the CORRECT choice
+COILS:
+- For aneurysms, pseudo-aneurysms
+- Feeding artery occlusion in AVMs = BAD
+- Blocks future access, collaterals form
+- Reserve for: High-flow fistula component only
+PVA PARTICLES:
+- Temporary effect
+- Don't reach nidus effectively
+- Recanalization common
+- Use for: Pre-surgical devascularization, tumor embolization
+GELFOAM:
+- Temporary agent (resorbs in days-weeks)
+- Not for definitive AVM treatment
+- Use for: Acute hemorrhage control, pre-op
+SCHOBINGER CLASSIFICATION:
+- Stage I: Quiescent (warm, pink, AV shunting)
+- Stage II: Expansion (enlargement, pulsation, thrill, bruit)
+- Stage III: Destruction (pain, ulceration, bleeding, necrosis)
+- Stage IV: Decompensation (high-output cardiac failure)
+TREATMENT APPROACH:
+- Stage I: Observation (many remain stable)
+- Stage II-IV: Intervention indicated
+- Multi-stage embolization often needed
+- Surgery may follow embolization
+- Complete resection > partial treatment
+ETHANOL:
+- Most permanent agent (tissue necrosis)
+- High complication rate (nerve injury, skin necrosis)
+- Reserved for experienced centers
+- Requires general anesthesia (painful)`,
+    difficulty: 'medium',
+    examFrequency: 'high'
+  },
+  {
+    id: 'B021',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'IVC Filters',
+    question: 'A patient with acute PE had an IVC filter placed due to contraindication to anticoagulation. Six weeks later, the contraindication has resolved and the patient is anticoagulated. What is the recommended management of the filter?',
+    options: [
+      'Leave the filter permanently—removal is not necessary',
+      'Retrieve the filter as soon as the contraindication resolves',
+      'Retrieve the filter within 3-6 months if no longer needed',
+      'Remove only if the patient develops filter-related complications'
+    ],
+    correctAnswers: [1],
+    explanation: `Retrievable IVC filters should be removed as soon as the indication resolves—FDA recommends retrieval when no longer needed, ideally within 1-2 months.
+FDA RECOMMENDATIONS (2014 Safety Communication):
+- Evaluate filter retrieval 1-2 months after placement
+- Remove as soon as PE/DVT risk allows
+- Prolonged dwell time increases complications
+- This patient: Contraindication resolved → RETRIEVE NOW
+IVC FILTER INDICATIONS:
+ABSOLUTE:
+- Acute VTE with contraindication to anticoagulation
+- Recurrent VTE despite adequate anticoagulation
+- Complication of anticoagulation requiring cessation
+RELATIVE (controversial):
+- Massive PE with residual DVT (prophylactic)
+- Free-floating iliofemoral thrombus
+- Poor cardiopulmonary reserve with any PE risk
+COMPLICATIONS OF INDWELLING FILTERS:
+EARLY:
+- Insertion site thrombosis
+- Malposition
+- IVC penetration
+LATE:
+- Filter thrombosis (6-30%)
+- IVC occlusion
+- Filter migration
+- Strut fracture with embolization
+- Penetration with retroperitoneal injury
+- Chronic leg swelling
+RETRIEVAL SUCCESS FACTORS:
+- Dwell time: <3 months optimal, can still retrieve at >1 year
+- Tilt: <15° ideal
+- Embedded struts: May need advanced techniques
+- Filter type: Some easier than others
+ADVANCED RETRIEVAL TECHNIQUES:
+- Stiff wire/sheath manipulation
+- Laser sheath
+- Endobronchial forceps
+- Loop snare techniques
+- 96%+ retrieval rate at experienced centers
+IF NOT RETRIEVABLE:
+- Leave in place if asymptomatic
+- Treat IVC thrombosis with anticoagulation
+- Covered stent for symptomatic IVC stenosis`,
+    difficulty: 'medium',
+    examFrequency: 'high'
+  },
+  {
+    id: 'B022',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'Peripheral Arterial Disease',
+    question: 'A patient with lifestyle-limiting claudication has a 6cm occlusion of the superficial femoral artery. You successfully recanalize the lesion. What is the preferred treatment strategy for this TASC C lesion?',
+    options: [
+      'Plain balloon angioplasty alone',
+      'Drug-coated balloon (DCB) angioplasty',
+      'Bare metal stent placement',
+      'Covered stent-graft placement'
+    ],
+    correctAnswers: [1],
+    explanation: `Drug-coated balloons (DCB) are the preferred treatment for femoropopliteal lesions after successful recanalization—superior patency compared to plain balloon with less foreign body.
+FEMOROPOPLITEAL TREATMENT EVOLUTION:
+- Plain balloon: High restenosis (40-60% at 1 year)
+- Bare metal stent: Better acute result, but in-stent restenosis
+- Drug-coated balloon: Current first-line for most lesions
+- Drug-eluting stent: Alternative for complex cases
+DCB ADVANTAGES:
+- No permanent implant (vessel preserved)
+- Paclitaxel inhibits smooth muscle proliferation
+- 1-year patency 80-90% (vs 50-60% POBA)
+- IN.PACT SFA, LEVANT trials showed superiority
+WHEN TO USE DCB (first-line):
+- De novo femoropopliteal stenosis/occlusion
+- After successful recanalization of CTO
+- In-stent restenosis treatment
+- Moderate-length lesions (up to 15-20cm)
+WHEN TO CONSIDER STENT:
+- Flow-limiting dissection after PTA
+- Significant recoil (>30% residual)
+- Failed DCB with suboptimal result
+- Consider DES for longer lesions
+COVERED STENT (VIABAHN) INDICATIONS:
+- Very long lesions (>15-20cm)
+- In-stent restenosis (stent-in-stent)
+- Heavily calcified vessels
+- VIASTAR trial showed benefit in long lesions
+PACLITAXEL SAFETY:
+- FDA review 2018-2020: Mortality signal concern
+- Subsequent analyses: No confirmed increased risk
+- Still recommended by guidelines
+- Discuss with patient (shared decision-making)
+TECHNICAL TIPS FOR DCB:
+- Adequate lesion preparation essential
+- Score balloon or atherectomy for calcium
+- DCB should overlap lesion by 5-10mm each end
+- 3-minute inflation (drug transfer time)
+- No need for post-dilation usually`,
+    difficulty: 'medium',
+    examFrequency: 'high'
+  },
+
   // ═══════════════════════════════════════════════════════════════════════════
   // SECTION C: Non-vascular Interventions
   // ═══════════════════════════════════════════════════════════════════════════

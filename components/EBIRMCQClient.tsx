@@ -1340,7 +1340,48 @@ export default function EBIRMCQClient() {
                   </span>
                 )}
               </div>
-              <p className="text-gray-700 text-sm">{currentQuestion.explanation}</p>
+              {/* Formatted explanation with bullet point support */}
+              <div className="text-gray-700 text-sm space-y-2">
+                {currentQuestion.explanation.split(/(?=•)|(?=HIGH-YIELD)|(?=DEVICE-SPECIFIC)|(?=PEARLS:)|(?=CRITICAL)|(?=KEY POINT)|(?=REMEMBER)|(?=TIP:)|(?=NOTE:)/).map((segment, idx) => {
+                  const trimmed = segment.trim()
+                  if (!trimmed) return null
+                  
+                  // Check if this is a header/section title
+                  const isHeader = /^(HIGH-YIELD|DEVICE-SPECIFIC|PEARLS:|CRITICAL|KEY POINT|REMEMBER|TIP:|NOTE:)/.test(trimmed)
+                  
+                  if (isHeader) {
+                    // Split header from content
+                    const colonIndex = trimmed.indexOf(':')
+                    const headerText = colonIndex > -1 ? trimmed.slice(0, colonIndex + 1) : trimmed
+                    const content = colonIndex > -1 ? trimmed.slice(colonIndex + 1).trim() : ''
+                    
+                    return (
+                      <div key={idx} className="mt-3">
+                        <span className="font-semibold text-gray-800 block">{headerText}</span>
+                        {content && <span>{content}</span>}
+                      </div>
+                    )
+                  }
+                  
+                  // Handle bullet points - split by • and render each as separate item
+                  if (trimmed.includes('•')) {
+                    const bullets = trimmed.split('•').filter(b => b.trim())
+                    return (
+                      <ul key={idx} className="ml-4 space-y-1">
+                        {bullets.map((bullet, bIdx) => (
+                          <li key={bIdx} className="flex items-start gap-2">
+                            <span className="text-green-600 mt-0.5">•</span>
+                            <span>{bullet.trim()}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )
+                  }
+                  
+                  // Regular paragraph
+                  return <p key={idx}>{trimmed}</p>
+                })}
+              </div>
               
               {/* "Why I got this wrong" note feature - only show if incorrect */}
               {!isCorrect && (

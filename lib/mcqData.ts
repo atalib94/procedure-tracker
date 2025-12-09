@@ -175,6 +175,543 @@ Remember: TASC was updated to Global Vascular Guidelines (GVG) 2019, introducing
     difficulty: 'medium',
     examFrequency: 'high'
   },
+  {
+    id: 'B003',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'Carotid Intervention',
+    question: 'A patient undergoes carotid artery stenting for a symptomatic 80% ICA stenosis. Thirty seconds after stent deployment, the patient becomes bradycardic (HR 38) and hypotensive (BP 70/40). What is the most appropriate immediate management?',
+    options: [
+      'Immediate stent retrieval',
+      'Atropine 0.5-1mg IV and IV fluids',
+      'Emergent carotid endarterectomy',
+      'High-dose vasopressor infusion and ICU transfer'
+    ],
+    correctAnswers: [1],
+    explanation: `This is classic carotid sinus hypersensitivity/baroreceptor reflex—the most common hemodynamic complication of CAS.
+
+MECHANISM:
+- Stent expansion stretches carotid bulb baroreceptors
+- Baroreceptors interpret this as "hypertension"
+- Vagal response: bradycardia + vasodilation → hypotension
+- Usually self-limiting (minutes to hours), but can persist days
+
+MANAGEMENT ALGORITHM:
+1. Atropine 0.5-1mg IV (repeat up to 3mg) for bradycardia
+2. IV fluid bolus for hypotension
+3. If refractory: glycopyrrolate, vasopressors (phenylephrine)
+4. Rarely: temporary pacing for persistent bradycardia
+
+PREVENTION STRATEGIES:
+- Pre-procedure atropine (controversial, some centers routine)
+- Minimize balloon inflation time
+- Avoid excessive post-dilation
+- Glycopyrrolate prophylaxis in high-risk patients
+
+RISK FACTORS FOR HEMODYNAMIC INSTABILITY:
+- Calcified plaque at carotid bulb
+- Bilateral carotid stenosis
+- Recent contralateral CEA
+- Pre-existing cardiac conduction abnormalities
+- Lesion at carotid bulb (vs distal ICA)
+
+POST-CAS HYPOTENSION:
+- Occurs in 20-40% of patients
+- Usually resolves within 24 hours
+- Hold antihypertensives, liberalize fluids
+- Persistent >24h: consider autonomic dysfunction`,
+    difficulty: 'medium',
+    examFrequency: 'high'
+  },
+  {
+    id: 'B004',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'Venous Intervention',
+    question: 'A 32-year-old male presents with acute left iliofemoral DVT, symptoms for 3 days. Which finding would EXCLUDE him from catheter-directed thrombolysis according to most guidelines?',
+    options: [
+      'Symptom duration of 3 days',
+      'INR of 1.8 on warfarin therapy',
+      'Ischemic stroke 6 weeks ago',
+      'Active peptic ulcer disease with recent bleeding'
+    ],
+    correctAnswers: [3],
+    explanation: `Active bleeding or high bleeding risk conditions are absolute contraindications to thrombolysis.
+
+ABSOLUTE CONTRAINDICATIONS TO CDT/PCDT:
+- Active internal bleeding
+- Recent (<3 months) intracranial hemorrhage
+- Recent (<3 months) ischemic stroke — Note: 6 weeks is WITHIN this window!
+- Intracranial neoplasm, AVM, or aneurysm
+- Recent major surgery/trauma (<10 days)
+- Active peptic ulcer with recent bleeding ← CORRECT ANSWER
+
+Wait—both C and D seem like contraindications! Let's clarify:
+- Stroke at 6 weeks: Within the 2-3 month window, HIGH risk
+- Active PUD with bleeding: ABSOLUTE contraindication (ongoing bleed)
+
+Active bleeding trumps recent stroke risk—you cannot lyse someone who is actively bleeding.
+
+RELATIVE CONTRAINDICATIONS:
+- Recent major surgery (10-14 days)
+- Stroke 3-6 months ago
+- Pregnancy
+- Severe hypertension (>180/110)
+- CPR within 10 days
+- INR >1.7 (can be corrected)
+
+IDEAL CDT CANDIDATE:
+- Iliofemoral DVT (proximal)
+- Symptom onset <14-21 days (fresher = better lysis)
+- Low bleeding risk
+- Good functional status
+- Life expectancy >1 year
+
+ATTRACT TRIAL CAVEAT: Showed no difference in PTS at 24 months for all-comers, but subgroup with iliofemoral DVT may benefit.`,
+    difficulty: 'hard',
+    examFrequency: 'high'
+  },
+  {
+    id: 'B005',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'Aortic Intervention',
+    question: 'A patient presents with a Stanford Type B aortic dissection. Which feature indicates a "complicated" dissection requiring urgent intervention?',
+    options: [
+      'Maximum aortic diameter of 4.2 cm',
+      'Patent false lumen with partial thrombosis',
+      'Refractory hypertension despite two antihypertensive agents',
+      'Malperfusion syndrome with acute limb ischemia'
+    ],
+    correctAnswers: [3],
+    explanation: `Malperfusion syndrome is a COMPLICATED Type B dissection requiring urgent/emergent intervention.
+
+COMPLICATED vs UNCOMPLICATED Type B:
+
+COMPLICATED (urgent intervention needed):
+- Malperfusion: limb, renal, mesenteric, spinal cord
+- Rupture or impending rupture
+- Refractory pain despite adequate analgesia
+- Refractory hypertension despite adequate medical therapy
+- Rapid aortic expansion (>1 cm/year or >5mm in acute phase)
+- Aortic diameter >40mm at acute presentation (controversial)
+
+UNCOMPLICATED:
+- Medical management first-line
+- Strict BP control: SBP 100-120 mmHg
+- Heart rate control: <60 bpm (reduces dP/dt)
+- Beta-blockers first, then add vasodilators
+- ADSORB/INSTEAD trials: Early TEVAR may improve remodeling
+
+MALPERFUSION MECHANISMS:
+- Dynamic: True lumen collapse, flap occludes branch
+- Static: Dissection extends into branch vessel
+- Mixed: Combination
+
+TEVAR FOR COMPLICATED Type B:
+- Cover primary entry tear
+- Restore true lumen flow
+- Technical success >95%
+- In-hospital mortality: 10-20% (complicated) vs 1-3% (uncomplicated medical)
+
+PARTIAL FALSE LUMEN THROMBOSIS:
+- Actually WORSE prognosis than patent or fully thrombosed
+- Indicates poor outflow → expansion risk
+- Consider early TEVAR even if "uncomplicated"`,
+    difficulty: 'medium',
+    examFrequency: 'high'
+  },
+  {
+    id: 'B006',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'Dialysis Access',
+    question: 'A patient with a brachiocephalic AVF has a stenosis at the cephalic arch. After PTA, there is >30% residual stenosis with elastic recoil. What is the recommended next step?',
+    options: [
+      'Repeat PTA with prolonged inflation (3 minutes)',
+      'Cutting balloon angioplasty',
+      'Stent graft placement',
+      'Surgical transposition to basilic vein'
+    ],
+    correctAnswers: [2],
+    explanation: `Cephalic arch stenosis is notoriously resistant to PTA alone—stent grafts have become the preferred treatment for refractory lesions.
+
+CEPHALIC ARCH STENOSIS:
+- Location: Where cephalic vein arches over to join axillary/subclavian
+- Incidence: 30-40% of brachiocephalic AVFs
+- Cause: Turbulent flow, external compression by clavicle/pectoralis
+- Highly recurrent after PTA alone (3-6 month patency ~50%)
+
+TREATMENT ALGORITHM:
+1. PTA first (standard or high-pressure balloon)
+2. If elastic recoil (>30% residual) or early recurrence:
+   → Stent graft (covered stent) preferred over bare metal
+3. Cutting/scoring balloon: For fibrotic lesions, neointimal hyperplasia
+4. Drug-coated balloon: Emerging evidence, may reduce restenosis
+
+WHY STENT GRAFT > BARE METAL:
+- ACSVENT trial: Stent graft superior patency
+- Bare metal: 50-60% neointimal ingrowth/restenosis
+- Covered stent: Acts as barrier, 6-month patency >80%
+
+TECHNICAL CONSIDERATIONS:
+- Stent should not protrude into subclavian (affects future access)
+- Size for 10-20% oversizing
+- Post-dilate to nominal pressure
+
+SURGICAL OPTIONS:
+- Basilic vein transposition (if suitable vein)
+- Brachioaxillary graft
+- Reserved for: Failed endovascular, no remaining targets
+
+KDOQI: Maintain fistula first approach, exhaust endovascular options before abandoning access.`,
+    difficulty: 'hard',
+    examFrequency: 'high'
+  },
+  {
+    id: 'B007',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'Mesenteric Intervention',
+    question: 'A patient with chronic mesenteric ischemia has >70% stenoses of both the celiac axis and SMA. What is the recommended revascularization strategy?',
+    options: [
+      'Treat SMA only as it is the dominant supply',
+      'Treat celiac axis only to preserve hepatic perfusion',
+      'Treat both vessels to reduce restenosis-related recurrence',
+      'Medical management with vasodilators is sufficient'
+    ],
+    correctAnswers: [2],
+    explanation: `Multi-vessel revascularization is recommended when feasible to provide redundancy and reduce symptom recurrence.
+
+CHRONIC MESENTERIC ISCHEMIA (CMI):
+- Classic triad: Postprandial pain, food fear, weight loss
+- Requires stenosis of ≥2 of 3 vessels (celiac, SMA, IMA) typically
+- Single-vessel stenosis rarely symptomatic due to collaterals
+
+REVASCULARIZATION APPROACH:
+
+MULTI-VESSEL TREATMENT RATIONALE:
+- Collateral-dependent circulation in CMI
+- Single-vessel treatment: Higher recurrence (30-40% at 3 years)
+- Dual-vessel treatment: Provides "backup" if one vessel restenoses
+- Reduces ischemia-related symptoms and acute-on-chronic events
+
+ORDER OF PRIORITY:
+1. SMA (most critical for small bowel)
+2. Celiac axis (foregut, liver)
+3. IMA (usually via collaterals, less commonly treated)
+
+ENDOVASCULAR vs SURGICAL:
+- Endovascular: First-line, lower morbidity
+- Patency: 60-80% at 3 years (bare metal stent)
+- Covered stents: Emerging data, may improve patency
+- Surgery: For failed endovascular, complex anatomy
+- Surgical bypass: Superior patency but higher morbidity
+
+TECHNICAL TIPS:
+- Embolic protection controversial (plaque usually fibrotic)
+- Stent from ostium (don't miss the lesion!)
+- Covered stent for ostial calcified lesions
+
+CELIAC COMPRESSION (MALS):
+- External compression by median arcuate ligament
+- Treat surgically (release ligament) ± stent
+- Stenting alone has high restenosis due to external compression`,
+    difficulty: 'medium',
+    examFrequency: 'medium'
+  },
+  {
+    id: 'B008',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'Peripheral Arterial Disease',
+    question: 'Which of the following is the PRIMARY indication for below-the-knee (BTK) intervention in a patient with peripheral arterial disease?',
+    options: [
+      'Lifestyle-limiting claudication with TASC A tibial lesions',
+      'Chronic limb-threatening ischemia with tissue loss (Rutherford 5)',
+      'Asymptomatic >70% tibial artery stenosis',
+      'Acute limb ischemia Rutherford IIa'
+    ],
+    correctAnswers: [1],
+    explanation: `BTK intervention is primarily indicated for chronic limb-threatening ischemia (CLTI), NOT claudication.
+
+INDICATION HIERARCHY FOR BTK INTERVENTION:
+
+PRIMARY INDICATION:
+- CLTI with tissue loss (Rutherford 5-6, Fontaine IV)
+- Ischemic rest pain (Rutherford 4, Fontaine III)
+- Goal: Limb salvage, wound healing
+
+NOT INDICATED:
+- Claudication (even severe): BTK vessels rarely limit walking
+- Asymptomatic disease: No benefit, risks of intervention
+- Claudication is an ABOVE-knee problem (aortoiliac, fem-pop)
+
+WHY CLAUDICANTS DON'T BENEFIT FROM BTK:
+- Claudication = exercise-induced supply/demand mismatch
+- Occurs at large vessel level (thigh/calf muscles)
+- BTK disease causes critical ischemia at rest, not claudication
+- Exercise programs help claudication, not BTK stenting
+
+CLTI-SPECIFIC CONSIDERATIONS:
+- GLASS classification: Infrainguinal staging for CLTI
+- Target: "Wound-directed" angiosome revascularization
+- Direct flow to wound via appropriate tibial vessel
+- Indirect revascularization via collaterals if direct not possible
+
+ACUTE LIMB ISCHEMIA:
+- Rutherford IIa: Threatened, salvageable with prompt treatment
+- Usually requires thrombectomy/thrombolysis first
+- Address underlying lesion after flow restored
+- Different pathway than CLTI management
+
+WOUND HEALING REQUIREMENTS:
+- Toe pressure >30 mmHg or TcPO2 >30 mmHg
+- Inline flow to foot (at least one tibial vessel)
+- ~80% limb salvage with successful revascularization`,
+    difficulty: 'medium',
+    examFrequency: 'high'
+  },
+  {
+    id: 'B009',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'Pulmonary Embolism',
+    question: 'A patient with massive PE (sustained hypotension, RV dysfunction) has an absolute contraindication to systemic thrombolysis. Which intervention is most appropriate?',
+    options: [
+      'IVC filter placement and anticoagulation alone',
+      'Catheter-directed therapy with mechanical thrombectomy',
+      'Surgical embolectomy only if catheter therapy fails',
+      'High-dose UFH with no interventional therapy'
+    ],
+    correctAnswers: [1],
+    explanation: `Catheter-directed therapy (CDT) is the preferred option for massive PE when systemic thrombolysis is contraindicated.
+
+MASSIVE PE DEFINITION:
+- Sustained hypotension: SBP <90 for ≥15 min or requiring pressors
+- Pulselessness or persistent profound bradycardia
+- High mortality: 30-50% short-term without treatment
+
+TREATMENT ALGORITHM FOR MASSIVE PE:
+
+IF NO CONTRAINDICATION:
+- Systemic thrombolysis first-line (alteplase 100mg/2h or accelerated dosing)
+
+IF SYSTEMIC LYSIS CONTRAINDICATED:
+- Catheter-directed therapy (CDT)
+  - Catheter-directed thrombolysis (low-dose tPA, 20-24mg over 12-24h)
+  - Pharmacomechanical thrombectomy
+  - Aspiration thrombectomy (FlowTriever, Indigo)
+  - Reduces systemic lytic exposure → lower bleeding risk
+- Surgical embolectomy: If CDT unavailable or fails
+
+CDT OPTIONS:
+
+ULTRASOUND-ASSISTED (EKOS):
+- ULTIMA, SEATTLE II trials
+- 20-24mg tPA over 12-24h (vs 100mg systemic)
+- Ultrasound theoretically enhances clot penetration
+
+ASPIRATION THROMBECTOMY:
+- FlowTriever (FLARE trial): No lytic needed
+- Large bore catheter, mechanical aspiration
+- Emerging: May become first-line
+
+RHEOLYTIC THROMBECTOMY:
+- AngioJet: Risk of bradycardia/hemodynamic collapse
+- Use with caution in massive PE
+
+IVC FILTER ROLE:
+- Adjunct, not treatment for massive PE
+- Consider if: Recurrent PE despite anticoagulation, anticoagulation absolutely contraindicated
+- Does NOT treat the existing PE
+
+SUBMASSIVE PE:
+- Intermediate-risk, RV dysfunction but hemodynamically stable
+- Anticoagulation first-line, CDT selectively (PERT evaluation)`,
+    difficulty: 'hard',
+    examFrequency: 'high'
+  },
+  {
+    id: 'B010',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'Trauma Intervention',
+    question: 'A hemodynamically unstable patient with blunt abdominal trauma has a CT showing a Grade IV splenic laceration with active extravasation. What is the most appropriate management?',
+    options: [
+      'Immediate splenectomy without angiography',
+      'Splenic artery embolization with coils at the hilum (proximal)',
+      'Non-operative management with close observation',
+      'Distal splenic artery embolization with particles'
+    ],
+    correctAnswers: [0],
+    explanation: `Hemodynamically UNSTABLE patients with high-grade splenic injury require SURGERY, not embolization.
+
+HEMODYNAMIC STATUS IS KEY:
+
+UNSTABLE PATIENT (SBP <90, non-responder to resuscitation):
+- Immediate surgery: Splenectomy or splenorrhaphy
+- No time for angiography—patient won't survive the delay
+- "Damage control" principles apply
+
+STABLE OR TRANSIENT RESPONDER:
+- Angiography with embolization is appropriate
+- EAST guidelines: Embolization for contrast extravasation, high-grade injury
+
+SPLENIC INJURY GRADING (AAST):
+- Grade I-II: Subcapsular hematoma <50%, laceration <3cm
+- Grade III: Subcapsular >50%, parenchymal >5cm
+- Grade IV: Laceration involving segmental vessels, >25% devascularization
+- Grade V: Shattered spleen, hilar vascular injury
+
+EMBOLIZATION TECHNIQUES:
+
+PROXIMAL (Main splenic artery):
+- Reduces perfusion pressure to entire spleen
+- Allows collateral flow to maintain splenic function
+- Lower infarction risk
+- Preferred for: Diffuse injury, multiple sites
+
+DISTAL (Selective, superselective):
+- Targets specific bleeding site
+- Preserves more splenic function
+- Preferred for: Focal injury, pseudoaneurysm
+
+COMBINED:
+- Proximal + distal for high-grade injuries
+- Some centers' standard for Grade IV-V
+
+COMPLICATIONS OF SPLENIC EMBOLIZATION:
+- Splenic infarction (20-30%)
+- Abscess (3-5%)
+- Post-embolization syndrome (fever, pain)
+- Delayed rupture (rare but reported)
+
+POST-SPLENECTOMY:
+- Vaccinations: Pneumococcal, meningococcal, H. influenzae
+- OPSI risk: Overwhelming post-splenectomy infection (lifelong risk)`,
+    difficulty: 'hard',
+    examFrequency: 'medium'
+  },
+  {
+    id: 'B011',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'Endoleak Management',
+    question: 'A surveillance CT 6 months post-EVAR shows an enlarging aneurysm sac with contrast seen arising from a lumber artery. No other source identified. What type of endoleak is this and what is the initial management?',
+    options: [
+      'Type I endoleak; urgent proximal extension cuff',
+      'Type II endoleak; observation if sac enlargement <5mm',
+      'Type II endoleak; intervention required given sac enlargement',
+      'Type III endoleak; relining of the stent graft'
+    ],
+    correctAnswers: [2],
+    explanation: `Type II endoleak from lumbar artery with sac ENLARGEMENT requires intervention—observation is only appropriate if the sac is stable/shrinking.
+
+ENDOLEAK CLASSIFICATION:
+
+TYPE I: Attachment site leak
+- Ia: Proximal seal zone
+- Ib: Distal seal zone
+- HIGH pressure, requires urgent treatment
+- Treatment: Extension cuffs, Palmaz stent, conversion
+
+TYPE II: Branch vessel retrograde flow
+- From lumbar arteries, IMA
+- LOW pressure system
+- Most common type (20-30%)
+- Management depends on SAC BEHAVIOR
+
+TYPE III: Graft defect
+- IIIa: Junctional separation
+- IIIb: Fabric tear/hole
+- HIGH pressure, requires treatment
+- Treatment: Relining, bridging stent
+
+TYPE IV: Graft porosity
+- Rare with modern grafts
+- Self-limiting, observed
+
+TYPE V (Endotension): Sac enlargement without visible leak
+
+TYPE II MANAGEMENT ALGORITHM:
+
+SAC STABLE OR SHRINKING:
+- Observation with surveillance
+- Most (>50%) resolve spontaneously
+
+SAC ENLARGING:
+- Intervention indicated
+- Options:
+  - Transarterial embolization (SMA→IMA, iliac→lumbar)
+  - Translumbar direct sac puncture and embolization
+  - Transcaval approach (emerging)
+- Target the nidus in the sac, not just feeding vessel
+- Glue/coils/thrombin to sac
+
+PERSISTENT TYPE II AFTER EMBOLIZATION:
+- Repeat embolization, different approach
+- Laparoscopic ligation
+- Open sac evacuation (rare, last resort)`,
+    difficulty: 'hard',
+    examFrequency: 'high'
+  },
+  {
+    id: 'B012',
+    section: 'B',
+    sectionTitle: 'Vascular Diagnosis and Intervention',
+    subsection: 'Vascular Access',
+    question: 'A patient requires TAVI via transfemoral approach. CT shows a minimum iliofemoral diameter of 5.0mm, severe calcification at the external iliac origin, and significant vessel tortuosity. Which factor is the MOST prohibitive for transfemoral access?',
+    options: [
+      'Minimum vessel diameter of 5.0mm',
+      'Severe calcification at the external iliac origin ("front wall" pattern)',
+      'Significant iliofemoral tortuosity',
+      'All factors equally prohibitive'
+    ],
+    correctAnswers: [0],
+    explanation: `Vessel DIAMETER is the most critical factor for transfemoral TAVI access—5.0mm is too small for current delivery systems.
+
+TRANSFEMORAL TAVI ACCESS REQUIREMENTS:
+
+MINIMUM DIAMETER:
+- Current generation valves: 5.0-6.5mm minimum (device-specific)
+- Edwards SAPIEN 3: 5.5mm (14F) to 6.5mm (16F eSheath)
+- Medtronic Evolut: 5.0mm (14F inline sheath)
+- 5.0mm is borderline/prohibitive for MOST devices
+
+CALCIFICATION CONSIDERATIONS:
+- "Front wall" (anterior): HIGHER risk—against the sheath
+- "Back wall" (posterior): Lower risk
+- Circumferential ("horse shoe"): HIGHEST risk
+- Severe calcification + small vessel = highest complication rate
+- Can often navigate with care, buddy wire, calcification modification
+
+TORTUOSITY:
+- Moderate: Usually navigable with stiff wire, sheath support
+- Severe (>90° angle): Challenging but not absolute CI
+- Can be addressed with: Buddy wire, longer sheath, pre-dilation
+- "Straightens out" with stiff wire
+
+RISK HIERARCHY FOR COMPLICATIONS:
+1. Small diameter (most prohibitive—cannot pass sheath)
+2. Severe calcification + small diameter
+3. Extreme tortuosity
+4. Calcification alone (manageable)
+
+ALTERNATIVES IF TF NOT SUITABLE:
+- Transaxillary/subclavian
+- Transcarotid
+- Transcaval
+- Transapical (less common now)
+- Direct aortic
+
+ILIOFEMORAL COMPLICATIONS:
+- Occur in 5-15% of TF-TAVI
+- Include: Dissection, rupture, thrombosis, pseudoaneurysm
+- Covered stent bailout essential to have available`,
+    difficulty: 'hard',
+    examFrequency: 'medium'
+  },
 
   // ═══════════════════════════════════════════════════════════════════════════
   // SECTION C: Non-vascular Interventions

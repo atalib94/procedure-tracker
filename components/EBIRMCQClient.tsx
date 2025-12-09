@@ -94,6 +94,9 @@ export default function EBIRMCQClient() {
   // Questions with notes modal state
   const [showNotesModal, setShowNotesModal] = useState(false)
   
+  // Lightbox state for full-size image viewing
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null)
+  
   // Spaced repetition
   const sr = useSpacedRepetition()
   
@@ -1199,7 +1202,8 @@ export default function EBIRMCQClient() {
                     <img 
                       src={progress.reviewImage} 
                       alt="Review note attachment" 
-                      className="max-h-32 rounded-lg object-cover"
+                      className="max-h-32 rounded-lg object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => setLightboxImage(progress.reviewImage!)}
                     />
                   )}
                 </div>
@@ -1489,8 +1493,8 @@ export default function EBIRMCQClient() {
                 <img 
                   src={progress.personalNoteImage} 
                   alt="Personal note attachment" 
-                  className="max-h-48 rounded-lg object-contain cursor-pointer hover:opacity-90"
-                  onClick={() => window.open(progress.personalNoteImage!, '_blank')}
+                  className="max-h-48 rounded-lg object-contain cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => setLightboxImage(progress.personalNoteImage!)}
                 />
               )}
             </div>
@@ -2405,7 +2409,8 @@ export default function EBIRMCQClient() {
                           <img 
                             src={item.reviewImage} 
                             alt="Flag note" 
-                            className="max-h-32 rounded border border-purple-200"
+                            className="max-h-32 rounded border border-purple-200 cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={() => setLightboxImage(item.reviewImage)}
                           />
                         </div>
                       )}
@@ -2427,7 +2432,8 @@ export default function EBIRMCQClient() {
                           <img 
                             src={item.personalNoteImage} 
                             alt="Personal note" 
-                            className="max-h-32 rounded border border-blue-200"
+                            className="max-h-32 rounded border border-blue-200 cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={() => setLightboxImage(item.personalNoteImage)}
                           />
                         </div>
                       )}
@@ -2452,6 +2458,32 @@ export default function EBIRMCQClient() {
     )
   }
 
+  // Render lightbox for full-size image viewing
+  const renderLightbox = () => {
+    if (!lightboxImage) return null
+    
+    return (
+      <div 
+        className="fixed inset-0 bg-black/90 flex items-center justify-center z-[60] p-4"
+        onClick={() => setLightboxImage(null)}
+      >
+        <button
+          onClick={() => setLightboxImage(null)}
+          className="absolute top-4 right-4 text-white/80 hover:text-white p-2 rounded-full bg-black/30 hover:bg-black/50 transition-colors"
+          aria-label="Close"
+        >
+          <X className="w-6 h-6" />
+        </button>
+        <img 
+          src={lightboxImage} 
+          alt="Full size view" 
+          className="max-w-full max-h-full object-contain rounded-lg"
+          onClick={(e) => e.stopPropagation()}
+        />
+      </div>
+    )
+  }
+
   // Main render
   if (!sr.isLoaded || !settingsLoaded) {
     return (
@@ -2466,6 +2498,7 @@ export default function EBIRMCQClient() {
       {renderFirstVisitModal()}
       {renderQuizStartModal()}
       {renderNotesModal()}
+      {renderLightbox()}
       {view === 'menu' && renderMenu()}
       {view === 'quiz' && renderQuiz()}
       {view === 'stats' && renderStats()}

@@ -101,15 +101,15 @@ Multiple myeloma: Previously thought high-risk, now considered safe with adequat
     section: 'B',
     sectionTitle: 'Vascular Diagnosis and Intervention',
     subsection: 'Aortic Intervention',
-    question: 'A 72-year-old male with a 6.2 cm infrarenal AAA is evaluated for EVAR. CT shows a 22mm infrarenal neck length, 28mm neck diameter, and 45° angulation. Which factor is OUTSIDE standard IFU criteria for most devices?',
+    question: 'A 72-year-old male with a 6.2 cm infrarenal AAA is evaluated for EVAR. CT shows a 22mm infrarenal neck length, 28mm neck diameter, and 65° angulation. Which factor is OUTSIDE standard IFU criteria for most devices?',
     options: [
       'Infrarenal neck length of 22mm',
       'Neck diameter of 28mm',
-      'Neck angulation of 45°',
+      'Neck angulation of 65°',
       'All parameters are within standard IFU'
     ],
     correctAnswers: [2],
-    explanation: `Standard EVAR IFU criteria have specific anatomical requirements. Neck angulation >60° is generally acceptable, but 45° approaches limits for some devices.
+    explanation: `Standard EVAR IFU criteria have specific anatomical requirements. Neck angulation <60° is generally acceptable, but 65° approaches limits for some devices.
 
 HIGH-YIELD IFU CRITERIA (know these!):
 • Neck length: ≥15mm (most devices), ≥10mm for some newer devices

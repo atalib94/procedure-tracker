@@ -7,7 +7,7 @@ import {
   Zap, TrendingUp, AlertCircle, Star, Shuffle, List,
   BarChart3, Calendar, Flame, Award, Image, MessageSquare, X,
   Timer, Keyboard, CircleDot, HelpCircle, ThumbsUp, Settings, Sparkles,
-  StickyNote, Pencil, Trash2
+  StickyNote, Pencil, Trash2, RefreshCw
 } from 'lucide-react'
 import { mcqQuestions, sectionInfo, MCQQuestion, getQuestionsBySection } from '@/lib/mcqData'
 import { useSpacedRepetition, QuestionProgress } from '@/lib/useSpacedRepetition'
@@ -46,6 +46,7 @@ const DEFAULT_SETTINGS: QuizSettings = {
 
 const SETTINGS_STORAGE_KEY = 'ebir-mcq-quiz-settings'
 const FIRST_VISIT_KEY = 'ebir-mcq-first-visit-completed'
+const APP_VERSION = 'v1.1.0' // Update this when deploying changes
 
 export default function EBIRMCQClient() {
   // Core state
@@ -57,6 +58,7 @@ export default function EBIRMCQClient() {
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>([])
   const [showResult, setShowResult] = useState(false)
   const [sessionStats, setSessionStats] = useState({ correct: 0, incorrect: 0, startTime: Date.now() })
+  const [isRefreshing, setIsRefreshing] = useState(false)
   
   // First visit / setup modal state
   const [showFirstVisitModal, setShowFirstVisitModal] = useState(false)
@@ -99,6 +101,31 @@ export default function EBIRMCQClient() {
   
   // Spaced repetition
   const sr = useSpacedRepetition()
+  
+  // Hard refresh function to clear cache and reload
+  const handleHardRefresh = async () => {
+    setIsRefreshing(true)
+    try {
+      // Clear service worker caches if available
+      if ('caches' in window) {
+        const cacheNames = await caches.keys()
+        await Promise.all(cacheNames.map(name => caches.delete(name)))
+      }
+      
+      // Unregister service workers
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations()
+        await Promise.all(registrations.map(reg => reg.unregister()))
+      }
+      
+      // Force reload from server
+      window.location.reload()
+    } catch (e) {
+      console.error('Refresh failed:', e)
+      // Fallback to simple reload
+      window.location.reload()
+    }
+  }
   
   // Load settings from localStorage on mount
   useEffect(() => {
@@ -268,10 +295,16 @@ export default function EBIRMCQClient() {
 
   // Initiate quiz - shows question count selector modal
   const initiateQuiz = (overrideSettings?: Partial<QuizSettings>) => {
-    setPendingQuizSettings(overrideSettings || null)
+    // Always default filterMode to 'all' for quick-start buttons
+    // Only use saved filterMode if explicitly starting from Settings with custom filter
+    const effectiveOverrides = { 
+      filterMode: 'all' as FilterMode, 
+      ...overrideSettings 
+    }
+    setPendingQuizSettings(effectiveOverrides)
     // Calculate available questions for this quiz type
     let pool: MCQQuestion[] = []
-    const activeSettings = { ...settings, ...overrideSettings }
+    const activeSettings = { ...settings, ...effectiveOverrides }
     
     if (activeSettings.section) {
       pool = getQuestionsBySection(activeSettings.section)
@@ -678,9 +711,18 @@ export default function EBIRMCQClient() {
     return (
       <div className="space-y-6">
         {/* Header */}
-        <div className="text-center">
+        <div className="text-center relative">
+          <button
+            onClick={handleHardRefresh}
+            disabled={isRefreshing}
+            className="absolute right-0 top-0 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+            title="Refresh app (clears cache)"
+          >
+            <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+          </button>
           <h1 className="text-2xl font-bold text-gray-900">EBIR MCQ Practice</h1>
           <p className="text-gray-600 mt-1">Spaced repetition learning system</p>
+          <p className="text-xs text-gray-400 mt-1">{APP_VERSION} • {mcqQuestions.length} questions</p>
         </div>
 
         {/* Daily Goal & Streak Banner */}
